@@ -6,6 +6,8 @@ import { LazyError } from "./LazyUtil";
 import * as fs from "fs";
 import * as jimp from "jimp";
 import { Pattern } from "../structures/helpers/Pattern";
+import { LayersManager } from "../structures/managers/LayersManager";
+import { TextLayer } from "../structures/components/TextLayer";
 
 export function generateID(type: string) {
     return `${type}-${Math.random().toString(36).substr(2, 9)}`;
@@ -14,6 +16,7 @@ export function generateID(type: string) {
 let percentReg = /^(\d+)%$/;
 let pxReg = /^(\d+)px$/;
 let canvasReg = /^(vw|vh|vmin|vmax)$/;
+let linkReg = /^(link-w|link-h)-([A-Za-z0-9_]+)-(\d+)$/;
 
 let hexReg = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 let rgbReg = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
@@ -87,7 +90,7 @@ export function parseColor(v: ColorType) {
     }
 }
 
-export function parseToNormal(v: ScaleType, canvas: Canvas, layer: { width: number, height: number } = { width: 0, height: 0 }, options: { vertical?: boolean, layer?: boolean } = { vertical: false, layer: false }) {
+export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas, layer: { width: number, height: number } = { width: 0, height: 0 }, options: { vertical?: boolean, layer?: boolean } = { vertical: false, layer: false }, manager?: LayersManager) {
     if (typeof v === 'number') {
         return v;
     } else if (percentReg.test(v)) {
@@ -103,6 +106,22 @@ export function parseToNormal(v: ScaleType, canvas: Canvas, layer: { width: numb
             return (options.layer ? Math.max(layer.width, layer.height) : Math.min(canvas.width, canvas.height));
         } else if (v === 'vmax') {
             return (options.layer ? Math.max(layer.width, layer.height) : Math.max(canvas.width, canvas.height));
+        }
+    } else if (linkReg.test(v)) {
+        let match = v.match(linkReg) as RegExpMatchArray;
+        if (!manager) return 0;
+        let layer = manager.get(match[2]);
+        switch (match[1]) {
+            case 'link-w':
+                if (layer instanceof TextLayer) {
+                    return layer.measureText(ctx, canvas).width + (parseInt(match[3]) || 0);
+                }
+                break;
+            case 'link-h':
+                if (layer instanceof TextLayer) {
+                    return layer.measureText(ctx, canvas).height + (parseInt(match[3]) || 0);
+                }
+                break;
         }
     }
     return 0;

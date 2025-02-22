@@ -15,6 +15,7 @@ import {
 import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import { Pattern } from "../helpers/Pattern";
+import {LayersManager} from "../managers/LayersManager";
 
 export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     props: IQuadraticLayerProps;
@@ -85,13 +86,13 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, debug: boolean) {
-        const xs = parseToNormal(this.props.x, canvas);
-        const ys = parseToNormal(this.props.y, canvas, { width: 0, height: 0 }, { vertical: true });
-        const cx = parseToNormal(this.props.controlPoint.x, canvas);
-        const cy = parseToNormal(this.props.controlPoint.y, canvas, { width: 0, height: 0 }, { vertical: true });
-        const xe = parseToNormal(this.props.endPoint.x, canvas);
-        const ye = parseToNormal(this.props.endPoint.y, canvas, { width: 0, height: 0 }, { vertical: true });
+    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+        const xs = parseToNormal(this.props.x, ctx, canvas);
+        const ys = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
+        const cx = parseToNormal(this.props.controlPoint.x, ctx, canvas);
+        const cy = parseToNormal(this.props.controlPoint.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
+        const xe = parseToNormal(this.props.endPoint.x, ctx, canvas);
+        const ye = parseToNormal(this.props.endPoint.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
         const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cx, y: cy }, { x: xe, y: ye } ]);
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
 

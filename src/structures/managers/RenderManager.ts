@@ -25,11 +25,11 @@ export class RenderManager implements IRenderManager {
                 if (layer instanceof Group) {
                     for (const subLayer of layer.components) {
                         if (subLayer.visible) {
-                            await subLayer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.debug);
+                            await subLayer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.layers, this.debug);
                         }
                     }
                 } else {
-                    await layer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.debug);
+                    await layer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.layers, this.debug);
                 }
                 this.lazyCanvas.ctx.shadowColor = 'transparent';
             }

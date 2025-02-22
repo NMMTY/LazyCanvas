@@ -16,6 +16,7 @@ import {
 import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import { Pattern } from "../helpers/Pattern";
+import {LayersManager} from "../managers/LayersManager";
 
 export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     props: IMorphLayerProps;
@@ -91,12 +92,12 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, debug: boolean) {
-        const xs = parseToNormal(this.props.x, canvas);
-        const ys = parseToNormal(this.props.y, canvas, { width: 0, height: 0 }, { vertical: true });
-        const w = parseToNormal(this.props.size.width, canvas);
-        const h = parseToNormal(this.props.size.height, canvas, { width: w, height: 0 }, { vertical: true });
-        const r = parseToNormal(this.props.size.radius, canvas, { width: w / 2, height: h / 2 }, { layer: true });
+    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+        const xs = parseToNormal(this.props.x, ctx, canvas);
+        const ys = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
+        const w = parseToNormal(this.props.size.width, ctx, canvas, { width: 0, height: 0 }, { vertical: false }, manager);
+        const h = parseToNormal(this.props.size.height, ctx, canvas, { width: w, height: 0 }, { vertical: true }, manager);
+        const r = parseToNormal(this.props.size.radius, ctx, canvas, { width: w / 2, height: h / 2 }, { layer: true });
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
 

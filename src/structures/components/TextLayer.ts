@@ -24,6 +24,7 @@ import {
 } from "../../utils/utils";
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import { Pattern } from "../helpers/Pattern";
+import {LayersManager} from "../managers/LayersManager";
 
 export class TextLayer extends BaseLayer<ITextLayerProps> {
     props: ITextLayerProps;
@@ -167,11 +168,24 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, debug: boolean) {
-        const x = parseToNormal(this.props.x, canvas);
-        const y = parseToNormal(this.props.y, canvas, { width: 0, height: 0 }, { vertical: true });
-        const w = parseToNormal(this.props.multiline?.width, canvas);
-        const h = parseToNormal(this.props.multiline?.height, canvas, { width: w, height: 0 }, { vertical: true });
+    measureText(ctx: SKRSContext2D, canvas: Canvas): { width: number, height: number } {
+        const w = parseToNormal(this.props.multiline?.width, ctx, canvas);
+        const h = parseToNormal(this.props.multiline?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
+
+        if (this.props.multiline.enabled) {
+            return { width: w, height: h };
+        } else {
+            ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
+            let data = ctx.measureText(this.props.text);
+            return { width: data.width, height: this.props.font.size };
+        }
+    }
+
+    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+        const x = parseToNormal(this.props.x, ctx, canvas);
+        const y = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
+        const w = parseToNormal(this.props.multiline?.width, ctx, canvas);
+        const h = parseToNormal(this.props.multiline?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
 
         if (debug) LazyLog.log('none', `TextLayer:`, { x, y, w, h });
 
