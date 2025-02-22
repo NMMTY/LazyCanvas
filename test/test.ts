@@ -17,7 +17,7 @@ const canvas = new LazyCanvas(true)
 
 canvas.layers.add(
     new MorphLayer()
-        .setPosition(200, 200)
+        .setPosition('25%', 200)
         .setColor("rgb(0, 200, 0)")
         .setSize(250, 250, 0)
         .setFilter(Filters.blur(10))
@@ -51,7 +51,7 @@ canvas.layers.add(
         .setFont("Geist", 50, FontWeight.Thin)
         .setMultiline(true, 200, 500),
     new ImageLayer()
-        .setPosition(500, 200)
+        .setPosition('70%', '25%')
         .setSize(200, 200, 60)
         .setSrc("https://i.pinimg.com/1200x/f3/32/19/f332192b2090f437ca9f49c1002287b6.jpg"),
     new BezierLayer()

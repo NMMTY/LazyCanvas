@@ -91,7 +91,7 @@ export function parseToNormal(v: ScaleType, canvas: Canvas, layer: { width: numb
     if (typeof v === 'number') {
         return v;
     } else if (percentReg.test(v)) {
-        return parseFloat(v) * (options.layer ? (options.vertical ? layer.width : layer.height) : (options.vertical ? canvas.width : canvas.height));
+        return (parseFloat(v) / 100) * (options.layer ? (options.vertical ? layer.width : layer.height) : (options.vertical ? canvas.width : canvas.height));
     } else if (pxReg.test(v)) {
         return parseFloat(v);
     } else if (canvasReg.test(v)) {
