@@ -1,12 +1,15 @@
 import { AnyLayer } from "../../types";
 import { ILayersManager } from "../../types";
 import { Group } from "../components/Group";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
 
 export class LayersManager implements ILayersManager {
     map: Map<string, AnyLayer | Group>;
+    debug: boolean;
 
-    constructor() {
+    constructor(debug: boolean = false) {
         this.map = new Map();
+        this.debug = debug;
     }
 
     /**
@@ -14,10 +17,12 @@ export class LayersManager implements ILayersManager {
      * @param layers {AnyLayer[] | Group[]} - The `layer` or `group` to add to the map
      */
     public add(...layers: AnyLayer[] | Group[]) {
+        if (this.debug) LazyLog.log('info', `Adding layers...\nlength: ${layers.length}`);
         let layersArray = layers.flat();
         layersArray = layersArray.filter(l => l !== undefined);
         for (const layer of layersArray) {
-            if (this.map.has(layer.id)) throw new Error("Layer already exists");
+            if (this.debug) LazyLog.log('none', `Data:`, layer.toJSON());
+            if (this.map.has(layer.id)) throw new LazyError("Layer already exists");
             this.map.set(layer.id, layer);
         }
         this.sort();

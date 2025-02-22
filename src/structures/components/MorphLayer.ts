@@ -13,7 +13,7 @@ import {
     centring,
     parseFillStyle
 } from "../../utils/utils";
-import { LazyError } from "../../utils/LazyUtil";
+import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import { Pattern } from "../helpers/Pattern";
 
@@ -91,14 +91,19 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas, debug: boolean) {
         const xs = parseToNormal(this.props.x, canvas);
         const ys = parseToNormal(this.props.y, canvas, { width: 0, height: 0 }, { vertical: true });
         const w = parseToNormal(this.props.size.width, canvas);
         const h = parseToNormal(this.props.size.height, canvas, { width: w, height: 0 }, { vertical: true });
-        const r = parseToNormal(this.props.size.radius, canvas, { width: w, height: h }, { layer: true });
+        const r = parseToNormal(this.props.size.radius, canvas, { width: w / 2, height: h / 2 }, { layer: true });
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
+
+        if (debug) LazyLog.log('none', `MorphLayer:`, { x, y, w, h, r });
+
         ctx.save();
+
         transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
         ctx.beginPath();
         if (r) {
@@ -111,16 +116,11 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
             ctx.rect(x, y, w, h);
         }
         ctx.closePath();
+
         drawShadow(ctx, this.props.shadow);
         opacity(ctx, this.props.opacity);
         filters(ctx, this.props.filter);
-        let base = parseFillStyle(ctx, this.props.fillStyle);
-        let fillStyle;
-        if (base instanceof Promise) {
-            fillStyle = await base;
-        } else {
-            fillStyle = base;
-        }
+
         if (this.props.filled) {
             ctx.fillStyle = fillStyle;
             ctx.fill();
@@ -134,6 +134,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
             ctx.setLineDash(this.props.stroke?.dash || []);
             ctx.stroke();
         }
+
         ctx.restore();
     }
 

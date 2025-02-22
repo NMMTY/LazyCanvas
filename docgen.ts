@@ -1,9 +1,9 @@
 import { createDocumentation } from '@hitomihiumi/micro-docgen';
-import { name, version, homepage } from './package.json';
+import { version, homepage } from './package.json';
 
 async function main() {
     const docs = await createDocumentation({
-        name,
+        name: 'lazycanvas',
         version,
         github: homepage,
         tsconfigPath: './tsconfig.json',

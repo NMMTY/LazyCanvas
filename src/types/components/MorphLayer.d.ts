@@ -1,5 +1,5 @@
 import { IBaseLayer, IBaseLayerProps } from "./BaseLayer";
-import { ScaleType } from "../";
+import {ColorType, ScaleType} from "../";
 
 export interface IMorphLayer extends IBaseLayer {
     props: IMorphLayerProps;

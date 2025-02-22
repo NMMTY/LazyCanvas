@@ -17,12 +17,6 @@ export interface IBaseLayerProps {
     opacity: number;
     filled: boolean;
     fillStyle: ColorType;
-    shadow: {
-        color: string;
-        blur: number;
-        offsetX: number;
-        offsetY: number;
-    };
     stroke: {
         width: number;
         cap: CanvasLineCap;
@@ -30,6 +24,12 @@ export interface IBaseLayerProps {
         dashOffset: number;
         dash: number[];
         miterLimit: number;
+    };
+    shadow: {
+        color: string;
+        blur: number;
+        offsetX: number;
+        offsetY: number;
     };
     transform: Transform;
 }

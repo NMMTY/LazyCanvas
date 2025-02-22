@@ -10,7 +10,7 @@ import {
     Centring
 } from "../../types/enum";
 import { ITextLayer, ITextLayerProps, ScaleType, ColorType } from "../../types";
-import { LazyError } from "../../utils/LazyUtil";
+import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import {
     drawShadow,
@@ -167,13 +167,15 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas, debug: boolean) {
         const x = parseToNormal(this.props.x, canvas);
         const y = parseToNormal(this.props.y, canvas, { width: 0, height: 0 }, { vertical: true });
         const w = parseToNormal(this.props.multiline?.width, canvas);
         const h = parseToNormal(this.props.multiline?.height, canvas, { width: w, height: 0 }, { vertical: true });
+
+        if (debug) LazyLog.log('none', `TextLayer:`, { x, y, w, h });
+
         ctx.save();
-        console.log(this.props)
         transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type }, { text: this.props.text, textAlign: this.props.align, fontSize: this.props.font.size, multiline: this.props.multiline.enabled });
         ctx.beginPath();
         drawShadow(ctx, this.props.shadow);

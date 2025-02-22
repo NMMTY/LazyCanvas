@@ -19,7 +19,6 @@ export interface ITextLayerProps extends IBaseLayerProps {
         height: ScaleType;
         spacing?: number;
     };
-    color: ColorType;
     align: TextAlign;
     baseline: TextBaseline;
     direction: TextDirection;

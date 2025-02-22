@@ -1,11 +1,12 @@
 {
-  "name": "@nnmty/lazycanvas",
-  "version": "0.2.0",
+  "name": "@nmmty/lazycanvas",
+  "version": "0.3.0",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "tsc ./test/test.ts && node ./test/test.js",
+    "centring": "tsc ./test/centring.ts && node ./test/centring.js",
     "logo": "tsc ./test/logo.ts && node ./test/logo.js",
     "text": "tsc ./test/text.ts && node ./test/text.js",
     "doc": "tsx docgen.ts",

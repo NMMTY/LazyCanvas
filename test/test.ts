@@ -1,6 +1,18 @@
-import { FontWeight, ImageLayer, LazyCanvas, MorphLayer, saveFile, SaveFormat, TextLayer, Gradient, GradientType, Filters } from "../dist";
+import {
+    FontWeight,
+    ImageLayer,
+    LazyCanvas,
+    MorphLayer,
+    saveFile,
+    SaveFormat,
+    TextLayer,
+    Gradient,
+    GradientType,
+    Filters,
+    BezierLayer, QuadraticLayer
+} from "../dist";
 
-const canvas = new LazyCanvas()
+const canvas = new LazyCanvas(true)
     .create(800, 800);
 
 canvas.layers.add(
@@ -21,8 +33,7 @@ canvas.layers.add(
         .setFont("GeistMono", 50, FontWeight.Normal)
         .setMultiline(true, 200, 200)
         .setShadow('#000000', 10, 10, 10)
-        .setRotate(45)
-    ,
+        .setRotate(45),
     new TextLayer()
         .setText("Lazy Canvas")
         .setPosition(100, 400)
@@ -42,7 +53,19 @@ canvas.layers.add(
     new ImageLayer()
         .setPosition(500, 200)
         .setSize(200, 200, 60)
-        .setSrc("https://i.pinimg.com/1200x/f3/32/19/f332192b2090f437ca9f49c1002287b6.jpg")
+        .setSrc("https://i.pinimg.com/1200x/f3/32/19/f332192b2090f437ca9f49c1002287b6.jpg"),
+    new BezierLayer()
+        .setPosition(400, 400)
+        .setControlPoints({ x: 400, y: 450 }, { x: 600, y: 650 })
+        .setEndPoint(600, 600)
+        .setColor("rgb(0, 200, 0)")
+        .setStroke(5, "round", "round", [20, 10], 0, 10),
+    new QuadraticLayer()
+        .setPosition(400, 400)
+        .setControlPoint(700, 500)
+        .setEndPoint(600, 600)
+        .setColor("rgb(255, 59, 0)")
+        .setStroke(5, "round", "round", [20, 10], 0, 10)
 )
 
 canvas.render.render().then(async (buffer) => {

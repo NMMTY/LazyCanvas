@@ -59,7 +59,8 @@ export class Font implements IFont {
         return {
             family: this.family,
             weight: this.weight,
-            path: this.path
+            path: this.path,
+            base64: this.base64
         }
     }
 }

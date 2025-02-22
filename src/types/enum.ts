@@ -90,7 +90,15 @@ export enum SaveFormat {
 
 export enum Centring {
     Start = 'start',
+    StartTop = 'start-top',
+    StartBottom = 'start-bottom',
     Center = 'center',
+    CenterTop = 'center-top',
+    CenterBottom = 'center-bottom',
+    End = 'end',
+    EndTop = 'end-top',
+    EndBottom = 'end-bottom',
+    None = 'none'
 }
 
 export enum PatternType {

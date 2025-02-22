@@ -1,5 +1,5 @@
 import { Centring, LayerType, SaveFormat, TextAlign } from "../types/enum";
-import { IBaseLayerProps, Transform, ScaleType, ColorType } from "../types";
+import { Transform, ScaleType, ColorType, PointNumber } from "../types";
 import { Gradient } from "../structures/helpers/Gradient";
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import { LazyError } from "./LazyUtil";
@@ -146,8 +146,10 @@ export function transform(ctx: SKRSContext2D, transform: Transform, layer: { wid
             switch (layer.type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.BezierCurve:
+                case LayerType.QuadraticCurve:
                     ctx.translate(layer.x + (layer.width / 2), layer.y + (layer.height / 2));
-                    ctx.rotate((Math.PI/180) * transform.rotate);
+                    ctx.rotate((Math.PI / 180) * transform.rotate);
                     ctx.translate(-(layer.x + (layer.width / 2)), -(layer.y + (layer.height / 2)));
                     break;
                 case LayerType.Text:
@@ -204,16 +206,114 @@ export function isImageUrlValid(src: string) {
 }
 
 export function centring(centring: Centring, type: LayerType, width: number, height: number, x: number, y: number) {
-    if (centring === Centring.Center) {
-        switch (type) {
-            case LayerType.Image:
-            case LayerType.Morph:
-                x -= width / 2;
-                y -= height / 2;
-                break;
-        }
-        return { x, y };
-    } else {
-        return { x, y };
+    switch (centring) {
+        case Centring.Center:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    x -= width / 2;
+                    y -= height / 2;
+                    break;
+            }
+            return { x, y };
+        case Centring.CenterBottom:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    x -= width / 2;
+                    break;
+            }
+            return { x, y };
+        case Centring.CenterTop:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    x -= width / 2;
+                    y -= height;
+                    break;
+            }
+            return { x, y };
+        case Centring.Start:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    y -= height / 2;
+                    break;
+            }
+            return { x, y };
+        case Centring.StartBottom:
+            return { x, y };
+        case Centring.StartTop:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    y -= height;
+                    break;
+            }
+            return { x, y };
+        case Centring.End:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    x -= width;
+                    y -= height / 2;
+                    break;
+            }
+            return { x, y };
+        case Centring.EndBottom:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    x -= width;
+                    break;
+            }
+            return { x, y };
+        case Centring.EndTop:
+            switch (type) {
+                case LayerType.Image:
+                case LayerType.Morph:
+                    x -= width;
+                    y -= height;
+                    break;
+            }
+            return { x, y };
+        case Centring.None:
+            return { x, y };
     }
+}
+
+function quadraticBezier(p0: PointNumber, p1: PointNumber, p2: PointNumber, t: number): PointNumber {
+    const x = (1 - t) ** 2 * p0.x + 2 * (1 - t) * t * p1.x + t ** 2 * p2.x;
+    const y = (1 - t) ** 2 * p0.y + 2 * (1 - t) * t * p1.y + t ** 2 * p2.y;
+    return { x, y };
+}
+
+function cubicBezier(p0: PointNumber, p1: PointNumber, p2: PointNumber, p3: PointNumber, t: number): PointNumber {
+    const x = (1 - t) ** 3 * p0.x + 3 * (1 - t) ** 2 * t * p1.x + 3 * (1 - t) * t ** 2 * p2.x + t ** 3 * p3.x;
+    const y = (1 - t) ** 3 * p0.y + 3 * (1 - t) ** 2 * t * p1.y + 3 * (1 - t) * t ** 2 * p2.y + t ** 3 * p3.y;
+    return { x, y };
+}
+
+export function getBoundingBoxBezier(points: PointNumber[], steps = 100) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        let p: PointNumber;
+
+        if (points.length === 3) {
+            p = quadraticBezier(points[0], points[1], points[2], t);
+        } else if (points.length === 4) {
+            p = cubicBezier(points[0], points[1], points[2], points[3], t);
+        } else {
+            throw new LazyError("Invalid number of points");
+        }
+
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+
+    return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY }, center: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 }, width: maxX - minX, height: maxY - minY };
 }

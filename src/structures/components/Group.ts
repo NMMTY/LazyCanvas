@@ -92,4 +92,13 @@ export class Group implements IGroup {
     get length() {
         return this.components.length;
     }
+
+    toJSON(): IGroup {
+        return {
+            id: this.id,
+            visible: this.visible,
+            zIndex: this.zIndex,
+            components: this.components.map(c => c.toJSON())
+        };
+    }
 }

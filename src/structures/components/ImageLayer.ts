@@ -3,7 +3,7 @@ import { IImageLayer, IImageLayerProps, ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { Canvas, loadImage, SKRSContext2D } from "@napi-rs/canvas";
 import { centring, drawShadow, filters, isImageUrlValid, opacity, parseToNormal, transform } from "../../utils/utils";
-import { LazyError } from "../../utils/LazyUtil";
+import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import * as jimp from "jimp";
 
 export class ImageLayer extends BaseLayer<IImageLayerProps> {
@@ -40,13 +40,16 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas, debug: boolean) {
         let xs = parseToNormal(this.props.x, canvas);
         let ys = parseToNormal(this.props.y, canvas, { width: 0, height: 0 }, { vertical: true });
         let w = parseToNormal(this.props.size.width, canvas);
         let h = parseToNormal(this.props.size.height, canvas, { width: w, height: 0 }, { vertical: true });
         let r = parseToNormal(this.props.size.radius, canvas, { width: w, height: h }, { layer: true });
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
+
+        if (debug) LazyLog.log('none', `ImageLayer:`, { x, y, w, h, r });
+
         ctx.save();
         transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
         drawShadow(ctx, this.props.shadow);

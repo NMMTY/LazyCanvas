@@ -3,6 +3,8 @@ import { LazyCanvas } from "./structures/LazyCanvas";
 import { ImageLayer } from "./structures/components/ImageLayer";
 import { MorphLayer } from "./structures/components/MorphLayer";
 import { TextLayer } from "./structures/components/TextLayer";
+import { BezierLayer } from "./structures/components/BezierLayer";
+import { QuadraticLayer } from "./structures/components/QuadraticLayer";
 import { BaseLayer } from "./structures/components/BaseLayer";
 import { Group } from "./structures/components/Group";
 
@@ -36,6 +38,10 @@ import type {
     IMorphLayerProps,
     ITextLayer,
     ITextLayerProps,
+    IBezierLayer,
+    IBezierLayerProps,
+    IQuadraticLayer,
+    IQuadraticLayerProps,
     IBaseLayer,
     IBaseLayerProps,
     IGroup,
@@ -56,6 +62,8 @@ export {
     ImageLayer,
     MorphLayer,
     TextLayer,
+    BezierLayer,
+    QuadraticLayer,
     BaseLayer,
     Group,
     Font,
@@ -88,6 +96,10 @@ export {
     ITextLayerProps,
     IBaseLayer,
     IBaseLayerProps,
+    IBezierLayer,
+    IBezierLayerProps,
+    IQuadraticLayer,
+    IQuadraticLayerProps,
     IGroup,
     AnyLayer,
     ScaleType,
