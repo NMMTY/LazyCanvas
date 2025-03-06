@@ -11,7 +11,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     props: IImageLayerProps;
 
     constructor(props?: IImageLayerProps) {
-        super(LayerType.Image, props);
+        super(LayerType.Image, props || {} as IImageLayerProps);
         this.props = props ? props : {} as IImageLayerProps;
         this.props.centring = Centring.Center;
     }

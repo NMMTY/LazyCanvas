@@ -22,7 +22,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     props: IMorphLayerProps;
 
     constructor(props?: IMorphLayerProps) {
-        super(LayerType.Morph, props);
+        super(LayerType.Morph, props || {} as IMorphLayerProps);
         this.props = props ? props : {} as IMorphLayerProps;
         if (!this.props.fillStyle) this.props.fillStyle = '#000000';
         if (!this.props.filled && this.props.filled !== false) this.props.filled = true;

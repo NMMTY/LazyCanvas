@@ -29,7 +29,7 @@ canvas.layers.add(
     new TextLayer()
         .setText("Hello, World!")
         .setPosition(400, 400)
-        .setColor("hsl(300, 100%, 100%)")
+        .setColor("hsl(10, 40%, 50%)")
         .setFont("GeistMono", 50, FontWeight.Normal)
         .setMultiline(true, 200, 200)
         .setShadow('#000000', 10, 10, 10)

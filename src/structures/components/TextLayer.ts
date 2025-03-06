@@ -30,7 +30,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     props: ITextLayerProps;
 
     constructor(props?: ITextLayerProps) {
-        super(LayerType.Text, props);
+        super(LayerType.Text, props || {} as ITextLayerProps);
         this.props = props ? props : {} as ITextLayerProps;
         this.props.align = TextAlign.Left;
         this.props.font = {

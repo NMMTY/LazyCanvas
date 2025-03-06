@@ -21,7 +21,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     props: IQuadraticLayerProps;
 
     constructor(props?: IQuadraticLayerProps) {
-        super(LayerType.QuadraticCurve, props);
+        super(LayerType.QuadraticCurve, props || {} as IQuadraticLayerProps);
         this.props = props ? props : {} as IQuadraticLayerProps;
         if (!this.props.fillStyle) this.props.fillStyle = '#000000';
         this.props.centring = Centring.None;
@@ -42,7 +42,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
      * @param x {ScaleType} - The end `x` of the quadratic layer.
      * @param y {ScaleType} - The end `y` of the quadratic layer.
      */
-    setEndPoint(x: ScaleType, y: ScaleType) {
+    setEndPosition(x: ScaleType, y: ScaleType) {
         this.props.endPoint = { x, y };
         return this;
     }

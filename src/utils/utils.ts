@@ -167,6 +167,7 @@ export function transform(ctx: SKRSContext2D, transform: Transform, layer: { wid
                 case LayerType.Morph:
                 case LayerType.BezierCurve:
                 case LayerType.QuadraticCurve:
+                case LayerType.Line:
                     ctx.translate(layer.x + (layer.width / 2), layer.y + (layer.height / 2));
                     ctx.rotate((Math.PI / 180) * transform.rotate);
                     ctx.translate(-(layer.x + (layer.width / 2)), -(layer.y + (layer.height / 2)));

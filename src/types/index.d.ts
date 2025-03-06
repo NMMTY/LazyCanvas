@@ -5,6 +5,7 @@ export * from "./components/ImageLayer";
 export * from "./components/MorphLayer";
 export * from "./components/BezierLayer";
 export * from "./components/QuadraticLayer";
+export * from "./components/LineLayer";
 export * from "./components/Group";
 export * from "./helpers/Font";
 export * from "./helpers/Gradient";

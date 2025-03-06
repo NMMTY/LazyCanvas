@@ -42,6 +42,8 @@ import type {
     IBezierLayerProps,
     IQuadraticLayer,
     IQuadraticLayerProps,
+    ILineLayer,
+    ILineLayerProps,
     IBaseLayer,
     IBaseLayerProps,
     IGroup,

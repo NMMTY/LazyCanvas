@@ -1,11 +1,10 @@
 import {BaseLayer} from "./BaseLayer";
-import {ColorType, IBezierLayer, IBezierLayerProps, ScaleType} from "../../types";
+import {ColorType, ILineLayer, ILineLayerProps, ScaleType} from "../../types/";
 import {Centring, LayerType} from "../../types/enum";
-import {Canvas, SKRSContext2D} from "@napi-rs/canvas";
+import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import {
     drawShadow,
     filters,
-    getBoundingBoxBezier,
     isColor,
     opacity,
     parseColor,
@@ -13,35 +12,26 @@ import {
     parseToNormal,
     transform
 } from "../../utils/utils";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import {Gradient} from "../helpers/Gradient";
 import {Pattern} from "../helpers/Pattern";
+import {Canvas, SKRSContext2D} from "@napi-rs/canvas";
 import {LayersManager} from "../managers/LayersManager";
 
-export class BezierLayer extends BaseLayer<IBezierLayerProps> {
-    props: IBezierLayerProps;
 
-    constructor(props?: IBezierLayerProps) {
-        super(LayerType.BezierCurve, props || {} as IBezierLayerProps);
-        this.props = props ? props : {} as IBezierLayerProps;
+export class LineLayer extends BaseLayer<ILineLayerProps> {
+    props: ILineLayerProps;
+
+    constructor(props?: ILineLayerProps) {
+        super(LayerType.Line, props || {} as ILineLayerProps);
+        this.props = props ? props : {} as ILineLayerProps;
         if (!this.props.fillStyle) this.props.fillStyle = '#000000';
         this.props.centring = Centring.None;
     }
 
     /**
-     * @description Sets the control points of the bezier layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param controlPoints {Array<{ x: ScaleType, y: ScaleType }>} - The `controlPoints` of the bezier layer.
-     */
-    setControlPoints(...controlPoints: { x: ScaleType, y: ScaleType }[]) {
-        if (controlPoints.length !== 2) throw new LazyError('The control points of the layer must be provided');
-        this.props.controlPoints = controlPoints.flat();
-        return this;
-    }
-
-    /**
-     * @description Sets the end point of the bezier layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param x {ScaleType} - The end `x` of the bezier layer.
-     * @param y {ScaleType} - The end `y` of the bezier layer.
+     * @description Sets the end point of the line layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
+     * @param x {ScaleType} - The end `x` of the line layer.
+     * @param y {ScaleType} - The end `y` of the line layer.
      */
     setEndPosition(x: ScaleType, y: ScaleType) {
         this.props.endPoint = { x, y };
@@ -90,20 +80,17 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
         const xs = parseToNormal(this.props.x, ctx, canvas);
         const ys = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const cp1x = parseToNormal(this.props.controlPoints[0].x, ctx, canvas);
-        const cp1y = parseToNormal(this.props.controlPoints[0].y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const cp2x = parseToNormal(this.props.controlPoints[1].x, ctx, canvas);
-        const cp2y = parseToNormal(this.props.controlPoints[1].y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
         const xe = parseToNormal(this.props.endPoint.x, ctx, canvas);
         const ye = parseToNormal(this.props.endPoint.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cp1x, y: cp1y }, { x: cp2x, y: cp2y }, { x: xe, y: ye } ]);
+        let width = xe - xs;
+        let height = ye - ys;
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
 
-        if (debug) LazyLog.log('none', `BezierLayer:`, { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye, max, min, center, width, height, fillStyle });
+        if (debug) LazyLog.log('none', `LineLayer:`, { xs, ys, xe, ye, width, height });
 
         ctx.save();
 
-        transform(ctx, this.props.transform, { x: center.x, y: center.y, width, height, type: this.type });
+        transform(ctx, this.props.transform, { x: xs, y: ys, width, height, type: this.type });
         drawShadow(ctx, this.props.shadow);
         opacity(ctx, this.props.opacity);
         filters(ctx, this.props.filter);
@@ -117,19 +104,14 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         ctx.miterLimit = this.props.stroke?.miterLimit || 10;
         ctx.lineDashOffset = this.props.stroke?.dashOffset || 0;
         ctx.setLineDash(this.props.stroke?.dash || []);
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, xe, ye);
-        ctx.stroke();
+        ctx.lineTo(xe, ye);
         ctx.closePath();
-
-        ctx.restore();
     }
 
-    /**
-     * @returns {IBezierLayer}
-     */
-    public toJSON(): IBezierLayer {
+    toJSON(): ILineLayer {
         let data = super.toJSON();
         data.props = this.props;
-        return {...data} as IBezierLayer;
+        return {...data} as ILineLayer;
     }
+
 }

@@ -1,5 +1,5 @@
 /**
- * List of CSS [`filters`](https://developer.mozilla.org/en-US/docs/Web/CSS/filter) that can be used with the `filter` property. Use this functions to `setFilter` on the layer.
+ * List of CSS [`filters`](https://developer.mozilla.org/en-US/docs/Web/CSS/filter) that can be used with the `filter` property. Use this functions to `setFilters` on the layer.
  */
 export const Filters = {
     /**
