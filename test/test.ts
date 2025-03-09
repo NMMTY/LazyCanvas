@@ -8,6 +8,7 @@ import {
     TextLayer,
     Gradient,
     GradientType,
+    LineLayer,
     Filters,
     BezierLayer, QuadraticLayer
 } from "../dist";
@@ -20,7 +21,7 @@ canvas.layers.add(
         .setPosition('25%', 200)
         .setColor("rgb(0, 200, 0)")
         .setSize(250, 250, 0)
-        .setFilter(Filters.blur(10))
+        .setFilters(Filters.blur(10))
         .setRotate(45),
     new MorphLayer()
         .setPosition(200, 200)
@@ -30,7 +31,7 @@ canvas.layers.add(
         .setText("Hello, World!")
         .setPosition(400, 400)
         .setColor("hsl(10, 40%, 50%)")
-        .setFont("GeistMono", 50, FontWeight.Normal)
+        .setFont("GeistMono", 50, FontWeight.Regular)
         .setMultiline(true, 200, 200)
         .setShadow('#000000', 10, 10, 10)
         .setRotate(45),
@@ -57,15 +58,20 @@ canvas.layers.add(
     new BezierLayer()
         .setPosition(400, 400)
         .setControlPoints({ x: 400, y: 450 }, { x: 600, y: 650 })
-        .setEndPoint(600, 600)
+        .setEndPosition(600, 600)
         .setColor("rgb(0, 200, 0)")
         .setStroke(5, "round", "round", [20, 10], 0, 10),
     new QuadraticLayer()
         .setPosition(400, 400)
         .setControlPoint(700, 500)
-        .setEndPoint(600, 600)
+        .setEndPosition(600, 600)
         .setColor("rgb(255, 59, 0)")
-        .setStroke(5, "round", "round", [20, 10], 0, 10)
+        .setStroke(5, "round", "round", [20, 10], 0, 10),
+    new LineLayer()
+        .setPosition(200, 400)
+        .setEndPosition(600, 600)
+        .setColor("rgb(0, 200, 0)")
+        .setStroke(5, "round", "round", [20, 10], 0, 10),
 )
 
 canvas.render.render().then(async (buffer) => {

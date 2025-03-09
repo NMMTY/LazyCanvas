@@ -1,6 +1,6 @@
-import { IFontsManager, IFonts } from "../../types";
+import { IFonts, IFontsManager } from "../../types";
 import { Font } from "../helpers/Font";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Fonts } from "../../helpers/Fonts";
 import { GlobalFonts } from "@napi-rs/canvas";
 
@@ -12,9 +12,7 @@ export class FontsManager implements IFontsManager {
         this.debug = debug;
         this.map = new Map();
 
-        let fontList = Fonts;
-
-        this.loadFonts(fontList);
+        this.loadFonts(Fonts);
     }
 
     /**

@@ -1,5 +1,5 @@
-import { ColorType, ScaleType } from "../";
-import { Centring, LayerType } from "../enum";
+import { ColorType, ScaleType, AnyCentring } from "../";
+import { LayerType } from "../enum";
 
 export interface IBaseLayer {
     id: string;
@@ -12,7 +12,7 @@ export interface IBaseLayer {
 export interface IBaseLayerProps {
     x: ScaleType;
     y: ScaleType;
-    centring: Centring;
+    centring: AnyCentring;
     filter: string;
     opacity: number;
     filled: boolean;

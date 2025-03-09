@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,6 +10,7 @@
     "logo": "tsc ./test/logo.ts && node ./test/logo.js",
     "text": "tsc ./test/text.ts && node ./test/text.js",
     "doc": "tsx docgen.ts",
+    "font": "tsc ./scripts/font-gen.ts && node ./scripts/font-gen.js",
     "build": "tsc"
   },
   "repository": {
@@ -30,12 +31,13 @@
   },
   "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.65",
+    "@napi-rs/canvas": "^0.1.68",
     "jimp": "0.22.12",
     "path": "^0.12.7",
     "svgson": "^5.3.1"
   },
   "devDependencies": {
+    "@hitomihiumi/colors.ts": "^1.0.3",
     "@hitomihiumi/micro-docgen": "^0.3.0",
     "@types/jimp": "^0.2.28",
     "@types/node": "^22.10.2",

@@ -1,7 +1,7 @@
-import {BaseLayer} from "./BaseLayer";
-import {ColorType, ILineLayer, ILineLayerProps, ScaleType} from "../../types/";
-import {Centring, LayerType} from "../../types/enum";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
+import { BaseLayer } from "./BaseLayer";
+import { ColorType, ILineLayer, ILineLayerProps, ScaleType } from "../../types/";
+import { Centring, LayerType } from "../../types/enum";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import {
     drawShadow,
     filters,
@@ -12,10 +12,10 @@ import {
     parseToNormal,
     transform
 } from "../../utils/utils";
-import {Gradient} from "../helpers/Gradient";
-import {Pattern} from "../helpers/Pattern";
-import {Canvas, SKRSContext2D} from "@napi-rs/canvas";
-import {LayersManager} from "../managers/LayersManager";
+import { Gradient } from "../helpers/Gradient";
+import { Pattern } from "../helpers/Pattern";
+import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
+import { LayersManager } from "../managers/LayersManager";
 
 
 export class LineLayer extends BaseLayer<ILineLayerProps> {
@@ -105,7 +105,10 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         ctx.lineDashOffset = this.props.stroke?.dashOffset || 0;
         ctx.setLineDash(this.props.stroke?.dash || []);
         ctx.lineTo(xe, ye);
+        ctx.stroke();
         ctx.closePath();
+
+        ctx.restore();
     }
 
     toJSON(): ILineLayer {

@@ -1,4 +1,4 @@
-import {LazyCanvas, TextLayer, saveFile, SaveFormat, Export, TextAlign, FontWeight} from "../dist";
+import { LazyCanvas, TextLayer, saveFile, SaveFormat, Export, TextAlign, FontsList } from "../dist";
 import { SvgExportFlag } from "@napi-rs/canvas";
 
 const canvas = new LazyCanvas()
@@ -7,12 +7,12 @@ const canvas = new LazyCanvas()
     .setSvgExportFlag(SvgExportFlag.ConvertTextToPaths);
 
 canvas.layers.add(
-    new TextLayer()
-    .setText("NMMTY")
-    .setPosition(150, 85)
-    .setColor("#ff8a8a")
-    .setFont("GeistMono", 100, FontWeight.Bold)
-    .setAlign(TextAlign.Center)
+        new TextLayer()
+        .setText("NMMTY")
+        .setPosition(150, 85)
+        .setColor("#ff8a8a")
+        .setFont(FontsList.GeistMono_Black(50))
+        .setAlign(TextAlign.Center)
 )
 
 canvas.render.render().then(async (buffer) => {

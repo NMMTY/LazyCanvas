@@ -3,9 +3,9 @@ import { IImageLayer, IImageLayerProps, ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { Canvas, loadImage, SKRSContext2D } from "@napi-rs/canvas";
 import { centring, drawShadow, filters, isImageUrlValid, opacity, parseToNormal, transform } from "../../utils/utils";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import * as jimp from "jimp";
-import {LayersManager} from "../managers/LayersManager";
+import { LayersManager } from "../managers/LayersManager";
 
 export class ImageLayer extends BaseLayer<IImageLayerProps> {
     props: IImageLayerProps;

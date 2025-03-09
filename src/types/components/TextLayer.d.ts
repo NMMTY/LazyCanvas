@@ -1,6 +1,5 @@
-import { ColorType, ScaleType } from "../";
+import { AnyWeight, ScaleType, AnyTextAlign, AnyTextBaseline, AnyTextDirection } from "../";
 import { IBaseLayer, IBaseLayerProps } from "./BaseLayer";
-import { FontWeight, TextAlign, TextBaseline, TextDirection } from "../enum";
 
 export interface ITextLayer extends IBaseLayer {
     props: ITextLayerProps;
@@ -11,7 +10,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
     font: {
         family: string;
         size: number;
-        weight: FontWeight;
+        weight: AnyWeight;
     };
     multiline: {
         enabled: boolean;
@@ -19,7 +18,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
         height: ScaleType;
         spacing?: number;
     };
-    align: TextAlign;
-    baseline: TextBaseline;
-    direction: TextDirection;
+    align: AnyTextAlign;
+    baseline: AnyTextBaseline;
+    direction: AnyTextDirection;
 }

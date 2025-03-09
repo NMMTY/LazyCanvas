@@ -1,4 +1,4 @@
-import { ScaleType, IBaseLayer, IBaseLayerProps, Transform } from "../../types";
+import { ScaleType, IBaseLayer, IBaseLayerProps, Transform, AnyCentring } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { generateID, isColor, parseColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
@@ -122,9 +122,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
 
     /**
      * @description Sets type of centring of the layer.
-     * @param centring {Centring} - The `centring` of the layer
+     * @param centring {AnyCentring} - The `centring` of the layer
      */
-    setCentring(centring: Centring) {
+    setCentring(centring: AnyCentring) {
         this.props.centring = centring;
         return this;
     }

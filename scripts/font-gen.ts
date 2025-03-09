@@ -1,20 +1,22 @@
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
+import '@hitomihiumi/colors.ts';
 
-const fontsDir = path.join(__dirname, 'fonts');
-const fonts = {};
-let fontWeights = {};
+const fontsDir = path.join(__dirname, '../resources/fonts');
+const fonts: { [key: string]: string } = {};
+let fontWeights: { [key: string]: { [key: number]: string } } = {};
 
 fs.readdirSync(fontsDir).forEach((file) => {
     const ext = path.extname(file);
     if (ext === '.ttf' || ext === '.otf') {
         const fontName = path.basename(file, ext);
         if (!fontName.includes('-')) {
-            console.error(`Font name must contain a weight: ${file}`);
+            console.error(`❌ | Font name must contain a weight: ${file}`.bgRed);
             return;
         }
+        console.log(`🔍 | ${fontName} found!`.yellow);
         if (fonts[fontName]) {
-            console.error(`Font with name ${fontName} already exists!`);
+            console.error(`❌ | Font with name ${fontName} already exists!`.bgRed);
             return;
         }
         if (!fontWeights[fontName.split('-')[0]]) {
@@ -24,9 +26,32 @@ fs.readdirSync(fontsDir).forEach((file) => {
     }
 });
 
-function getFontWeight(fontName) {
+function getFontWeight(fontName: string) {
     const weight = fontName.split('-')[1];
-    if (isNaN(Number(weight))) {
+    if (!isNaN(Number(fontName))) {
+        switch (Number(fontName)) {
+            case 100:
+                return 'Thin';
+            case 200:
+                return 'ExtraLight';
+            case 300:
+                return 'Light';
+            case 400:
+                return 'Regular';
+            case 500:
+                return 'Medium';
+            case 600:
+                return 'SemiBold';
+            case 700:
+                return 'Bold';
+            case 800:
+                return 'ExtraBold';
+            case 900:
+                return 'Black';
+            case 950:
+                return 'ExtraBlack';
+        }
+    } else if (isNaN(Number(weight))) {
         if (weight) {
             switch (weight.toLowerCase()) {
                 case 'thin':
@@ -64,10 +89,11 @@ function getFontWeight(fontName) {
 }
 
 let str = '';
+let str2 = '';
 
 for (const fontName in fonts) {
     const font = fonts[fontName];
-    const weight = getFontWeight(fontName);
+    const weight = getFontWeight(fontName) as number;
     const family = fontName.split('-')[0];
 
     if (!fontWeights[family]) {
@@ -81,11 +107,15 @@ for (const family in fontWeights) {
     str += `    ${family}: {\n`;
     for (const weight in fontWeights[family]) {
         str += `        ${weight}: 'Buffer.from(${fontWeights[family][weight]}, "base64")',\n`;
+        str2 += `    ${family}_${getFontWeight(weight)}(size: number) {\n`;
+        str2 += `        return { family: '${family}', size, weight: FontWeight.${getFontWeight(weight)} } \n`;
+        str2 += '    },\n';
+        console.log(`✔️ | ${family} ${getFontWeight(weight)} loaded!`.green);
     }
     str += '    },\n';
 }
 
-const output = `
+const fonts_ts = `
 /**
  * The bundled fonts in this package.
  * Used fonts:
@@ -96,5 +126,18 @@ ${str}
 };
 `;
 
-fs.writeFileSync(path.join(__dirname, 'Fonts.ts'), output);
-console.log('Fonts.ts generated!');
+const fonts_list = `
+import { FontWeight } from "../types/enum";
+/**
+ * The bundled fonts in this package.
+ * Used fonts:
+ * @see https://vercel.com/font
+ */
+ export const FontsList = {
+${str2}
+};
+`
+
+fs.writeFileSync(path.join(__dirname, 'Fonts.ts'), fonts_ts);
+fs.writeFileSync(path.join(__dirname, 'FontsList.ts'), fonts_list);
+console.log('-------------------------\n✔️ | Fonts.ts and FontsList.ts are generated!'.green);

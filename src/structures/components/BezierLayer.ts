@@ -1,7 +1,7 @@
-import {BaseLayer} from "./BaseLayer";
-import {ColorType, IBezierLayer, IBezierLayerProps, ScaleType} from "../../types";
-import {Centring, LayerType} from "../../types/enum";
-import {Canvas, SKRSContext2D} from "@napi-rs/canvas";
+import { BaseLayer } from "./BaseLayer";
+import { ColorType, IBezierLayer, IBezierLayerProps, ScaleType } from "../../types";
+import { Centring, LayerType } from "../../types/enum";
+import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import {
     drawShadow,
     filters,
@@ -13,10 +13,10 @@ import {
     parseToNormal,
     transform
 } from "../../utils/utils";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
-import {Gradient} from "../helpers/Gradient";
-import {Pattern} from "../helpers/Pattern";
-import {LayersManager} from "../managers/LayersManager";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
+import { Gradient } from "../helpers/Gradient";
+import { Pattern } from "../helpers/Pattern";
+import { LayersManager } from "../managers/LayersManager";
 
 export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     props: IBezierLayerProps;

@@ -2,7 +2,7 @@ import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import { LayersManager } from "../structures/managers/LayersManager";
 import { RenderManager } from "../structures/managers/RenderManager";
 import { FontsManager } from "../structures/managers/FontsManager";
-import { Export } from "./enum";
+import { AnyExport } from "../";
 
 export interface ILazyCanvas {
     width: number;
@@ -12,5 +12,5 @@ export interface ILazyCanvas {
     layers: LayersManager;
     render: RenderManager;
     fonts: FontsManager;
-    exportType: Export;
+    exportType: AnyExport;
 }

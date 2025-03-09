@@ -13,10 +13,10 @@ import {
     centring,
     parseFillStyle
 } from "../../utils/utils";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import { Pattern } from "../helpers/Pattern";
-import {LayersManager} from "../managers/LayersManager";
+import { LayersManager } from "../managers/LayersManager";
 
 export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     props: IMorphLayerProps;

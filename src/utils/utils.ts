@@ -1,5 +1,5 @@
 import { Centring, LayerType, SaveFormat, TextAlign } from "../types/enum";
-import { Transform, ScaleType, ColorType, PointNumber } from "../types";
+import { Transform, ScaleType, ColorType, PointNumber, AnyCentring, AnyTextAlign } from "../types";
 import { Gradient } from "../structures/helpers/Gradient";
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import { LazyError } from "./LazyUtil";
@@ -156,7 +156,7 @@ export function parseFillStyle(ctx: SKRSContext2D, color: ColorType) {
     }
 }
 
-export function transform(ctx: SKRSContext2D, transform: Transform, layer: { width: number, height: number, x: number, y: number, type: LayerType } = { width: 0, height: 0, x: 0, y: 0, type: LayerType.Morph }, extra: { text: string, textAlign: TextAlign, fontSize: number, multiline: boolean} = { text: '', textAlign: TextAlign.Left, fontSize: 0, multiline: false }) {
+export function transform(ctx: SKRSContext2D, transform: Transform, layer: { width: number, height: number, x: number, y: number, type: LayerType } = { width: 0, height: 0, x: 0, y: 0, type: LayerType.Morph }, extra: { text: string, textAlign: AnyTextAlign, fontSize: number, multiline: boolean} = { text: '', textAlign: TextAlign.Left, fontSize: 0, multiline: false }) {
     if (transform) {
         if (transform.translate) {
             ctx.translate(transform.translate.x, transform.translate.y);
@@ -225,9 +225,10 @@ export function isImageUrlValid(src: string) {
     }
 }
 
-export function centring(centring: Centring, type: LayerType, width: number, height: number, x: number, y: number) {
+export function centring(centring: AnyCentring, type: LayerType, width: number, height: number, x: number, y: number) {
     switch (centring) {
         case Centring.Center:
+        case "center":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -237,6 +238,7 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.CenterBottom:
+        case "center-bottom":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -245,6 +247,7 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.CenterTop:
+        case "center-top":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -254,6 +257,7 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.Start:
+        case "start":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -262,8 +266,10 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.StartBottom:
+        case "start-bottom":
             return { x, y };
         case Centring.StartTop:
+        case "start-top":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -272,6 +278,7 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.End:
+        case "end":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -281,6 +288,7 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.EndBottom:
+        case "end-bottom":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -289,6 +297,7 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.EndTop:
+        case "end-top":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -298,6 +307,7 @@ export function centring(centring: Centring, type: LayerType, width: number, hei
             }
             return { x, y };
         case Centring.None:
+        case "none":
             return { x, y };
     }
 }

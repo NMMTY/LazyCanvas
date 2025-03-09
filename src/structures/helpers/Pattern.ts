@@ -1,11 +1,11 @@
 import { PatternType } from "../../types/enum";
-import { IPattern } from "../../types";
+import { IPattern, AnyPatternType } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
 import { loadImage, SKRSContext2D } from "@napi-rs/canvas";
 import * as jimp from "jimp";
 
 export class Pattern implements IPattern {
-    type: PatternType;
+    type: AnyPatternType;
     src: string | LazyCanvas;
 
     constructor() {
@@ -15,9 +15,9 @@ export class Pattern implements IPattern {
 
     /**
      * Set the type of the pattern
-     * @param type {PatternType} - The `type` of the pattern
+     * @param type {AnyPatternType} - The `type` of the pattern
      */
-    setType(type: PatternType) {
+    setType(type: AnyPatternType) {
         this.type = type;
         return this;
     }

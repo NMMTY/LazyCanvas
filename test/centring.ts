@@ -1,5 +1,4 @@
-import { MorphLayer, LazyCanvas, saveFile, Centring } from "../dist";
-import {SaveFormat} from "../src";
+import { MorphLayer, LazyCanvas, saveFile, Centring, SaveFormat } from "../dist";
 
 let arr = ['start', 'start-top', 'start-bottom', 'center', 'center-top', 'center-bottom', 'end', 'end-top', 'end-bottom'];
 

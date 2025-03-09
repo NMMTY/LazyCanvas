@@ -1,5 +1,5 @@
 import { BaseLayer } from "./BaseLayer";
-import {IQuadraticLayerProps, IQuadraticLayer, ColorType, ScaleType, Point} from "../../types";
+import { IQuadraticLayerProps, IQuadraticLayer, ColorType, ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import {
@@ -12,10 +12,10 @@ import {
     transform,
     parseFillStyle, getBoundingBoxBezier
 } from "../../utils/utils";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
+import  {LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import { Pattern } from "../helpers/Pattern";
-import {LayersManager} from "../managers/LayersManager";
+import { LayersManager } from "../managers/LayersManager";
 
 export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     props: IQuadraticLayerProps;

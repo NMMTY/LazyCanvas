@@ -5,6 +5,7 @@ import { MorphLayer } from "./structures/components/MorphLayer";
 import { TextLayer } from "./structures/components/TextLayer";
 import { BezierLayer } from "./structures/components/BezierLayer";
 import { QuadraticLayer } from "./structures/components/QuadraticLayer";
+import { LineLayer } from "./structures/components/LineLayer";
 import { BaseLayer } from "./structures/components/BaseLayer";
 import { Group } from "./structures/components/Group";
 
@@ -26,6 +27,17 @@ import {
 
 import type {
     AnyLayer,
+    AnyCentring,
+    AnyPatternType,
+    AnyGradientType,
+    AnyTextAlign,
+    AnyTextDirection,
+    AnyTextBaseline,
+    AnyWeight,
+    AnyExport,
+    AnyLineCap,
+    AnyLineJoin,
+    AnySaveFormat,
     ScaleType,
     ColorType,
     IFont,
@@ -57,7 +69,8 @@ import {
     saveFile
 } from "./utils/utils";
 
-import { Filters } from "./helpers/filters";
+import { Filters } from "./helpers/Filters";
+import { FontsList } from "./helpers/FontsList";
 
 export {
     LazyCanvas,
@@ -66,6 +79,7 @@ export {
     TextLayer,
     BezierLayer,
     QuadraticLayer,
+    LineLayer,
     BaseLayer,
     Group,
     Font,
@@ -86,6 +100,10 @@ export {
     PatternType,
     saveFile,
     Filters,
+    FontsList,
+}
+
+export type {
     IFont,
     IFonts,
     IGradient,
@@ -102,8 +120,21 @@ export {
     IBezierLayerProps,
     IQuadraticLayer,
     IQuadraticLayerProps,
+    ILineLayer,
+    ILineLayerProps,
     IGroup,
     AnyLayer,
+    AnyCentring,
+    AnyPatternType,
+    AnyGradientType,
+    AnyTextAlign,
+    AnyTextDirection,
+    AnyTextBaseline,
+    AnyWeight,
+    AnyExport,
+    AnyLineCap,
+    AnyLineJoin,
+    AnySaveFormat,
     ScaleType,
-    ColorType,
+    ColorType
 }

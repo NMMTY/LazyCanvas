@@ -1,15 +1,16 @@
 import { FontWeight } from "../../types/enum";
+import { AnyWeight } from "../../types";
 import { IFont } from "../../types";
 
 export class Font implements IFont {
     family: string;
-    weight: FontWeight;
+    weight: AnyWeight;
     path?: string;
     base64?: Buffer;
 
     constructor() {
         this.family = "Arial";
-        this.weight = FontWeight.Normal;
+        this.weight = FontWeight.Regular;
     }
 
     /**
@@ -24,9 +25,9 @@ export class Font implements IFont {
 
     /**
      * Set the font weight
-     * @param weight {FontWeight} - The `weight` of the font
+     * @param weight {AnyWeight} - The `weight` of the font
      */
-    setWeight(weight: FontWeight) {
+    setWeight(weight: AnyWeight) {
         if (!weight) throw new Error("Weight must be provided");
         this.weight = weight;
         return this;

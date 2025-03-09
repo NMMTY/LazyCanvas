@@ -1,5 +1,5 @@
 import { Export } from "../types/enum";
-import { ILazyCanvas } from "../types";
+import { AnyExport, ILazyCanvas } from "../types";
 import { Canvas, SKRSContext2D, SvgExportFlag } from "@napi-rs/canvas";
 import { LayersManager } from "./managers/LayersManager";
 import { RenderManager } from "./managers/RenderManager";
@@ -13,7 +13,7 @@ export class LazyCanvas implements ILazyCanvas {
     layers: LayersManager;
     render: RenderManager;
     fonts: FontsManager;
-    exportType: Export;
+    exportType: AnyExport;
 
     constructor(debug: boolean = false) {
         this.width = 0;
@@ -28,9 +28,9 @@ export class LazyCanvas implements ILazyCanvas {
 
     /**
      * Set the export type
-     * @param type {Export} - The `export` type
+     * @param type {AnyExport} - The `export` type
      */
-    public setExportType(type: Export) {
+    public setExportType(type: AnyExport) {
         this.exportType = type;
         switch (type) {
             case Export.Buffer:

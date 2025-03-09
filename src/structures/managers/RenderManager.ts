@@ -37,10 +37,13 @@ export class RenderManager implements IRenderManager {
 
         switch (this.lazyCanvas.exportType) {
             case Export.Buffer:
+            case "buffer":
                 return this.lazyCanvas.canvas.toBuffer('image/png');
             case Export.CTX:
+            case "ctx":
                 return this.lazyCanvas.ctx;
             case Export.SVG:
+            case "svg":
                 // @ts-ignore
                 return this.lazyCanvas.canvas.getContent().toString('utf8');
             default:

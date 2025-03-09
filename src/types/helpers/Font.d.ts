@@ -1,8 +1,8 @@
-import { FontWeight } from "../enum";
+import { AnyWeight } from "../";
 
 export interface IFont {
     family: string;
-    weight: FontWeight;
+    weight: AnyWeight;
     path?: string;
     base64?: Buffer;
 }

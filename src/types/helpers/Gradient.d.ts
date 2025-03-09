@@ -1,7 +1,7 @@
-import { GradientType } from "../enum";
+import { AnyGradientType } from "../";
 
 export interface IGradient {
-    type: GradientType;
+    type: AnyGradientType;
     points: Array<GradientPoint>;
     stops: Array<GradientColorStop>;
 }

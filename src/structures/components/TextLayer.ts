@@ -4,12 +4,19 @@ import {
     LineCap,
     LineJoin,
     TextAlign,
-    TextBaseline,
-    TextDirection,
     LayerType,
     Centring
 } from "../../types/enum";
-import { ITextLayer, ITextLayerProps, ScaleType, ColorType } from "../../types";
+import {
+    ITextLayer,
+    ITextLayerProps,
+    ScaleType,
+    ColorType,
+    AnyWeight,
+    AnyTextAlign,
+    AnyTextBaseline,
+    AnyTextDirection
+} from "../../types";
 import {LazyError, LazyLog} from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import {
@@ -36,7 +43,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         this.props.font = {
             family: 'Geist',
             size: 16,
-            weight: FontWeight.Normal,
+            weight: FontWeight.Regular,
         };
         this.props.fillStyle = '#ffffff';
         this.props.filled = true;
@@ -60,19 +67,26 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     /**
      * @description Set the font of the text layer. You can use `Geist` and `GeistMono`, or you can upload your own font from file/base64 buffer.
-     * @param family {string} - The `family` of the font.
+     * @param familyOrConfig {string | { font: string; size: number; weight: AnyWeight }} - The `family` of the font. If you want to use FontsList, you can use the object config.
      * @param size {number} - The `size` of the font.
-     * @param weight {FontWeight} - The `weight` of the font.
+     * @param weight {AnyWeight} - The `weight` of the font.
      */
-    setFont(family: string, size: number, weight: FontWeight) {
-        if (!family) throw new LazyError('The family of the font must be provided');
-        if (!size) throw new LazyError('The size of the font must be provided');
-        if (!weight) throw new LazyError('The weight of the font must be provided');
-        this.props.font = {
-            family: family,
-            size: size,
-            weight: weight,
-        };
+    setFont(familyOrConfig: string | { family: string; size: number; weight: AnyWeight }, size?: number, weight?: AnyWeight) {
+        if (typeof familyOrConfig === "string") {
+            if (!size) throw new LazyError('The size of the font must be provided');
+            if (!weight) throw new LazyError('The weight of the font must be provided');
+            this.props.font = {
+                family: familyOrConfig,
+                size,
+                weight,
+            };
+        } else {
+            this.props.font = {
+                family: familyOrConfig.family,
+                size: familyOrConfig.size,
+                weight: familyOrConfig.weight,
+            };
+        }
         return this;
     }
 
@@ -113,27 +127,27 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     /**
      * @description Set the align of the text layer.
-     * @param align {TextAlign} - The `align` of the text layer.
+     * @param align {AnyTextAlign} - The `align` of the text layer.
      */
-    setAlign(align: TextAlign) {
+    setAlign(align: AnyTextAlign) {
         this.props.align = align;
         return this;
     }
 
     /**
      * @description Set the baseline of the text layer.
-     * @param baseline {TextBaseline} - The `baseline` of the text layer.
+     * @param baseline {AnyTextBaseline} - The `baseline` of the text layer.
      */
-    setBaseline(baseline: TextBaseline) {
+    setBaseline(baseline: AnyTextBaseline) {
         this.props.baseline = baseline;
         return this;
     }
 
     /**
      * @description Set the direction of the text layer.
-     * @param direction {TextDirection} - The `direction` of the text layer.
+     * @param direction {AnyTextDirection} - The `direction` of the text layer.
      */
-    setDirection(direction: TextDirection) {
+    setDirection(direction: AnyTextDirection) {
         this.props.direction = direction;
         return this;
     }
