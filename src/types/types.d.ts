@@ -7,9 +7,23 @@ import { BezierLayer } from "../structures/components/BezierLayer";
 import { QuadraticLayer } from "../structures/components/QuadraticLayer";
 import { LineLayer } from "../structures/components/LineLayer";
 import { Group } from "../structures/components/Group";
-import { FontWeight, GradientType, TextAlign, TextBaseline, TextDirection, LineCap, LineJoin, Export, Centring, PatternType, SaveFormat } from "./enum";
+import { Link } from "../structures/helpers/Link";
+import {
+    FontWeight,
+    GradientType,
+    TextAlign,
+    TextBaseline,
+    TextDirection,
+    LineCap,
+    LineJoin,
+    Export,
+    Centring,
+    PatternType,
+    SaveFormat,
+    LinkType
+} from "./enum";
 
-export type ScaleType = string | number | 'vw' | 'vh' | 'vmin' | 'vmax';
+export type ScaleType = string | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link;
 
 export type ColorType = string | Gradient | Pattern;
 
@@ -36,6 +50,8 @@ export type AnyCentring = Centring | 'start' | 'start-top' | 'start-bottom' | 'c
 export type AnyPatternType = PatternType | 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 
 export type AnySaveFormat = SaveFormat | 'png' | 'jpeg' | 'jpg' | 'svg';
+
+export type AnyLinkType = LinkType | 'width' | 'height' | 'x' | 'y';
 
 export type Point = {
     x: ScaleType;

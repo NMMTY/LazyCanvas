@@ -1,13 +1,17 @@
-import { Centring, LayerType, SaveFormat, TextAlign } from "../types/enum";
+import { Centring, LayerType, LinkType, SaveFormat, TextAlign } from "../types/enum";
 import { Transform, ScaleType, ColorType, PointNumber, AnyCentring, AnyTextAlign } from "../types";
 import { Gradient } from "../structures/helpers/Gradient";
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
-import { LazyError } from "./LazyUtil";
+import {defaultArg, LazyError} from "./LazyUtil";
 import * as fs from "fs";
 import * as jimp from "jimp";
 import { Pattern } from "../structures/helpers/Pattern";
 import { LayersManager } from "../structures/managers/LayersManager";
-import { TextLayer } from "../structures/components/TextLayer";
+import { Link } from "../structures/helpers/Link";
+import { Group } from "../structures/components/Group";
+import { LineLayer } from "../structures/components/LineLayer";
+import { BezierLayer } from "../structures/components/BezierLayer";
+import { QuadraticLayer } from "../structures/components/QuadraticLayer";
 
 export function generateID(type: string) {
     return `${type}-${Math.random().toString(36).substr(2, 9)}`;
@@ -16,7 +20,7 @@ export function generateID(type: string) {
 let percentReg = /^(\d+)%$/;
 let pxReg = /^(\d+)px$/;
 let canvasReg = /^(vw|vh|vmin|vmax)$/;
-let linkReg = /^(link-w|link-h)-([A-Za-z0-9_]+)-(\d+)$/;
+let linkReg = /^(link-w|link-h|link-x|link-y)-([A-Za-z0-9_]+)-(\d+)$/;
 
 let hexReg = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 let rgbReg = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
@@ -90,42 +94,138 @@ export function parseColor(v: ColorType) {
     }
 }
 
-export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas, layer: { width: number, height: number } = { width: 0, height: 0 }, options: { vertical?: boolean, layer?: boolean } = { vertical: false, layer: false }, manager?: LayersManager) {
+export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas, layer: { width: number, height: number } = { width: 0, height: 0 }, options: { vertical?: boolean, layer?: boolean } = { vertical: false, layer: false }, manager?: LayersManager): number {
     if (typeof v === 'number') {
         return v;
-    } else if (percentReg.test(v)) {
-        return (parseFloat(v) / 100) * (options.layer ? (options.vertical ? layer.width : layer.height) : (options.vertical ? canvas.width : canvas.height));
-    } else if (pxReg.test(v)) {
-        return parseFloat(v);
-    } else if (canvasReg.test(v)) {
-        if (v === 'vw') {
-            return (options.layer ? layer.width : canvas.width);
-        } else if (v === 'vh') {
-            return (options.layer ? layer.height : canvas.height);
-        } else if (v === 'vmin') {
-            return (options.layer ? Math.max(layer.width, layer.height) : Math.min(canvas.width, canvas.height));
-        } else if (v === 'vmax') {
-            return (options.layer ? Math.max(layer.width, layer.height) : Math.max(canvas.width, canvas.height));
+    } else if (typeof v === 'string') {
+        if (percentReg.test(v)) {
+            return (parseFloat(v) / 100) * (options.layer ? (options.vertical ? layer.width : layer.height) : (options.vertical ? canvas.width : canvas.height));
+        } else if (pxReg.test(v)) {
+            return parseFloat(v);
+        } else if (canvasReg.test(v)) {
+            if (v === 'vw') {
+                return (options.layer ? layer.width : canvas.width);
+            } else if (v === 'vh') {
+                return (options.layer ? layer.height : canvas.height);
+            } else if (v === 'vmin') {
+                return (options.layer ? Math.max(layer.width, layer.height) : Math.min(canvas.width, canvas.height));
+            } else if (v === 'vmax') {
+                return (options.layer ? Math.max(layer.width, layer.height) : Math.max(canvas.width, canvas.height));
+            }
+        } else if (linkReg.test(v)) {
+            let match = v.match(linkReg) as RegExpMatchArray;
+            if (!manager) return 0;
+            let anyLayer = manager.get(match[2]);
+            const parcer = parser(ctx, canvas, manager);
+            switch (match[1]) {
+                case 'link-w':
+                    if (anyLayer && !(anyLayer instanceof Group)) {
+                        if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
+                            return anyLayer.getBoundingBox(ctx, canvas, manager).width + (parseInt(match[3]) || 0);
+                        } else {
+                            return (parcer.parse(anyLayer.props.size.width) || 0) + (parseInt(match[3]) || 0);
+                        }
+                    } else {
+                        return 0;
+                    }
+                    break;
+                case 'link-h':
+                    if (anyLayer && !(anyLayer instanceof Group)) {
+                        if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
+                            return anyLayer.getBoundingBox(ctx, canvas, manager).height + (parseInt(match[3]) || 0);
+                        } else {
+                            return (parcer.parse(anyLayer.props.size.height, defaultArg.wh(parcer.parse(anyLayer.props.size.width)), defaultArg.vl(true)) || 0) + (parseInt(match[3]) || 0);
+                        }
+                    } else {
+                        return 0;
+                    }
+                    break;
+                case 'link-x':
+                    if (anyLayer && !(anyLayer instanceof Group)) {
+                        return (parcer.parse(anyLayer.props.x) || 0) + (parseInt(match[3]) || 0);
+                    } else {
+                        return 0;
+                    }
+                    break;
+                case 'link-y':
+                    if (anyLayer && !(anyLayer instanceof Group)) {
+                        return (parcer.parse(anyLayer.props.y, defaultArg.wh(), defaultArg.vl(true)) || 0) + (parseInt(match[3]) || 0);
+                    } else {
+                        return 0;
+                    }
+                    break;
+            }
         }
-    } else if (linkReg.test(v)) {
-        let match = v.match(linkReg) as RegExpMatchArray;
+    } else if (v instanceof Link) {
         if (!manager) return 0;
-        let layer = manager.get(match[2]);
-        switch (match[1]) {
-            case 'link-w':
-                if (layer instanceof TextLayer) {
-                    return layer.measureText(ctx, canvas).width + (parseInt(match[3]) || 0);
+        let anyLayer = manager.get(v.source);
+        const parcer = parser(ctx, canvas, manager);
+        switch (v.type) {
+            case LinkType.Width:
+            case 'width':
+                if (anyLayer && !(anyLayer instanceof Group)) {
+                    if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
+                        return anyLayer.getBoundingBox(ctx, canvas, manager).width + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
+                    } else {
+                        return (parcer.parse(anyLayer.props.size.width) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
+                    }
+                } else {
+                    return 0;
                 }
                 break;
-            case 'link-h':
-                if (layer instanceof TextLayer) {
-                    return layer.measureText(ctx, canvas).height + (parseInt(match[3]) || 0);
+            case LinkType.Height:
+            case 'height':
+                if (anyLayer && !(anyLayer instanceof Group)) {
+                    if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
+                        return anyLayer.getBoundingBox(ctx, canvas, manager).height + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
+                    } else {
+                        return (parcer.parse(anyLayer.props.size.height, defaultArg.wh(parcer.parse(anyLayer.props.size.width)), defaultArg.vl(true)) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
+                    }
+                } else {
+                    return 0;
                 }
                 break;
+            case LinkType.X:
+            case 'x':
+                if (anyLayer && !(anyLayer instanceof Group)) {
+                    return (parcer.parse(anyLayer.props.x) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
+                } else {
+                    return 0;
+                }
+                break;
+            case LinkType.Y:
+            case 'y':
+                if (anyLayer && !(anyLayer instanceof Group)) {
+                    return (parcer.parse(anyLayer.props.y) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
+                } else {
+                    return 0;
+                }
+                break;
+            default:
+                return 0;
         }
+    } else {
+        return 0;
     }
     return 0;
 }
+
+export function parser(ctx: SKRSContext2D, canvas: Canvas, manager?: LayersManager) {
+    return {
+        parse(v: ScaleType, layer: { width: number, height: number } = defaultArg.wh(), options: { vertical?: boolean, layer?: boolean } = defaultArg.vl()) {
+            return parseToNormal(v, ctx, canvas, layer, options, manager);
+        },
+        parseBatch(values: Record<string, { v: ScaleType; layer?: { width: number; height: number }; options?: { vertical?: boolean; layer?: boolean } }>) {
+            const result: Record<string, number> = {};
+            for (const key in values) {
+                const { v, layer, options } = values[key];
+                result[key] = parseToNormal(v, ctx, canvas, layer ?? defaultArg.wh(), options ?? defaultArg.vl(), manager);
+            }
+            return result;
+        }
+    };
+}
+
 
 export function drawShadow(ctx: SKRSContext2D, shadow: any) {
     if (shadow) {

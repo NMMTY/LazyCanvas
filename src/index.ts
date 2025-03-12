@@ -23,6 +23,7 @@ import {
     PatternType,
     SaveFormat,
     GradientType,
+    LinkType
 } from "./types/enum";
 
 import type {
@@ -38,6 +39,7 @@ import type {
     AnyLineCap,
     AnyLineJoin,
     AnySaveFormat,
+    AnyLinkType,
     ScaleType,
     ColorType,
     IFont,
@@ -64,6 +66,7 @@ import type {
 import { Font } from "./structures/helpers/Font";
 import { Gradient } from "./structures/helpers/Gradient";
 import { Pattern } from "./structures/helpers/Pattern";
+import { Link } from "./structures/helpers/Link";
 
 import {
     saveFile
@@ -85,6 +88,7 @@ export {
     Font,
     Gradient,
     Pattern,
+    Link,
     LayerScaleType,
     LayerType,
     FontWeight,
@@ -98,6 +102,7 @@ export {
     SaveFormat,
     Centring,
     PatternType,
+    LinkType,
     saveFile,
     Filters,
     FontsList,
@@ -135,6 +140,7 @@ export type {
     AnyLineCap,
     AnyLineJoin,
     AnySaveFormat,
+    AnyLinkType,
     ScaleType,
     ColorType
 }

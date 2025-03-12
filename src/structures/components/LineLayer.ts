@@ -1,7 +1,7 @@
 import { BaseLayer } from "./BaseLayer";
 import { ColorType, ILineLayer, ILineLayerProps, ScaleType } from "../../types/";
 import { Centring, LayerType } from "../../types/enum";
-import { LazyError, LazyLog } from "../../utils/LazyUtil";
+import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import {
     drawShadow,
     filters,
@@ -9,7 +9,7 @@ import {
     opacity,
     parseColor,
     parseFillStyle,
-    parseToNormal,
+    parser,
     transform
 } from "../../utils/utils";
 import { Gradient } from "../helpers/Gradient";
@@ -77,11 +77,31 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         return this;
     }
 
+    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager) {
+        const parcer = parser(ctx, canvas, manager);
+
+        const { xs, ys, xe, ye } = parcer.parseBatch({
+            xs: { v: this.props.x },
+            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            xe: { v: this.props.endPoint.x },
+            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) },
+        });
+
+        let width = xe - xs;
+        let height = ye - ys;
+        return { xs, ys, xe, ye, width, height };
+    }
+
     async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
-        const xs = parseToNormal(this.props.x, ctx, canvas);
-        const ys = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const xe = parseToNormal(this.props.endPoint.x, ctx, canvas);
-        const ye = parseToNormal(this.props.endPoint.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
+        const parcer = parser(ctx, canvas, manager);
+
+        const { xs, ys, xe, ye } = parcer.parseBatch({
+            xs: { v: this.props.x },
+            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            xe: { v: this.props.endPoint.x },
+            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) },
+        });
+
         let width = xe - xs;
         let height = ye - ys;
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);

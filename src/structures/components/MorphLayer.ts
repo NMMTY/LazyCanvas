@@ -8,12 +8,11 @@ import {
     isColor,
     opacity,
     parseColor,
-    parseToNormal,
     transform,
     centring,
-    parseFillStyle
+    parseFillStyle, parser
 } from "../../utils/utils";
-import { LazyError, LazyLog } from "../../utils/LazyUtil";
+import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import { Pattern } from "../helpers/Pattern";
 import { LayersManager } from "../managers/LayersManager";
@@ -93,11 +92,16 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     }
 
     async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
-        const xs = parseToNormal(this.props.x, ctx, canvas);
-        const ys = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const w = parseToNormal(this.props.size.width, ctx, canvas, { width: 0, height: 0 }, { vertical: false }, manager);
-        const h = parseToNormal(this.props.size.height, ctx, canvas, { width: w, height: 0 }, { vertical: true }, manager);
-        const r = parseToNormal(this.props.size.radius, ctx, canvas, { width: w / 2, height: h / 2 }, { layer: true });
+        const parcer = parser(ctx, canvas, manager);
+
+        const { xs, ys, w, h } = parcer.parseBatch({
+            xs: { v: this.props.x },
+            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            w: { v: this.props.size.width },
+            h: { v: this.props.size.height, options: defaultArg.vl(true) },
+        })
+        const r = parcer.parse(this.props.size.radius, defaultArg.wh(w / 2, h / 2), defaultArg.vl(false, true))
+
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
 

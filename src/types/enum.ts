@@ -107,3 +107,10 @@ export enum PatternType {
     RepeatY = 'repeat-y',
     NoRepeat = 'no-repeat'
 }
+
+export enum LinkType {
+    Width = 'width',
+    Height = 'height',
+    X = 'x',
+    Y = 'y'
+}

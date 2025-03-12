@@ -2,8 +2,16 @@ import { BaseLayer } from "./BaseLayer";
 import { IImageLayer, IImageLayerProps, ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { Canvas, loadImage, SKRSContext2D } from "@napi-rs/canvas";
-import { centring, drawShadow, filters, isImageUrlValid, opacity, parseToNormal, transform } from "../../utils/utils";
-import { LazyError, LazyLog } from "../../utils/LazyUtil";
+import {
+    centring,
+    drawShadow,
+    filters,
+    isImageUrlValid,
+    opacity,
+    parser,
+    transform
+} from "../../utils/utils";
+import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import * as jimp from "jimp";
 import { LayersManager } from "../managers/LayersManager";
 
@@ -42,11 +50,16 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     }
 
     async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
-        let xs = parseToNormal(this.props.x, ctx, canvas);
-        let ys = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        let w = parseToNormal(this.props.size.width, ctx, canvas);
-        let h = parseToNormal(this.props.size.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
-        let r = parseToNormal(this.props.size.radius, ctx, canvas, { width: w, height: h }, { layer: true });
+        const parcer = parser(ctx, canvas, manager);
+
+        const { xs, ys, w, h } = parcer.parseBatch({
+            xs: { v: this.props.x },
+            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            w: { v: this.props.size.width },
+            h: { v: this.props.size.height, options: defaultArg.vl(true) },
+        })
+        const r = parcer.parse(this.props.size.radius, defaultArg.wh(w / 2, h / 2), defaultArg.vl(false, true))
+
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
 
         if (debug) LazyLog.log('none', `ImageLayer:`, { x, y, w, h, r });

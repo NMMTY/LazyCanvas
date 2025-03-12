@@ -10,10 +10,10 @@ import {
     opacity,
     parseColor,
     parseFillStyle,
-    parseToNormal,
+    parser,
     transform
 } from "../../utils/utils";
-import { LazyError, LazyLog } from "../../utils/LazyUtil";
+import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import { Pattern } from "../helpers/Pattern";
 import { LayersManager } from "../managers/LayersManager";
@@ -87,15 +87,38 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         return this;
     }
 
+    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager) {
+        const parcer = parser(ctx, canvas, manager);
+
+        const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({
+            xs: { v: this.props.x },
+            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            cp1x: { v: this.props.controlPoints[0].x },
+            cp1y: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
+            cp2x: { v: this.props.controlPoints[1].x },
+            cp2y: { v: this.props.controlPoints[1].y, options: defaultArg.vl(true) },
+            xe: { v: this.props.endPoint.x },
+            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) }
+        });
+
+        const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cp1x, y: cp1y }, { x: cp2x, y: cp2y }, { x: xe, y: ye } ]);
+        return { max, min, center, width, height };
+    }
+
     async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
-        const xs = parseToNormal(this.props.x, ctx, canvas);
-        const ys = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const cp1x = parseToNormal(this.props.controlPoints[0].x, ctx, canvas);
-        const cp1y = parseToNormal(this.props.controlPoints[0].y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const cp2x = parseToNormal(this.props.controlPoints[1].x, ctx, canvas);
-        const cp2y = parseToNormal(this.props.controlPoints[1].y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const xe = parseToNormal(this.props.endPoint.x, ctx, canvas);
-        const ye = parseToNormal(this.props.endPoint.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
+        const parcer = parser(ctx, canvas, manager);
+
+        const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({
+            xs: { v: this.props.x },
+            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            cp1x: { v: this.props.controlPoints[0].x },
+            cp1y: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
+            cp2x: { v: this.props.controlPoints[1].x },
+            cp2y: { v: this.props.controlPoints[1].y, options: defaultArg.vl(true) },
+            xe: { v: this.props.endPoint.x },
+            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) }
+        });
+
         const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cp1x, y: cp1y }, { x: cp2x, y: cp2y }, { x: xe, y: ye } ]);
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
 

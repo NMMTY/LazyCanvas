@@ -10,7 +10,9 @@ import {
     GradientType,
     LineLayer,
     Filters,
-    BezierLayer, QuadraticLayer
+    BezierLayer,
+    QuadraticLayer,
+    Link
 } from "../dist";
 
 const canvas = new LazyCanvas(true)
@@ -18,13 +20,17 @@ const canvas = new LazyCanvas(true)
 
 canvas.layers.add(
     new MorphLayer()
+        .setID('morph')
         .setPosition('25%', 200)
         .setColor("rgb(0, 200, 0)")
         .setSize(250, 250, 0)
         .setFilters(Filters.blur(10))
         .setRotate(45),
     new MorphLayer()
-        .setPosition(200, 200)
+        .setPosition(new Link()
+            .setType('x')
+            .setSource('bezier')
+            .setSpacing(-200), 200)
         .setColor("rgba(255, 0, 14, 0.5)")
         .setSize(200, 200, 60),
     new TextLayer()
@@ -56,12 +62,14 @@ canvas.layers.add(
         .setSize(200, 200, 60)
         .setSrc("https://i.pinimg.com/1200x/f3/32/19/f332192b2090f437ca9f49c1002287b6.jpg"),
     new BezierLayer()
-        .setPosition(400, 400)
+        .setID('bezier')
+        .setPosition('link-x-quadratic-0', 400)
         .setControlPoints({ x: 400, y: 450 }, { x: 600, y: 650 })
         .setEndPosition(600, 600)
         .setColor("rgb(0, 200, 0)")
         .setStroke(5, "round", "round", [20, 10], 0, 10),
     new QuadraticLayer()
+        .setID('quadratic')
         .setPosition(400, 400)
         .setControlPoint(700, 500)
         .setEndPosition(600, 600)

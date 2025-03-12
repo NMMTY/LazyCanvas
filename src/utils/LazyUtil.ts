@@ -22,3 +22,12 @@ export class LazyLog {
         }
     }
 }
+
+export const defaultArg = {
+    wh(w?: number, h?: number): { width: number, height: number } {
+        return { width: w || 0, height: h || 0 };
+    },
+    vl(vertical?: boolean, layer?: boolean): { vertical: boolean, layer: boolean } {
+        return { vertical: vertical || false, layer: layer || false };
+    }
+}

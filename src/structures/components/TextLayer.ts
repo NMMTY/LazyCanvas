@@ -17,7 +17,7 @@ import {
     AnyTextBaseline,
     AnyTextDirection
 } from "../../types";
-import {LazyError, LazyLog} from "../../utils/LazyUtil";
+import { LazyError, LazyLog, defaultArg } from "../../utils/LazyUtil";
 import { Gradient } from "../helpers/Gradient";
 import {
     drawShadow,
@@ -26,12 +26,13 @@ import {
     opacity,
     parseColor,
     parseFillStyle,
+    parser,
     parseToNormal,
     transform
 } from "../../utils/utils";
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import { Pattern } from "../helpers/Pattern";
-import {LayersManager} from "../managers/LayersManager";
+import { LayersManager } from "../managers/LayersManager";
 
 export class TextLayer extends BaseLayer<ITextLayerProps> {
     props: ITextLayerProps;
@@ -49,10 +50,12 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         this.props.filled = true;
         this.props.multiline = {
             enabled: false,
-            width: 'vw',
-            height: 0,
             spacing: 1.1,
         };
+        this.props.size = {
+            width: 'vw',
+            height: 0,
+        }
         this.props.centring = Centring.Center;
     }
 
@@ -100,10 +103,12 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     setMultiline(enabled: boolean, width: ScaleType, height: ScaleType, spacing?: number) {
         this.props.multiline = {
             enabled: enabled,
-            width: width,
-            height: height,
             spacing: spacing || 1.1,
         };
+        this.props.size = {
+            width,
+            height,
+        }
         return this;
     }
 
@@ -183,8 +188,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     measureText(ctx: SKRSContext2D, canvas: Canvas): { width: number, height: number } {
-        const w = parseToNormal(this.props.multiline?.width, ctx, canvas);
-        const h = parseToNormal(this.props.multiline?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
+        const w = parseToNormal(this.props.size?.width, ctx, canvas);
+        const h = parseToNormal(this.props.size?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
 
         if (this.props.multiline.enabled) {
             return { width: w, height: h };
@@ -196,10 +201,14 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
-        const x = parseToNormal(this.props.x, ctx, canvas);
-        const y = parseToNormal(this.props.y, ctx, canvas, { width: 0, height: 0 }, { vertical: true });
-        const w = parseToNormal(this.props.multiline?.width, ctx, canvas);
-        const h = parseToNormal(this.props.multiline?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
+        const parcer = parser(ctx, canvas, manager);
+
+        const { x, y, w, h } = parcer.parseBatch({
+            x: { v: this.props.x },
+            y: { v: this.props.y, options: defaultArg.vl(true) },
+            w: { v: this.props.size?.width },
+            h: { v: this.props.size?.height, options: defaultArg.vl(true) },
+        })
 
         if (debug) LazyLog.log('none', `TextLayer:`, { x, y, w, h });
 

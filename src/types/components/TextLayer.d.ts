@@ -14,9 +14,11 @@ export interface ITextLayerProps extends IBaseLayerProps {
     };
     multiline: {
         enabled: boolean;
+        spacing?: number;
+    };
+    size: {
         width: ScaleType;
         height: ScaleType;
-        spacing?: number;
     };
     align: AnyTextAlign;
     baseline: AnyTextBaseline;
