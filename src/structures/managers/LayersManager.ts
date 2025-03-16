@@ -14,9 +14,9 @@ export class LayersManager implements ILayersManager {
 
     /**
      * Add a layer to the map
-     * @param layers {AnyLayer[] | Group[]} - The `layer` or `group` to add to the map
+     * @param layers {AnyLayer[]} - The `layer` or `group` to add to the map
      */
-    public add(...layers: AnyLayer[] | Group[]) {
+    public add(...layers: AnyLayer[]) {
         if (this.debug) LazyLog.log('info', `Adding layers...\nlength: ${layers.length}`);
         let layersArray = layers.flat();
         layersArray = layersArray.filter(l => l !== undefined);
@@ -51,9 +51,11 @@ export class LayersManager implements ILayersManager {
     /**
      * Get a layer from the map
      * @param id {string} - The `id` of the layer or group to get
+     * @param cross {boolean} - Whether to search in groups or not
      */
-    public get(id: string): AnyLayer | Group | undefined {
-        return this.map.get(id);
+    public get(id: string, cross: boolean = false): AnyLayer | undefined {
+        if (cross) return this.crossSearch(id);
+        else return this.map.get(id);
     }
 
     /**
@@ -74,7 +76,7 @@ export class LayersManager implements ILayersManager {
     /**
      * Get the values of the map
      */
-    public values(): IterableIterator<AnyLayer | Group> {
+    public values(): IterableIterator<AnyLayer> {
         return this.map.values();
     }
 
@@ -88,7 +90,7 @@ export class LayersManager implements ILayersManager {
     /**
      * Get the entries of the map
      */
-    public entries(): IterableIterator<[string, AnyLayer | Group]> {
+    public entries(): IterableIterator<[string, AnyLayer]> {
         return this.map.entries();
     }
 
@@ -96,7 +98,7 @@ export class LayersManager implements ILayersManager {
      * For each layer in the map
      * @param callbackfn {Function} - The `callback` function to execute
      */
-    public forEach(callbackfn: (value: AnyLayer | Group, key: string, map: Map<string, AnyLayer | Group>) => void) {
+    public forEach(callbackfn: (value: AnyLayer, key: string, map: Map<string, AnyLayer>) => void) {
         this.map.forEach(callbackfn);
         return this;
     }
@@ -120,20 +122,31 @@ export class LayersManager implements ILayersManager {
     /**
      * Convert the map to an array
      */
-    public toArray(): Array<AnyLayer | Group> {
+    public toArray(): Array<AnyLayer> {
         return Array.from(this.map.values());
     }
 
     /**
      * Convert an array to the map
-     * @param array {Array<AnyLayer | Group>} - The `array` to convert
+     * @param array {Array<AnyLayer>} - The `array` to convert
      */
-    public fromArray(array: Array<AnyLayer | Group>) {
+    public fromArray(array: Array<AnyLayer>) {
         this.map = new Map(array.map(l => [l.id, l]));
         return this;
     }
 
     public sort() {
         this.fromArray(this.toArray().sort((a, b) => a.zIndex - b.zIndex));
+    }
+
+    private crossSearch(id: string): AnyLayer | undefined {
+        for (const layer of this.map.values()) {
+            if (layer.id === id) return layer;
+            if (layer instanceof Group) {
+                const result = layer.components.find(l => l.id === id);
+                if (result) return result;
+            }
+        }
+        return undefined;
     }
 }
