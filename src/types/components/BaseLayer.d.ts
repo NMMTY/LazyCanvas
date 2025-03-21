@@ -1,4 +1,4 @@
-import { ColorType, ScaleType, AnyCentring } from "../";
+import { ColorType, ScaleType, AnyCentring, AnyGlobalCompositeOperation } from "../";
 import { LayerType } from "../enum";
 
 export interface IBaseLayer {
@@ -32,6 +32,7 @@ export interface IBaseLayerProps {
         offsetY: number;
     };
     transform: Transform;
+    globalComposite: AnyGlobalCompositeOperation;
 }
 
 export interface Transform {

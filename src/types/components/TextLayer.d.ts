@@ -23,4 +23,6 @@ export interface ITextLayerProps extends IBaseLayerProps {
     align: AnyTextAlign;
     baseline: AnyTextBaseline;
     direction: AnyTextDirection;
+    letterSpacing: number;
+    wordSpacing: number;
 }

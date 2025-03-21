@@ -57,6 +57,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
             height: 0,
         }
         this.props.centring = Centring.Center;
+        this.props.wordSpacing = 0;
+        this.props.letterSpacing = 0;
     }
 
     /**
@@ -187,6 +189,24 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         return this;
     }
 
+    /**
+     * @description Sets the spacing between the words.
+     * @param wordSpacing {number} - The `wordSpacing` of the text layer.
+     */
+    setWordSpacing(wordSpacing: number) {
+        this.props.wordSpacing = wordSpacing;
+        return this;
+    }
+
+    /**
+     * @description Sets the letter spacing.
+     * @param letterSpacing {number} - The `letterSpacing` of the text layer.
+     */
+    setLetterSpacing(letterSpacing: number) {
+        this.props.letterSpacing = letterSpacing;
+        return this;
+    }
+
     measureText(ctx: SKRSContext2D, canvas: Canvas): { width: number, height: number } {
         const w = parseToNormal(this.props.size?.width, ctx, canvas);
         const h = parseToNormal(this.props.size?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
@@ -219,6 +239,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         opacity(ctx, this.props.opacity);
         filters(ctx, this.props.filter);
         ctx.textAlign = this.props.align;
+        ctx.letterSpacing = `${this.props.letterSpacing}px`;
+        ctx.wordSpacing = `${this.props.wordSpacing}px`;
         if (this.props.baseline) ctx.textBaseline = this.props.baseline;
         if (this.props.direction) ctx.direction = this.props.direction;
         if (this.props.multiline.enabled) {

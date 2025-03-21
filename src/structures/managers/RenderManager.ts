@@ -25,10 +25,14 @@ export class RenderManager implements IRenderManager {
                 if (layer instanceof Group) {
                     for (const subLayer of layer.components) {
                         if (subLayer.visible) {
+                            if (!subLayer.props.globalComposite) this.lazyCanvas.ctx.globalCompositeOperation= 'source-over';
+                            else this.lazyCanvas.ctx.globalCompositeOperation = subLayer.props.globalComposite;
                             await subLayer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.layers, this.debug);
                         }
                     }
                 } else {
+                    if (!layer.props.globalComposite) this.lazyCanvas.ctx.globalCompositeOperation= 'source-over';
+                    else this.lazyCanvas.ctx.globalCompositeOperation = layer.props.globalComposite;
                     await layer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.layers, this.debug);
                 }
                 this.lazyCanvas.ctx.shadowColor = 'transparent';

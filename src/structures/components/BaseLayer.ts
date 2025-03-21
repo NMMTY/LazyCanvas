@@ -1,4 +1,4 @@
-import { ScaleType, IBaseLayer, IBaseLayerProps, Transform, AnyCentring } from "../../types";
+import { ScaleType, IBaseLayer, IBaseLayerProps, Transform, AnyCentring, AnyGlobalCompositeOperation } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { generateID, isColor, parseColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
@@ -20,7 +20,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
         if (!this.props.y) this.props.y = 0;
         if (!this.props.opacity) this.props.opacity = 1;
         if (!this.props.centring) this.props.centring = Centring.Center;
-        if (!this.props.transform) this.props.transform = {} as Transform
+        if (!this.props.transform) this.props.transform = {} as Transform;
     }
 
     /**
@@ -144,6 +144,15 @@ export class BaseLayer<T extends IBaseLayerProps> {
      */
     setZIndex(zIndex: number) {
         this.zIndex = zIndex;
+        return this;
+    }
+
+    /**
+     * @description Sets global composite operation of the layer.
+     * @param operation {AnyGlobalCompositeOperation} - The `operation` of the layer
+     */
+    setGlobalCompositeOperation(operation: AnyGlobalCompositeOperation) {
+        this.props.globalComposite = operation;
         return this;
     }
 

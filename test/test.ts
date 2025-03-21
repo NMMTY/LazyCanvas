@@ -31,15 +31,17 @@ canvas.layers.add(
             .setType('x')
             .setSource('bezier')
             .setSpacing(-200), 200)
-        .setColor("rgba(255, 0, 14, 0.5)")
-        .setSize(200, 200, 60),
+        .setColor("rgba(255, 0, 14, 1)")
+        .setSize(200, 200, 60)
+        .setGlobalCompositeOperation('xor'),
     new TextLayer()
         .setText("Hello, World!")
-        .setPosition(400, 400)
+        .setPosition(300, 500)
         .setColor("hsl(10, 40%, 50%)")
         .setFont("GeistMono", 50, FontWeight.Regular)
-        .setMultiline(true, 200, 200)
         .setShadow('#000000', 10, 10, 10)
+        .setWordSpacing(10)
+        .setLetterSpacing(10)
         .setRotate(45),
     new TextLayer()
         .setText("Lazy Canvas")

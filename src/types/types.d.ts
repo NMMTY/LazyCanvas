@@ -20,7 +20,8 @@ import {
     Centring,
     PatternType,
     SaveFormat,
-    LinkType
+    LinkType,
+    GlobalCompositeOperation
 } from "./enum";
 
 export type ScaleType = string | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link;
@@ -52,6 +53,8 @@ export type AnyPatternType = PatternType | 'repeat' | 'repeat-x' | 'repeat-y' | 
 export type AnySaveFormat = SaveFormat | 'png' | 'jpeg' | 'jpg' | 'svg';
 
 export type AnyLinkType = LinkType | 'width' | 'height' | 'x' | 'y';
+
+export type AnyGlobalCompositeOperation = GlobalCompositeOperation | 'source-over' | 'source-in' | 'source-out' | 'source-atop' | 'destination-over' | 'destination-in' | 'destination-out' | 'destination-atop' | 'lighter' | 'copy' | 'xor' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 'color-dodge' | 'color-burn' | 'hard-light' | 'soft-light' | 'difference' | 'exclusion' | 'hue' | 'saturation' | 'color' | 'luminosity';
 
 export type Point = {
     x: ScaleType;
