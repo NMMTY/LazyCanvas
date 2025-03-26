@@ -11,6 +11,7 @@ export enum LayerType {
     Morph = 'morph',
     Text = 'text',
     Group = 'group',
+    Clear = 'clear',
 }
 
 export enum LayerScaleType {
@@ -85,7 +86,9 @@ export enum SaveFormat {
     PNG = 'png',
     JPEG = 'jpeg',
     JPG = 'jpg',
-    SVG = 'svg'
+    SVG = 'svg',
+    GIF = 'gif',
+    WEBP = 'webp',
 }
 
 export enum Centring {
@@ -142,4 +145,10 @@ export enum GlobalCompositeOperation {
     Saturation = 'saturation',
     Color = 'color',
     Luminosity = 'luminosity'
+}
+
+export enum ColorSpace {
+    RGB565 = 'rgb565',
+    RGBA4444 = 'rgba4444',
+    RGBA444 = 'rgba444',
 }

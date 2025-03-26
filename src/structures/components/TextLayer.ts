@@ -223,12 +223,13 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
-        const { x, y, w, h } = parcer.parseBatch({
+        const { x, y, w } = parcer.parseBatch({
             x: { v: this.props.x },
             y: { v: this.props.y, options: defaultArg.vl(true) },
             w: { v: this.props.size?.width },
-            h: { v: this.props.size?.height, options: defaultArg.vl(true) },
         })
+
+        const h = parcer.parse(this.props.size?.height, defaultArg.wh(w), defaultArg.vl(true));
 
         if (debug) LazyLog.log('none', `TextLayer:`, { x, y, w, h });
 

@@ -32,8 +32,7 @@ canvas.layers.add(
             .setSource('bezier')
             .setSpacing(-200), 200)
         .setColor("rgba(255, 0, 14, 1)")
-        .setSize(200, 200, 60)
-        .setGlobalCompositeOperation('xor'),
+        .setSize(200, 200, 60),
     new TextLayer()
         .setText("Hello, World!")
         .setPosition(300, 500)

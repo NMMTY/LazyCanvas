@@ -64,7 +64,7 @@ export class Group implements IGroup {
     }
 
     /**
-     * Clear all components from the group
+     * ClearLayer all components from the group
      */
     clear() {
         this.components = [];

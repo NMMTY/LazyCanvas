@@ -72,7 +72,7 @@ export class FontsManager implements IFontsManager {
     }
 
     /**
-     * Clear all fonts from the map
+     * ClearLayer all fonts from the map
      */
     public clear() {
         this.map.clear();

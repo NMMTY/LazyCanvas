@@ -6,6 +6,7 @@ import { TextLayer } from "./structures/components/TextLayer";
 import { BezierLayer } from "./structures/components/BezierLayer";
 import { QuadraticLayer } from "./structures/components/QuadraticLayer";
 import { LineLayer } from "./structures/components/LineLayer";
+import { ClearLayer } from "./structures/components/ClearLayer";
 import { BaseLayer } from "./structures/components/BaseLayer";
 import { Group } from "./structures/components/Group";
 
@@ -25,43 +26,6 @@ import {
     GradientType,
     LinkType
 } from "./types/enum";
-
-import type {
-    AnyLayer,
-    AnyCentring,
-    AnyPatternType,
-    AnyGradientType,
-    AnyTextAlign,
-    AnyTextDirection,
-    AnyTextBaseline,
-    AnyWeight,
-    AnyExport,
-    AnyLineCap,
-    AnyLineJoin,
-    AnySaveFormat,
-    AnyLinkType,
-    ScaleType,
-    ColorType,
-    IFont,
-    IFonts,
-    IGradient,
-    IPattern,
-    IImageLayer,
-    IImageLayerProps,
-    IMorphLayer,
-    IMorphLayerProps,
-    ITextLayer,
-    ITextLayerProps,
-    IBezierLayer,
-    IBezierLayerProps,
-    IQuadraticLayer,
-    IQuadraticLayerProps,
-    ILineLayer,
-    ILineLayerProps,
-    IBaseLayer,
-    IBaseLayerProps,
-    IGroup,
-} from "./types";
 
 import { Font } from "./structures/helpers/Font";
 import { Gradient } from "./structures/helpers/Gradient";
@@ -83,6 +47,7 @@ export {
     BezierLayer,
     QuadraticLayer,
     LineLayer,
+    ClearLayer,
     BaseLayer,
     Group,
     Font,
@@ -109,25 +74,6 @@ export {
 }
 
 export type {
-    IFont,
-    IFonts,
-    IGradient,
-    IPattern,
-    IImageLayer,
-    IImageLayerProps,
-    IMorphLayer,
-    IMorphLayerProps,
-    ITextLayer,
-    ITextLayerProps,
-    IBaseLayer,
-    IBaseLayerProps,
-    IBezierLayer,
-    IBezierLayerProps,
-    IQuadraticLayer,
-    IQuadraticLayerProps,
-    ILineLayer,
-    ILineLayerProps,
-    IGroup,
     AnyLayer,
     AnyCentring,
     AnyPatternType,
@@ -141,6 +87,37 @@ export type {
     AnyLineJoin,
     AnySaveFormat,
     AnyLinkType,
+    AnyGlobalCompositeOperation,
+    AnyColorSpace,
     ScaleType,
-    ColorType
-}
+    ColorType,
+    Point,
+    PointNumber,
+    GradientPoint,
+    GradientColorStop,
+    Transform,
+    ILazyCanvas,
+    IFont,
+    IFonts,
+    IGradient,
+    IPattern,
+    IImageLayer,
+    IImageLayerProps,
+    IMorphLayer,
+    IMorphLayerProps,
+    ITextLayer,
+    ITextLayerProps,
+    IBezierLayer,
+    IBezierLayerProps,
+    IQuadraticLayer,
+    IQuadraticLayerProps,
+    ILineLayer,
+    ILineLayerProps,
+    IBaseLayer,
+    IBaseLayerProps,
+    IGroup,
+    ILink,
+    IFontsManager,
+    ILayersManager,
+    IRenderManager
+} from "./types";

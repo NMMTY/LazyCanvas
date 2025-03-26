@@ -11,3 +11,4 @@
 docgen.ts
 tsconfig.json
 package-lock.json
+eslint.config.js

@@ -1,5 +1,5 @@
-import { Centring, LayerType, LinkType, SaveFormat, TextAlign } from "../types/enum";
-import { Transform, ScaleType, ColorType, PointNumber, AnyCentring, AnyTextAlign } from "../types";
+import { Centring, LayerType, LinkType, TextAlign } from "../types/enum";
+import { Transform, ScaleType, ColorType, PointNumber, AnyCentring, AnyTextAlign, AnySaveFormat } from "../types";
 import { Gradient } from "../structures/helpers/Gradient";
 import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
 import { defaultArg, LazyError } from "./LazyUtil";
@@ -314,7 +314,7 @@ export function transform(ctx: SKRSContext2D, transform: Transform, layer: { wid
     }
 }
 
-export async function saveFile(buffer: any, extension: SaveFormat, name: string) {
+export async function saveFile(buffer: any, extension: AnySaveFormat, name: string) {
     if (!buffer) throw new LazyError('Buffer must be provided');
     if (!extension) throw new LazyError('Extension must be provided');
 

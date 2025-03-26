@@ -41,7 +41,7 @@ export class LayersManager implements ILayersManager {
     }
 
     /**
-     * Clear all layers from the map
+     * ClearLayer all layers from the map
      */
     public clear() {
         this.map.clear();
@@ -140,7 +140,7 @@ export class LayersManager implements ILayersManager {
     }
 
     private crossSearch(id: string): AnyLayer | undefined {
-        for (const layer of this.map.values()) {
+        for (const layer of Array.from(this.map.values())) {
             if (layer.id === id) return layer;
             if (layer instanceof Group) {
                 const result = layer.components.find(l => l.id === id);

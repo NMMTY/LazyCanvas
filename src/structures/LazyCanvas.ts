@@ -4,6 +4,7 @@ import { Canvas, SKRSContext2D, SvgExportFlag } from "@napi-rs/canvas";
 import { LayersManager } from "./managers/LayersManager";
 import { RenderManager } from "./managers/RenderManager";
 import { FontsManager } from "./managers/FontsManager";
+import { AnimationManager } from "./managers/AnimationManager";
 
 export class LazyCanvas implements ILazyCanvas {
     width: number | 0;
@@ -13,6 +14,7 @@ export class LazyCanvas implements ILazyCanvas {
     layers: LayersManager;
     render: RenderManager;
     fonts: FontsManager;
+    animation: AnimationManager;
     exportType: AnyExport;
 
     constructor(debug: boolean = false) {
@@ -23,6 +25,7 @@ export class LazyCanvas implements ILazyCanvas {
         this.layers = new LayersManager(debug);
         this.render = new RenderManager(this, debug);
         this.fonts = new FontsManager(debug);
+        this.animation = new AnimationManager(debug);
         this.exportType = Export.Buffer;
     }
 
