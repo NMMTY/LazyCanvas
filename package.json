@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,6 +10,8 @@
     "logo": "tsc ./test/logo.ts && node ./test/logo.js",
     "text": "tsc ./test/text.ts && node ./test/text.js",
     "animation": "tsc ./test/animation.ts && node ./test/animation.js",
+    "resize": "tsc ./test/resize.ts && node ./test/resize.js",
+    "iotest": "tsc ./test/iotest.ts && node ./test/iotest.js",
     "doc": "tsx docgen.ts",
     "font": "tsc ./scripts/font-gen.ts && node ./scripts/font-gen.js",
     "build": "tsc"
@@ -34,20 +36,18 @@
   "dependencies": {
     "@napi-rs/canvas": "^0.1.68",
     "gifenc": "^1.0.3",
-    "jimp": "0.22.12",
+    "js-yaml": "^4.1.0",
     "path": "^0.12.7",
     "svgson": "^5.3.1"
   },
   "devDependencies": {
     "@hitomihiumi/colors.ts": "^1.0.3",
     "@hitomihiumi/micro-docgen": "^0.3.0",
-    "@types/jimp": "^0.2.28",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
     "ava": "^6.2.0",
     "eslint": "^9.23.0",
     "eslint-config-neon": "^0.2.7",
-    "globals": "^15.14.0",
     "lodash.merge": "^4.6.2",
     "tslib": "^2.8.1",
     "tsx": "^4.19.2",

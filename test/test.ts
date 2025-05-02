@@ -3,8 +3,7 @@ import {
     ImageLayer,
     LazyCanvas,
     MorphLayer,
-    saveFile,
-    SaveFormat,
+    Exporter,
     TextLayer,
     Gradient,
     GradientType,
@@ -13,12 +12,12 @@ import {
     BezierLayer,
     QuadraticLayer,
     Link
-} from "../dist";
+} from "../src";
 
-const canvas = new LazyCanvas(true)
+const canvas = new LazyCanvas({ debug: true })
     .create(800, 800);
 
-canvas.layers.add(
+canvas.manager.layers.add(
     new MorphLayer()
         .setID('morph')
         .setPosition('25%', 200)
@@ -83,9 +82,5 @@ canvas.layers.add(
         .setStroke(5, "round", "round", [20, 10], 0, 10),
 )
 
-canvas.render.render().then(async (buffer) => {
-    console.log("Saved")
-    await saveFile(buffer, SaveFormat.PNG, "example")
-})
-
+new Exporter(canvas).export('png', { name: 'test', saveAsFile: true })
 

@@ -1,32 +1,67 @@
-import { Export } from "../types/enum";
-import { AnyExport, ILazyCanvas } from "../types";
-import { Canvas, SKRSContext2D, SvgExportFlag } from "@napi-rs/canvas";
+import { Export, AnyExport, JSONLayer } from "../types";
+import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
 import { LayersManager } from "./managers/LayersManager";
 import { RenderManager } from "./managers/RenderManager";
 import { FontsManager } from "./managers/FontsManager";
-import { AnimationManager } from "./managers/AnimationManager";
+import { AnimationManager, IAnimationOptions } from "./managers/AnimationManager";
+import { Group } from "./components";
+import {LazyLog} from "../utils/LazyUtil";
+
+export interface ILazyCanvas {
+    canvas: Canvas | SvgCanvas;
+    ctx: SKRSContext2D;
+    manager: {
+        layers: LayersManager;
+        render: RenderManager;
+        fonts: FontsManager;
+        animation: AnimationManager;
+    };
+    options: ILazyCanvasOptions;
+}
+
+export interface ILazyCanvasOptions {
+    width: number;
+    height: number;
+    animated: boolean;
+    exportType: AnyExport;
+    flag: SvgExportFlag;
+}
+
+export interface IOLazyCanvas {
+    options: ILazyCanvasOptions;
+    animation: IAnimationOptions;
+    layers: Array<JSONLayer | Group>;
+}
 
 export class LazyCanvas implements ILazyCanvas {
-    width: number | 0;
-    height: number | 0;
-    canvas: Canvas;
+    canvas: Canvas | SvgCanvas;
     ctx: SKRSContext2D;
-    layers: LayersManager;
-    render: RenderManager;
-    fonts: FontsManager;
-    animation: AnimationManager;
-    exportType: AnyExport;
+    manager: {
+        layers: LayersManager;
+        render: RenderManager;
+        fonts: FontsManager;
+        animation: AnimationManager;
+    };
+    options: ILazyCanvasOptions;
 
-    constructor(debug: boolean = false) {
-        this.width = 0;
-        this.height = 0;
+    constructor(opts?: { debug?: boolean, settings?: IOLazyCanvas }) {
         this.canvas = new Canvas(0, 0);
         this.ctx = this.canvas.getContext('2d');
-        this.layers = new LayersManager(debug);
-        this.render = new RenderManager(this, debug);
-        this.fonts = new FontsManager(debug);
-        this.animation = new AnimationManager(debug);
-        this.exportType = Export.Buffer;
+        this.manager = {
+            layers: new LayersManager({ debug: opts?.debug }),
+            render: new RenderManager(this, { debug: opts?.debug }),
+            fonts: new FontsManager({ debug: opts?.debug }),
+            animation: new AnimationManager({ debug: opts?.debug, settings: { options: opts?.settings?.animation } })
+        }
+        this.options = {
+            width: opts?.settings?.options.width || 0,
+            height: opts?.settings?.options.height || 0,
+            animated: opts?.settings?.options.animated || false,
+            exportType: opts?.settings?.options.exportType || Export.BUFFER,
+            flag: opts?.settings?.options.flag || SvgExportFlag.RelativePathEncoding
+        }
+
+        if (opts?.debug) LazyLog.log('info', 'LazyCanvas initialized with settings:', opts.settings);
     }
 
     /**
@@ -34,16 +69,16 @@ export class LazyCanvas implements ILazyCanvas {
      * @param type {AnyExport} - The `export` type
      */
     public setExportType(type: AnyExport) {
-        this.exportType = type;
+        this.options.exportType = type;
         switch (type) {
-            case Export.Buffer:
-                this.canvas = new Canvas(this.width, this.height);
+            case Export.BUFFER:
+                this.canvas = new Canvas(this.options.width, this.options.height);
                 this.ctx = this.canvas.getContext('2d');
                 break;
             case Export.CTX:
                 break;
             case Export.SVG:
-                this.canvas = new Canvas(this.width, this.height, SvgExportFlag.RelativePathEncoding);
+                this.canvas = new Canvas(this.options.width, this.options.height, this.options.flag || SvgExportFlag.RelativePathEncoding);
                 this.ctx = this.canvas.getContext('2d');
                 break;
         }
@@ -55,11 +90,17 @@ export class LazyCanvas implements ILazyCanvas {
      * @param flag {SvgExportFlag} - The `flag` of the SVG export
      */
     setSvgExportFlag(flag: SvgExportFlag) {
-        if (this.exportType === Export.SVG) {
-            this.canvas = new Canvas(this.width, this.height, flag);
+        if (this.options.exportType === Export.SVG) {
+            this.canvas = new Canvas(this.options.width, this.options.height, flag);
             this.ctx = this.canvas.getContext('2d');
+            this.options.flag = flag;
         }
         return this
+    }
+
+    animated() {
+        this.options.animated = true;
+        return this;
     }
 
     /**
@@ -68,11 +109,15 @@ export class LazyCanvas implements ILazyCanvas {
      * @param height {number} - The `height` of the canvas
      */
     create(width: number, height: number) {
-        this.width = width;
-        this.height = height;
-        this.canvas = new Canvas(width, height);
+        this.options.width = width;
+        this.options.height = height;
+        if (this.options.exportType === Export.SVG) {
+            this.canvas = new Canvas(width, height, this.options.flag || SvgExportFlag.RelativePathEncoding);
+        } else {
+            this.canvas = new Canvas(width, height);
+        }
         this.ctx = this.canvas.getContext('2d');
-        this.layers = new LayersManager();
+        this.manager.layers = new LayersManager();
         return this;
     }
 }

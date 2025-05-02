@@ -1,7 +1,7 @@
-import { BaseLayer } from "./BaseLayer";
-import { ColorType, IBezierLayer, IBezierLayerProps, ScaleType } from "../../types";
+import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
+import { ColorType, Point, ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
-import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     drawShadow,
     filters,
@@ -14,15 +14,23 @@ import {
     transform
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { Gradient } from "../helpers/Gradient";
-import { Pattern } from "../helpers/Pattern";
+import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
+
+export interface IBezierLayer extends IBaseLayer {
+    props: IBezierLayerProps;
+}
+
+export interface IBezierLayerProps extends IBaseLayerProps {
+    controlPoints: Array<Point>;
+    endPoint: Point;
+}
 
 export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     props: IBezierLayerProps;
 
-    constructor(props?: IBezierLayerProps) {
-        super(LayerType.BezierCurve, props || {} as IBezierLayerProps);
+    constructor(props?: IBezierLayerProps, misc?: IBaseLayerMisc) {
+        super(LayerType.BezierCurve, props || {} as IBezierLayerProps, misc);
         this.props = props ? props : {} as IBezierLayerProps;
         if (!this.props.fillStyle) this.props.fillStyle = '#000000';
         this.props.centring = Centring.None;
@@ -87,7 +95,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         return this;
     }
 
-    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager) {
+    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({
@@ -105,7 +113,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         return { max, min, center, width, height };
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({
@@ -152,7 +160,28 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      */
     public toJSON(): IBezierLayer {
         let data = super.toJSON();
-        data.props = this.props;
-        return {...data} as IBezierLayer;
+        let copy: any = { ...this.props };
+
+        for (const key of ['x', 'y', 'endPoint.x', 'endPoint.y', 'fillStyle']) {
+            if (copy[key] && typeof copy[key] === 'object' && 'toJSON' in copy[key]) {
+                copy[key] = copy[key].toJSON();
+            }
+        }
+
+        if (copy.controlPoints) {
+            copy.controlPoints = copy.controlPoints.map((point: { x: ScaleType, y: ScaleType }) => {
+                if (point.x && typeof point.x === 'object' && 'toJSON' in point.x) {
+                    // @ts-ignore
+                    point.x = point.x.toJSON();
+                }
+                if (point.y && typeof point.y === 'object' && 'toJSON' in point.y) {
+                    // @ts-ignore
+                    point.y = point.y.toJSON();
+                }
+                return point;
+            });
+        }
+
+        return { ...data, props: copy } as IBezierLayer;
     }
 }

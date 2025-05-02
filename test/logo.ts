@@ -1,20 +1,20 @@
-import {Export, FontWeight, Group, LazyCanvas, MorphLayer, saveFile, SaveFormat, TextLayer, Pattern, PatternType, ImageLayer } from '../dist';
-import {Image, SvgExportFlag} from "@napi-rs/canvas";
+import {Export, FontWeight, Group, LazyCanvas, MorphLayer, Exporter, TextLayer, Pattern, PatternType, ImageLayer } from '../src';
 
-const canvas = new LazyCanvas()
+const canvas = new LazyCanvas({ debug: true })
     .create(210, 210)
 
 const pattern = new LazyCanvas()
     .create(200, 200)
 
-pattern.layers.add(
+pattern.manager.layers.add(
     new ImageLayer()
-        .setSize(200, 200)
-        .setPosition(100, 100)
+        .setSize('vw', 'vh')
+        .setPosition('50%', '50%')
         .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg")
+        .dontResize()
 )
 
-canvas.layers.add(
+canvas.manager.layers.add(
     new Group()
         .add(
             new MorphLayer()
@@ -38,7 +38,7 @@ canvas.layers.add(
 );
 
 for (let i = 1; i < 5; i += 1) {
-    canvas.layers.add(
+    canvas.manager.layers.add(
         new MorphLayer()
             .setPosition(105, 105)
             .setColor("#ff8a8a")
@@ -49,7 +49,4 @@ for (let i = 1; i < 5; i += 1) {
     )
 }
 
-canvas.render.render().then(async (buffer) => {
-    console.log("Saved")
-    await saveFile(buffer, SaveFormat.PNG, "example")
-})
+new Exporter(canvas).export('json', { name: 'test', saveAsFile: true })

@@ -1,16 +1,20 @@
-import { IFonts, IFontsManager } from "../../types";
-import { Font } from "../helpers/Font";
+import { Font, IFonts } from "../helpers/Font";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Fonts } from "../../helpers/Fonts";
 import { GlobalFonts } from "@napi-rs/canvas";
+
+export interface IFontsManager {
+    map: Map<string, Font>;
+    debug: boolean;
+}
 
 export class FontsManager implements IFontsManager {
     map: Map<string, Font>;
     debug: boolean;
 
-    constructor(debug: boolean = false) {
-        this.debug = debug;
+    constructor(opts?: { debug?: boolean }) {
         this.map = new Map();
+        this.debug = opts?.debug || false;
 
         this.loadFonts(Fonts);
     }

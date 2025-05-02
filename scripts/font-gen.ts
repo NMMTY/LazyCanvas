@@ -116,6 +116,7 @@ for (const family in fontWeights) {
 }
 
 const fonts_ts = `
+import { IFonts } from "../structures/helpers";
 /**
  * The bundled fonts in this package.
  * Used fonts:

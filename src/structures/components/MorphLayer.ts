@@ -1,7 +1,7 @@
-import { BaseLayer } from "./BaseLayer";
-import { IMorphLayer, IMorphLayerProps, ColorType, ScaleType } from "../../types";
+import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
+import { ColorType, ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
-import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     drawShadow,
     filters,
@@ -13,15 +13,27 @@ import {
     parseFillStyle, parser
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { Gradient } from "../helpers/Gradient";
-import { Pattern } from "../helpers/Pattern";
+import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
+
+export interface IMorphLayer extends IBaseLayer {
+    props: IMorphLayerProps;
+}
+
+export interface IMorphLayerProps extends IBaseLayerProps {
+    size: {
+        width: ScaleType;
+        height: ScaleType;
+        radius: ScaleType;
+    };
+}
+
 
 export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     props: IMorphLayerProps;
 
-    constructor(props?: IMorphLayerProps) {
-        super(LayerType.Morph, props || {} as IMorphLayerProps);
+    constructor(props?: IMorphLayerProps, misc?: IBaseLayerMisc) {
+        super(LayerType.Morph, props || {} as IMorphLayerProps, misc);
         this.props = props ? props : {} as IMorphLayerProps;
         if (!this.props.fillStyle) this.props.fillStyle = '#000000';
         if (!this.props.filled && this.props.filled !== false) this.props.filled = true;
@@ -91,7 +103,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, w } = parcer.parseBatch({
@@ -150,7 +162,14 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      */
     toJSON(): IMorphLayer {
         let data = super.toJSON();
-        data.props = this.props;
-        return { ...data } as IMorphLayer;
+        let copy: any = { ...this.props };
+
+        for (const key of ['x', 'y', 'size.width', 'size.height', 'size.radius', 'fillStyle']) {
+            if (copy[key] && typeof copy[key] === 'object' && 'toJSON' in copy[key]) {
+                copy[key] = copy[key].toJSON();
+            }
+        }
+
+        return { ...data, props: copy } as IMorphLayer;
     }
 }

@@ -1,4 +1,4 @@
-import { BaseLayer } from "./BaseLayer";
+import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import {
     FontWeight,
     LineCap,
@@ -8,8 +8,6 @@ import {
     Centring
 } from "../../types/enum";
 import {
-    ITextLayer,
-    ITextLayerProps,
     ScaleType,
     ColorType,
     AnyWeight,
@@ -18,7 +16,7 @@ import {
     AnyTextDirection
 } from "../../types";
 import { LazyError, LazyLog, defaultArg } from "../../utils/LazyUtil";
-import { Gradient } from "../helpers/Gradient";
+import { Gradient, Pattern } from "../helpers";
 import {
     drawShadow,
     filters,
@@ -30,15 +28,41 @@ import {
     parseToNormal,
     transform
 } from "../../utils/utils";
-import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
-import { Pattern } from "../helpers/Pattern";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers/LayersManager";
+
+export interface ITextLayer extends IBaseLayer {
+    props: ITextLayerProps;
+}
+
+export interface ITextLayerProps extends IBaseLayerProps {
+    text: string;
+    font: {
+        family: string;
+        size: number;
+        weight: AnyWeight;
+    };
+    multiline: {
+        enabled: boolean;
+        spacing?: number;
+    };
+    size: {
+        width: ScaleType;
+        height: ScaleType;
+    };
+    align: AnyTextAlign;
+    baseline: AnyTextBaseline;
+    direction: AnyTextDirection;
+    letterSpacing: number;
+    wordSpacing: number;
+}
+
 
 export class TextLayer extends BaseLayer<ITextLayerProps> {
     props: ITextLayerProps;
 
-    constructor(props?: ITextLayerProps) {
-        super(LayerType.Text, props || {} as ITextLayerProps);
+    constructor(props?: ITextLayerProps, misc?: IBaseLayerMisc) {
+        super(LayerType.Text, props || {} as ITextLayerProps, misc);
         this.props = props ? props : {} as ITextLayerProps;
         this.props.align = TextAlign.Left;
         this.props.font = {
@@ -207,7 +231,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         return this;
     }
 
-    measureText(ctx: SKRSContext2D, canvas: Canvas): { width: number, height: number } {
+    measureText(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas): { width: number, height: number } {
         const w = parseToNormal(this.props.size?.width, ctx, canvas);
         const h = parseToNormal(this.props.size?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
 
@@ -220,7 +244,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         }
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
         const { x, y, w } = parcer.parseBatch({
@@ -303,10 +327,16 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     /**
      * @returns {ITextLayer}
      */
-    toJSON(): ITextLayer {
+    public toJSON(): ITextLayer {
         let data = super.toJSON();
-        data.props = this.props;
-        return { ...data } as ITextLayer;
-    }
+        let copy: any = { ...this.props };
 
+        for (const key of ['x', 'y', 'size.width', 'size.height', 'fillStyle']) {
+            if (copy[key] && typeof copy[key] === 'object' && 'toJSON' in copy[key]) {
+                copy[key] = copy[key].toJSON();
+            }
+        }
+
+        return { ...data, props: copy } as ITextLayer;
+    }
 }

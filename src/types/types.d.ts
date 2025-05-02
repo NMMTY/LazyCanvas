@@ -1,14 +1,20 @@
-import { Gradient } from "../structures/helpers/Gradient";
-import { Pattern } from "../structures/helpers/Pattern";
-import { MorphLayer } from "../structures/components/MorphLayer";
-import { ImageLayer } from "../structures/components/ImageLayer";
-import { TextLayer } from "../structures/components/TextLayer";
-import { BezierLayer } from "../structures/components/BezierLayer";
-import { QuadraticLayer } from "../structures/components/QuadraticLayer";
-import { LineLayer } from "../structures/components/LineLayer";
-import { Group } from "../structures/components/Group";
-import { ClearLayer } from "../structures/components/ClearLayer";
-import { Link } from "../structures/helpers/Link";
+import { Gradient, Link, Pattern } from "../structures/helpers";
+import {
+    MorphLayer,
+    ImageLayer,
+    TextLayer,
+    BezierLayer,
+    QuadraticLayer,
+    LineLayer,
+    ClearLayer,
+    IMorphLayer,
+    IBezierLayer,
+    IClearLayer,
+    IImageLayer,
+    ITextLayer,
+    IQuadraticLayer,
+    ILineLayer,
+} from "../structures/components";
 import {
     FontWeight,
     GradientType,
@@ -20,17 +26,18 @@ import {
     Export,
     Centring,
     PatternType,
-    SaveFormat,
     LinkType,
     GlobalCompositeOperation,
-    ColorSpace
+    ColorSpace,
 } from "./enum";
 
-export type ScaleType = string | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link;
+export type ScaleType = `link-w-${string}-${number}` | `link-h-${string}-${number}` | `link-x-${string}-${number}` | `link-y-${string}-${number}` | `${number}%` | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link;
 
 export type ColorType = string | Gradient | Pattern;
 
-export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | ClearLayer | Group;
+export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IClearLayer;
+
+export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | ClearLayer;
 
 export type AnyWeight = FontWeight | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 
@@ -46,13 +53,11 @@ export type AnyLineCap = LineCap | 'butt' | 'round' | 'square';
 
 export type AnyLineJoin = LineJoin | 'bevel' | 'round' | 'miter';
 
-export type AnyExport = Export | 'buffer' | 'svg' | 'ctx';
+export type AnyExport = Export | 'canvas' | 'ctx' | 'buffer' | 'svg' | 'png' | 'jpeg' | 'jpg' | 'gif' | 'webp' | 'yaml' | 'json';
 
 export type AnyCentring = Centring | 'start' | 'start-top' | 'start-bottom' | 'center' | 'center-top' | 'center-bottom' | 'end' | 'end-top' | 'end-bottom' | 'none';
 
 export type AnyPatternType = PatternType | 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
-
-export type AnySaveFormat = SaveFormat | 'png' | 'jpeg' | 'jpg' | 'svg' | 'gif' | 'webp';
 
 export type AnyLinkType = LinkType | 'width' | 'height' | 'x' | 'y';
 
@@ -69,3 +74,18 @@ export type PointNumber = {
     x: number;
     y: number;
 };
+
+export type Extensions = 'svg' | 'png' | 'jpeg' | 'jpg' | 'gif' | 'webp' | 'yaml' | 'json';
+
+export interface Transform {
+    rotate: number;
+    scale: {
+        x: number;
+        y: number;
+    };
+    translate: {
+        x: number;
+        y: number;
+    };
+    matrix: DOMMatrix2DInit;
+}

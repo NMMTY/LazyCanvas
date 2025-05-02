@@ -2,18 +2,18 @@ import {
     LazyCanvas,
     Group,
     MorphLayer,
-    saveFile
-} from '../dist';
+    Exporter
+} from '../src';
 
 
-const canvas = new LazyCanvas(true)
+const canvas = new LazyCanvas({ debug: true })
     .create(400, 400)
 
-canvas.animation.setFrameRate(60)
-    .setClear(false)
+canvas.manager.animation.setFrameRate(60)
+    .setClear(true, 30)
 
 for (let i = 0; i < 200; i++) {
-    canvas.layers.add(
+    canvas.manager.layers.add(
         new MorphLayer()
             .setPosition(100 + i, 100 + i)
             .setColor(`hsl(${Math.ceil(i * 1.5)}, 100%, 50%)`)
@@ -21,7 +21,4 @@ for (let i = 0; i < 200; i++) {
     )
 }
 
-canvas.render.render().then(async (buffer) => {
-    console.log(buffer)
-    await saveFile(buffer, 'gif', 'animation')
-})
+new Exporter(canvas).export('webp', { name: 'animation', saveAsFile: true })

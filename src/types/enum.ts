@@ -77,18 +77,17 @@ export enum LineJoin {
 }
 
 export enum Export {
-    Buffer = 'buffer',
-    SVG = 'svg',
+    CANVAS = 'canvas',
     CTX = 'ctx',
-}
-
-export enum SaveFormat {
+    BUFFER = 'buffer',
     PNG = 'png',
     JPEG = 'jpeg',
     JPG = 'jpg',
     SVG = 'svg',
     GIF = 'gif',
     WEBP = 'webp',
+    YAML = 'yaml',
+    JSON = 'json',
 }
 
 export enum Centring {
@@ -151,4 +150,10 @@ export enum ColorSpace {
     RGB565 = 'rgb565',
     RGBA4444 = 'rgba4444',
     RGBA444 = 'rgba444',
+}
+
+export enum FillType {
+    Solid = 'solid',
+    Gradient = 'gradient',
+    Pattern = 'pattern',
 }

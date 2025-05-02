@@ -1,10 +1,28 @@
-import { IClearLayer, IClearLayerProps, ScaleType } from "../../types";
+import { ScaleType } from "../../types";
 import { LayerType } from "../../types/enum";
-import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers/LayersManager";
 import { parser } from "../../utils/utils";
 import { defaultArg, LazyLog } from "../../utils/LazyUtil";
 import { generateID } from "../../utils/utils";
+import { IBaseLayerMisc } from "./BaseLayer";
+
+export interface IClearLayer {
+    id: string;
+    type: LayerType;
+    zIndex: number;
+    visible: boolean;
+    props: IClearLayerProps;
+}
+
+export interface IClearLayerProps {
+    x: ScaleType;
+    y: ScaleType;
+    size: {
+        width: ScaleType;
+        height: ScaleType;
+    };
+}
 
 export class ClearLayer implements IClearLayer {
     id: string;
@@ -13,11 +31,11 @@ export class ClearLayer implements IClearLayer {
     visible: boolean;
     props: IClearLayerProps;
 
-    constructor(props?: IClearLayerProps) {
-        this.id = generateID(LayerType.Clear);
+    constructor(props?: IClearLayerProps, misc?: IBaseLayerMisc) {
+        this.id = misc?.id || generateID(LayerType.Clear);
         this.type = LayerType.Clear;
-        this.zIndex = 1;
-        this.visible = true;
+        this.zIndex = misc?.zIndex || 1;
+        this.visible = misc?.visible || true;
         this.props = props ? props : {
             x: 0,
             y: 0,
@@ -70,7 +88,7 @@ export class ClearLayer implements IClearLayer {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
         const { x, y, w } = parcer.parseBatch({
@@ -89,12 +107,19 @@ export class ClearLayer implements IClearLayer {
      * @returns {IClearLayer}
      */
     toJSON(): IClearLayer {
+        let copy: any = { ...this.props };
+
+        for (const key of ['x', 'y', 'size.width', 'size.height']) {
+            if (copy[key] && typeof copy[key] === 'object' && 'toJSON' in copy[key]) {
+                copy[key] = copy[key].toJSON();
+            }
+        }
         return {
             id: this.id,
             type: this.type,
             zIndex: this.zIndex,
             visible: this.visible,
-            props: this.props,
+            props: copy,
         };
     }
 }

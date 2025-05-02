@@ -1,7 +1,7 @@
-import { BaseLayer } from "./BaseLayer";
-import { IQuadraticLayerProps, IQuadraticLayer, ColorType, ScaleType } from "../../types";
+import {BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps} from "./BaseLayer";
+import { ColorType, ScaleType, Point } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
-import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     drawShadow,
     filters,
@@ -14,15 +14,23 @@ import {
     parser
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { Gradient } from "../helpers/Gradient";
-import { Pattern } from "../helpers/Pattern";
+import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
+
+export interface IQuadraticLayer extends IBaseLayer {
+    props: IQuadraticLayerProps;
+}
+
+export interface IQuadraticLayerProps extends IBaseLayerProps {
+    controlPoint: Point;
+    endPoint: Point;
+}
 
 export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     props: IQuadraticLayerProps;
 
-    constructor(props?: IQuadraticLayerProps) {
-        super(LayerType.QuadraticCurve, props || {} as IQuadraticLayerProps);
+    constructor(props?: IQuadraticLayerProps, misc?: IBaseLayerMisc) {
+        super(LayerType.QuadraticCurve, props || {} as IQuadraticLayerProps, misc);
         this.props = props ? props : {} as IQuadraticLayerProps;
         if (!this.props.fillStyle) this.props.fillStyle = '#000000';
         this.props.centring = Centring.None;
@@ -87,7 +95,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         return this;
     }
 
-    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager) {
+    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
@@ -103,7 +111,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         return { max, min, center, width, height };
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
@@ -148,7 +156,14 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
      */
     public toJSON(): IQuadraticLayer {
         let data = super.toJSON();
-        data.props = this.props;
-        return {...data} as IQuadraticLayer;
+        let copy: any = { ...this.props };
+
+        for (const key of ['x', 'y', 'endPoint.x', 'endPoint.y', 'controlPoint.x', 'controlPoint.y', 'fillStyle']) {
+            if (copy[key] && typeof copy[key] === 'object' && 'toJSON' in copy[key]) {
+                copy[key] = copy[key].toJSON();
+            }
+        }
+
+        return { ...data, props: copy } as IQuadraticLayer;
     }
 }

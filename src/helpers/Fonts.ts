@@ -1,4 +1,4 @@
-import { IFonts } from "../types/helpers/Font";
+import { IFonts } from "../structures/helpers";
 
 /**
  * The bundled fonts in this package.

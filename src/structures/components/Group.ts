@@ -1,18 +1,27 @@
-import { AnyLayer, IGroup } from "../../types";
+import { AnyLayer } from "../../types";
 import { LayerType } from "../../types/enum";
 import { generateID } from "../../utils/utils";
 
-export class Group implements IGroup {
+export interface IGroup {
     id: string;
+    type: LayerType;
     visible: boolean;
     zIndex: number;
-    components: Array<any>;
+    layers: Array<AnyLayer>;
+}
 
-    constructor() {
-        this.id = generateID(LayerType.Group);
-        this.visible = true;
-        this.zIndex = 1;
-        this.components = [];
+export class Group implements IGroup {
+    id: string;
+    type: LayerType = LayerType.Group;
+    visible: boolean;
+    zIndex: number;
+    layers: Array<any>;
+
+    constructor(opts?: { id?: string, visible?: boolean, zIndex?: number }) {
+        this.id = opts?.id || generateID(LayerType.Group);
+        this.visible = opts?.visible || true;
+        this.zIndex = opts?.zIndex || 1;
+        this.layers = [];
     }
 
     /**
@@ -44,13 +53,13 @@ export class Group implements IGroup {
 
     /**
      * Add a component to the group
-     * @param components {any[]} - The `components` to add to the group
+     * @param components {AnyLayer[]} - The `components` to add to the group
      */
     add(...components: AnyLayer[]) {
         let layersArray = components.flat();
         layersArray = layersArray.filter(l => l !== undefined);
         layersArray = layersArray.sort((a, b) => a.zIndex - b.zIndex);
-        this.components.push(...layersArray);
+        this.layers.push(...layersArray);
         return this;
     }
 
@@ -59,15 +68,15 @@ export class Group implements IGroup {
      * @param id {any} - The `id` of the component to remove
      */
     remove(id: string) {
-        this.components = this.components.filter(c => c.id !== id);
+        this.layers = this.layers.filter(c => c.id !== id);
         return this;
     }
 
     /**
-     * ClearLayer all components from the group
+     * Clear all components from the group
      */
     clear() {
-        this.components = [];
+        this.layers = [];
         return this;
     }
 
@@ -76,29 +85,30 @@ export class Group implements IGroup {
      * @param id {string} - The `id` of the component to get
      */
     get(id: string) {
-        return this.components.find(c => c.id === id);
+        return this.layers.find(c => c.id === id);
     }
 
     /**
      * Get all components from the group
      */
     getAll() {
-        return this.components;
+        return this.layers;
     }
 
     /**
      * Get the length of the components
      */
     get length() {
-        return this.components.length;
+        return this.layers.length;
     }
 
     toJSON(): IGroup {
         return {
             id: this.id,
+            type: this.type,
             visible: this.visible,
             zIndex: this.zIndex,
-            components: this.components.map(c => c.toJSON())
+            layers: this.layers.map(c => c.toJSON())
         };
     }
 }

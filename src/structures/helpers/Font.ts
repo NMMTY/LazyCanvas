@@ -1,6 +1,17 @@
 import { FontWeight } from "../../types/enum";
 import { AnyWeight } from "../../types";
-import { IFont } from "../../types";
+
+export interface IFont {
+    family: string;
+    weight: AnyWeight;
+    path?: string;
+    base64?: Buffer;
+}
+
+export interface IFonts {
+    [family: string]: Record<number, Buffer>;
+}
+
 
 export class Font implements IFont {
     family: string;

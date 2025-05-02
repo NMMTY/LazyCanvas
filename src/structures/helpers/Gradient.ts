@@ -1,17 +1,37 @@
-import { GradientType } from "../../types/enum";
-import { IGradient, GradientPoint, GradientColorStop, AnyGradientType } from "../../types";
+import {AnyGradientType, FillType, GradientType} from "../../types";
 import { SKRSContext2D } from "@napi-rs/canvas";
 import { parseHex } from "../../utils/utils";
 
+export interface IGradient {
+    fillType: FillType;
+    type: AnyGradientType;
+    points: Array<GradientPoint>;
+    stops: Array<GradientColorStop>;
+}
+
+export interface GradientColorStop {
+    color: string;
+    offset: number;
+}
+
+export interface GradientPoint {
+    x: number;
+    y: number;
+    r?: number;
+    startAngle?: number;
+}
+
+
 export class Gradient implements IGradient {
+    fillType: FillType = FillType.Gradient;
     type: AnyGradientType;
     points: Array<GradientPoint>;
     stops: Array<GradientColorStop>;
 
-    constructor() {
-        this.type = GradientType.Linear;
-        this.points = [];
-        this.stops = [];
+    constructor(opts?: { props?: IGradient }) {
+        this.type = opts?.props?.type || GradientType.Linear;
+        this.points = opts?.props?.points || [];
+        this.stops = opts?.props?.stops || [];
     }
 
     /**
@@ -72,6 +92,7 @@ export class Gradient implements IGradient {
      */
     toJSON(): IGradient {
         return {
+            fillType: this.fillType,
             type: this.type,
             points: this.points,
             stops: this.stops,

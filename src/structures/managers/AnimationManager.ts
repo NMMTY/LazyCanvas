@@ -1,29 +1,44 @@
-import type { IAnimationManager, AnyColorSpace } from "../../types";
+import { AnyColorSpace } from "../../types";
 import { ColorSpace } from "../../types/enum";
 
-export class AnimationManager implements IAnimationManager {
-    opts: {
-        frameRate: number;
-        maxColors: number;
-        colorSpace: AnyColorSpace;
-        loop: boolean;
-        transparency: boolean;
+export interface IAnimationManager {
+    options: IAnimationOptions;
+    debug: boolean;
+}
+
+export interface IAnimationOptions {
+    frameRate: number;
+    maxColors: number;
+    colorSpace: AnyColorSpace;
+    loop: boolean;
+    transparency: boolean;
+    utils: {
         clear: boolean;
-    };
-    animated: boolean;
+        buffer: {
+            size: number;
+        }
+    }
+}
+
+export class AnimationManager implements IAnimationManager {
+    options: IAnimationOptions;
     debug: boolean;
 
-    constructor(debug: boolean = false) {
-        this.opts = {
+    constructor(opts?: { debug?: boolean, settings?: { options?: IAnimationOptions } }) {
+        this.options = opts?.settings?.options || {
             frameRate: 30,
             maxColors: 256,
             colorSpace: ColorSpace.RGB565,
             loop: true,
             transparency: true,
-            clear: true
-        };
-        this.animated = false;
-        this.debug = debug;
+            utils: {
+                clear: true,
+                buffer: {
+                    size: 0
+                }
+            }
+        } as IAnimationOptions;
+        this.debug = opts?.debug || false;
     }
 
     /**
@@ -31,8 +46,7 @@ export class AnimationManager implements IAnimationManager {
      * @param frameRate {number} - The frame rate of the animation (by default 30).
      */
     setFrameRate(frameRate: number): this {
-        this.opts.frameRate = frameRate;
-        this.animated = true;
+        this.options.frameRate = frameRate;
         return this;
     }
 
@@ -41,7 +55,7 @@ export class AnimationManager implements IAnimationManager {
      * @param loop {boolean} - Whether the animation should loop or not (by default true).
      */
     setLoop(loop: boolean): this {
-        this.opts.loop = loop;
+        this.options.loop = loop;
         return this;
     }
 
@@ -50,7 +64,7 @@ export class AnimationManager implements IAnimationManager {
      * @param transparency {boolean} - Whether the animation should have transparency or not (by default true).
      */
     setTransparent(transparency: boolean): this {
-        this.opts.transparency = transparency;
+        this.options.transparency = transparency;
         return this;
     }
 
@@ -59,7 +73,7 @@ export class AnimationManager implements IAnimationManager {
      * @param rgb {ColorSpace} - The RGB format of the animation (by default RGB565).
      */
     setRGBFormat(rgb: AnyColorSpace): this {
-        this.opts.colorSpace = rgb;
+        this.options.colorSpace = rgb;
         return this;
     }
 
@@ -68,16 +82,20 @@ export class AnimationManager implements IAnimationManager {
      * @param maxColors {number} - The maximum colors of the animation (by default 256).
      */
     setMaxColors(maxColors: number): this {
-        this.opts.maxColors = maxColors;
+        this.options.maxColors = maxColors;
         return this;
     }
 
     /**
      * Sets whether the content of previous frames will be cleared.
      * @param clear {boolean} - Whether the animation should clear or not (by default true).
+     * @param bufferSize {number} - The size of the frame buffer (by default 0).
      */
-    setClear(clear: boolean): this {
-        this.opts.clear = clear;
+    setClear(clear: boolean, bufferSize?: number): this {
+        this.options.utils.clear = clear;
+        if (bufferSize) {
+            this.options.utils.buffer.size = bufferSize;
+        }
         return this;
     }
 

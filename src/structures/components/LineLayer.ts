@@ -1,5 +1,5 @@
-import { BaseLayer } from "./BaseLayer";
-import { ColorType, ILineLayer, ILineLayerProps, ScaleType } from "../../types/";
+import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
+import { ColorType, ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import {
@@ -12,17 +12,26 @@ import {
     parser,
     transform
 } from "../../utils/utils";
-import { Gradient } from "../helpers/Gradient";
-import { Pattern } from "../helpers/Pattern";
-import { Canvas, SKRSContext2D } from "@napi-rs/canvas";
+import { Gradient, Pattern } from "../helpers";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers/LayersManager";
 
+export interface ILineLayer extends IBaseLayer {
+    props: ILineLayerProps;
+}
+
+export interface ILineLayerProps extends IBaseLayerProps {
+    endPoint: {
+        x: ScaleType,
+        y: ScaleType
+    }
+}
 
 export class LineLayer extends BaseLayer<ILineLayerProps> {
     props: ILineLayerProps;
 
-    constructor(props?: ILineLayerProps) {
-        super(LayerType.Line, props || {} as ILineLayerProps);
+    constructor(props?: ILineLayerProps, misc?: IBaseLayerMisc) {
+        super(LayerType.Line, props || {} as ILineLayerProps, misc);
         this.props = props ? props : {} as ILineLayerProps;
         if (!this.props.fillStyle) this.props.fillStyle = '#000000';
         this.props.centring = Centring.None;
@@ -77,7 +86,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         return this;
     }
 
-    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager) {
+    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, xe, ye } = parcer.parseBatch({
@@ -92,7 +101,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         return { xs, ys, xe, ye, width, height };
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, xe, ye } = parcer.parseBatch({
@@ -133,8 +142,15 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
 
     toJSON(): ILineLayer {
         let data = super.toJSON();
-        data.props = this.props;
-        return {...data} as ILineLayer;
+        let copy: any = { ...this.props };
+
+        for (const key of ['x', 'y', 'endPoint.x', 'endPoint.y', 'fillStyle']) {
+            if (copy[key] && typeof copy[key] === 'object' && 'toJSON' in copy[key]) {
+                copy[key] = copy[key].toJSON();
+            }
+        }
+
+        return { ...data, props: copy } as ILineLayer;
     }
 
 }

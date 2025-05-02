@@ -1,7 +1,7 @@
-import { BaseLayer } from "./BaseLayer";
-import { IImageLayer, IImageLayerProps, ScaleType } from "../../types";
+import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
+import { ScaleType } from "../../types";
 import { Centring, LayerType } from "../../types/enum";
-import { Canvas, loadImage, SKRSContext2D } from "@napi-rs/canvas";
+import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     centring,
     drawShadow,
@@ -12,16 +12,30 @@ import {
     transform
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import * as jimp from "jimp";
 import { LayersManager } from "../managers/LayersManager";
+
+export interface IImageLayer extends IBaseLayer {
+    props: IImageLayerProps;
+}
+
+export interface IImageLayerProps extends IBaseLayerProps {
+    src: string | Buffer;
+    resize: boolean;
+    size: {
+        width: ScaleType;
+        height: ScaleType;
+        radius: ScaleType;
+    }
+}
 
 export class ImageLayer extends BaseLayer<IImageLayerProps> {
     props: IImageLayerProps;
 
-    constructor(props?: IImageLayerProps) {
-        super(LayerType.Image, props || {} as IImageLayerProps);
+    constructor(props?: IImageLayerProps, misc?: IBaseLayerMisc) {
+        super(LayerType.Image, props || {} as IImageLayerProps, misc);
         this.props = props ? props : {} as IImageLayerProps;
         this.props.centring = Centring.Center;
+        this.props.resize = true;
     }
 
     /**
@@ -49,7 +63,12 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas, manager: LayersManager, debug: boolean) {
+    dontResize() {
+        this.props.resize = false;
+        return this;
+    }
+
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, w } = parcer.parseBatch({
@@ -71,9 +90,9 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         drawShadow(ctx, this.props.shadow);
         opacity(ctx, this.props.opacity);
         filters(ctx, this.props.filter);
-        let jmp = await jimp.read(this.props.src);
-        jmp.resize(w, h);
-        let image = await loadImage(await jmp.getBufferAsync('image/png'));
+        let image = await loadImage(this.props.src);
+        image.width = w;
+        image.height = h;
         if (!image) throw new LazyError('The image could not be loaded');
         if (r) {
             ctx.beginPath();
@@ -96,7 +115,14 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
      */
     toJSON(): IImageLayer {
         let data = super.toJSON();
-        data.props = this.props;
+        let copy: any = { ...this.props };
+
+        for (const key of ['x', 'y', 'size.width', 'size.height', 'size.radius']) {
+            if (copy[key] && typeof copy[key] === 'object' && 'toJSON' in copy[key]) {
+                copy[key] = copy[key].toJSON();
+            }
+        }
+
         return { ...data } as IImageLayer;
     }
 

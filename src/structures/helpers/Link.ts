@@ -1,15 +1,20 @@
-import { AnyLinkType, ILink, ScaleType } from "../../types";
-import { LinkType } from "../../types/enum";
+import { AnyLinkType, ScaleType, LinkType } from "../../types";
+
+export interface ILink {
+    source: string;
+    type: AnyLinkType;
+    additionalSpacing: ScaleType;
+}
 
 export class Link {
     source: string;
     type: AnyLinkType;
     additionalSpacing: ScaleType;
 
-    constructor(props?: ILink) {
-        this.source = props?.source || '';
-        this.type = props?.type || LinkType.Width;
-        this.additionalSpacing = props?.additionalSpacing || 0;
+    constructor(opts?: { props?: ILink }) {
+        this.source = opts?.props?.source || '';
+        this.type = opts?.props?.type || LinkType.Width;
+        this.additionalSpacing = opts?.props?.additionalSpacing || 0;
     }
 
     /**
@@ -38,5 +43,16 @@ export class Link {
     setSpacing(additionalSpacing: ScaleType) {
         this.additionalSpacing = additionalSpacing;
         return this;
+    }
+
+    /**
+     * @returns {ILink}
+     */
+    toJSON(): ILink {
+        return {
+            source: this.source,
+            type: this.type,
+            additionalSpacing: this.additionalSpacing
+        }
     }
 }

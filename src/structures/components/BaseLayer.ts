@@ -1,7 +1,53 @@
-import { ScaleType, IBaseLayer, IBaseLayerProps, Transform, AnyCentring, AnyGlobalCompositeOperation } from "../../types";
+import {
+    ScaleType,
+    AnyCentring,
+    AnyGlobalCompositeOperation,
+    ColorType,
+    Transform
+} from "../../types";
 import { Centring, LayerType } from "../../types/enum";
 import { generateID, isColor, parseColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
+
+export interface IBaseLayer{
+    id: string;
+    type: LayerType;
+    zIndex: number;
+    visible: boolean;
+    props: IBaseLayerProps;
+}
+
+export interface IBaseLayerProps {
+    x: ScaleType;
+    y: ScaleType;
+    centring: AnyCentring;
+    filter: string;
+    opacity: number;
+    filled: boolean;
+    fillStyle: ColorType;
+    stroke: {
+        width: number;
+        cap: CanvasLineCap;
+        join: CanvasLineJoin;
+        dashOffset: number;
+        dash: number[];
+        miterLimit: number;
+    };
+    shadow: {
+        color: string;
+        blur: number;
+        offsetX: number;
+        offsetY: number;
+    };
+    transform: Transform;
+    globalComposite: AnyGlobalCompositeOperation;
+}
+
+export interface IBaseLayerMisc {
+    id?: string;
+    zIndex?: number;
+    visible?: boolean;
+}
 
 export class BaseLayer<T extends IBaseLayerProps> {
     id: string;
@@ -10,11 +56,11 @@ export class BaseLayer<T extends IBaseLayerProps> {
     visible: boolean;
     props: T;
 
-    constructor(type?: LayerType, props?: T) {
-        this.id = generateID(type ? type : LayerType.Base);
+    constructor(type?: LayerType, props?: T, misc?: IBaseLayerMisc) {
+        this.id = misc?.id || generateID(type ? type : LayerType.Base);
         this.type = type ? type : LayerType.Base;
-        this.zIndex = 1;
-        this.visible = true;
+        this.zIndex = misc?.zIndex || 1;
+        this.visible = misc?.visible || true;
         this.props = props ? props : {} as T;
         if (!this.props.x) this.props.x = 0;
         if (!this.props.y) this.props.y = 0;

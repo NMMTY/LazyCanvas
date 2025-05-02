@@ -1,16 +1,23 @@
-import { PatternType } from "../../types/enum";
-import { IPattern, AnyPatternType } from "../../types";
+import { FillType, PatternType } from "../../types";
+import { AnyPatternType } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
-import { loadImage, SKRSContext2D } from "@napi-rs/canvas";
-import * as jimp from "jimp";
+import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
+import { Exporter } from "./Exporter";
+
+export interface IPattern {
+    fillType: FillType;
+    type: AnyPatternType;
+    src: string | LazyCanvas;
+}
 
 export class Pattern implements IPattern {
+    fillType: FillType = FillType.Pattern;
     type: AnyPatternType;
     src: string | LazyCanvas;
 
-    constructor() {
-        this.type = PatternType.Repeat;
-        this.src = '';
+    constructor(opts?: { props?: IPattern }) {
+        this.type = opts?.props?.type || PatternType.Repeat;
+        this.src = opts?.props?.src || '';
     }
 
     /**
@@ -33,13 +40,9 @@ export class Pattern implements IPattern {
 
     async draw(ctx: SKRSContext2D) {
         if (this.src instanceof LazyCanvas) {
-            let jmp = await this.src.render.render() as Buffer;
-            let image = await loadImage(jmp);
-            return ctx.createPattern(image, this.type);
+            return ctx.createPattern((await this.src.manager.render.render('canvas')) as unknown as Canvas | SvgCanvas, this.type);
         } else {
-            let jmp = await jimp.read(this.src);
-            let image = await loadImage(await jmp.getBufferAsync('image/png'));
-            return ctx.createPattern(image, this.type);
+            return ctx.createPattern(await loadImage(this.src), this.type);
         }
     }
 
@@ -47,9 +50,15 @@ export class Pattern implements IPattern {
      * @returns {IPattern}
      */
     toJSON(): IPattern {
+        let src = this.src;
+        if (this.src instanceof LazyCanvas) {
+            // @ts-ignore
+            src = new Exporter(this.src).syncExport('json');
+        }
         return {
+            fillType: this.fillType,
             type: this.type,
-            src: this.src
+            src: src
         }
     }
 }
