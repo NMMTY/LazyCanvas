@@ -3,9 +3,11 @@ import {
     AnyCentring,
     AnyGlobalCompositeOperation,
     ColorType,
-    Transform
+    Transform,
+    AnyFilter,
+    Centring,
+    LayerType
 } from "../../types";
-import { Centring, LayerType } from "../../types/enum";
 import { generateID, isColor, parseColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
 
@@ -159,9 +161,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     /**
      * @description The **`CanvasRenderingContext2D`**. filter property of the Canvas 2D API provides filter effects such as blurring and grayscaling.
      * It is similar to the CSS [`filter`](https://developer.mozilla.org/en-US/docs/Web/CSS/filter) property and accepts the same values.
-     * @param filter {string} - The `filter` of the layer. Multiple filters are supported.
+     * @param filter {AnyFilter} - The `filter` of the layer. Multiple filters are supported.
      */
-    setFilters(...filter: string[]) {
+    setFilters(...filter: AnyFilter[]) {
         this.props.filter = filter.join(' ');
         return this;
     }

@@ -11,10 +11,10 @@ export class LazyLog {
     public static log(type: string = "none", ...message: any): void {
         switch (type) {
             case "info":
-                console.log("[LazyCanvas] [INFO] ", ...message);
+                console.log("[LazyCanvas] [INFO]", ...message);
                 break;
             case "warn":
-                console.warn("[LazyCanvas] [WARN] ", ...message);
+                console.warn("[LazyCanvas] [WARN]", ...message);
                 break;
             default:
                 console.log(...message);

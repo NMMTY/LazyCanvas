@@ -1,11 +1,10 @@
-import {IOLazyCanvas, LazyCanvas} from "../LazyCanvas";
-import {AnyExport, Extensions} from "../../types";
-import {Export} from "../../types/enum";
-import {Canvas, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
-import {LazyError} from "../../utils/LazyUtil";
+import { IOLazyCanvas, LazyCanvas } from "../LazyCanvas";
+import { AnyExport, Extensions, Export } from "../../types";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
+import { LazyError } from "../../utils/LazyUtil";
 import * as fs from "fs";
-import {generateRandomName} from "../../utils/utils";
-import {LayersManager} from "../managers/LayersManager";
+import { generateRandomName } from "../../utils/utils";
+import { LayersManager } from "../managers/LayersManager";
 import * as _yaml from 'js-yaml';
 
 export class Exporter {

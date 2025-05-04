@@ -1,4 +1,4 @@
-import {AnyGradientType, FillType, GradientType} from "../../types";
+import { AnyGradientType, FillType, GradientType } from "../../types";
 import { SKRSContext2D } from "@napi-rs/canvas";
 import { parseHex } from "../../utils/utils";
 

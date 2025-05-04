@@ -7,7 +7,7 @@ export const Filters = {
      * @param radius {number} - The `radius` of the blur.
      * @returns {string}
      */
-    blur(radius: number): string {
+    blur(radius: number): `blur(${number}px)` {
         return `blur(${radius}px)`;
     },
     /**
@@ -15,7 +15,7 @@ export const Filters = {
      * @param amount {number} - The `amount` of the brightness.
      * @returns {string}
      */
-    brightness(amount: number): string {
+    brightness(amount: number): `brightness(${number}%)` {
         return `brightness(${amount}%)`;
     },
     /**
@@ -23,7 +23,7 @@ export const Filters = {
      * @param amount {number} - The `amount` of the contrast.
      * @returns {string}
      */
-    contrast(amount: number): string {
+    contrast(amount: number): `contrast(${number}%)` {
         return `contrast(${amount}%)`;
     },
     /**
@@ -34,7 +34,7 @@ export const Filters = {
      * @param blurRadius {number} - The `blurRadius` of the shadow.
      * @returns {string}
      */
-    dropShadow(color: string, offsetX: number, offsetY: number, blurRadius: number): string {
+    dropShadow(color: string, offsetX: number, offsetY: number, blurRadius: number): `drop-shadow(${number}px ${number}px ${number}px ${string})` {
         return `drop-shadow(${offsetX}px ${offsetY}px ${blurRadius}px ${color})`;
     },
     /**
@@ -42,7 +42,7 @@ export const Filters = {
      * @param amount {number} - The `amount` of the grayscale.
      * @returns {string}
      */
-    grayscale(amount: number): string {
+    grayscale(amount: number): `grayscale(${number}%)` {
         return `grayscale(${amount}%)`;
     },
     /**
@@ -50,7 +50,7 @@ export const Filters = {
      * @param angle {number} - The `angle` of the hue rotation.
      * @returns {string}
      */
-    hueRotate(angle: number): string {
+    hueRotate(angle: number): `hue-rotate(${number}deg)` {
         return `hue-rotate(${angle}deg)`;
     },
     /**
@@ -58,7 +58,7 @@ export const Filters = {
      * @param amount {number} - The `amount` of the invert.
      * @returns {string}
      */
-    invert(amount: number): string {
+    invert(amount: number): `invert(${number}%)` {
         return `invert(${amount}%)`;
     },
     /**
@@ -66,7 +66,7 @@ export const Filters = {
      * @param amount {number} - The `amount` of the opacity.
      * @returns {string}
      */
-    opacity(amount: number): string {
+    opacity(amount: number): `opacity(${number}%)` {
         return `opacity(${amount}%)`;
     },
     /**
@@ -74,7 +74,7 @@ export const Filters = {
      * @param amount {number} - The `amount` of the saturation.
      * @returns {string}
      */
-    saturate(amount: number): string {
+    saturate(amount: number): `saturate(${number}%)` {
         return `saturate(${amount}%)`;
     },
     /**
@@ -82,7 +82,7 @@ export const Filters = {
      * @param amount {number} - The `amount` of the sepia.
      * @returns {string}
      */
-    sepia(amount: number): string {
+    sepia(amount: number): `sepia(${number}%)` {
         return `sepia(${amount}%)`;
     }
 }

@@ -65,6 +65,8 @@ export type AnyGlobalCompositeOperation = GlobalCompositeOperation | 'source-ove
 
 export type AnyColorSpace = ColorSpace | 'rgb565' | 'rgba4444' | 'rgba444';
 
+export type AnyFilter = `sepia(${number}%)` | `saturate(${number}%)` | `opacity(${number}%)` | `invert(${number}%)` | `hue-rotate(${number}deg)` | `grayscale(${number}%)` | `drop-shadow(${number}px ${number}px ${number}px ${string})` | `contrast(${number}%)` | `brightness(${number}%)` | `blur(${number}px)`;
+
 export type Point = {
     x: ScaleType;
     y: ScaleType;

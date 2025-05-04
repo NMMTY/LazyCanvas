@@ -1,19 +1,17 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import {
+    ScaleType,
+    ColorType,
+    AnyWeight,
+    AnyTextAlign,
+    AnyTextBaseline,
+    AnyTextDirection,
     FontWeight,
     LineCap,
     LineJoin,
     TextAlign,
     LayerType,
     Centring
-} from "../../types/enum";
-import {
-    ScaleType,
-    ColorType,
-    AnyWeight,
-    AnyTextAlign,
-    AnyTextBaseline,
-    AnyTextDirection
 } from "../../types";
 import { LazyError, LazyLog, defaultArg } from "../../utils/LazyUtil";
 import { Gradient, Pattern } from "../helpers";

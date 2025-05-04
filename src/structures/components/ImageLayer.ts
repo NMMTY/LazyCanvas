@@ -1,6 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ScaleType } from "../../types";
-import { Centring, LayerType } from "../../types/enum";
+import { ScaleType, Centring, LayerType } from "../../types";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     centring,

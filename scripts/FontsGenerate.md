@@ -30,5 +30,5 @@ List of available weights:
 After that, you can run the script with the following command:
 
 ```bash
-$ node scripts/font-gen.ts
+$ tsx font-gen.ts
 ```

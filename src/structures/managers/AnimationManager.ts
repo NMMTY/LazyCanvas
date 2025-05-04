@@ -1,5 +1,4 @@
-import { AnyColorSpace } from "../../types";
-import { ColorSpace } from "../../types/enum";
+import { AnyColorSpace, ColorSpace } from "../../types";
 
 export interface IAnimationManager {
     options: IAnimationOptions;

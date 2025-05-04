@@ -1,5 +1,4 @@
-import { AnyLayer } from "../../types";
-import { LayerType } from "../../types/enum";
+import { AnyLayer, LayerType } from "../../types";
 import { generateID } from "../../utils/utils";
 
 export interface IGroup {

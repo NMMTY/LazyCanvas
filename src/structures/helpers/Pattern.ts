@@ -1,5 +1,4 @@
-import { FillType, PatternType } from "../../types";
-import { AnyPatternType } from "../../types";
+import { FillType, PatternType, AnyPatternType } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { Exporter } from "./Exporter";

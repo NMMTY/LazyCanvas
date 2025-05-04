@@ -1,5 +1,4 @@
-import { ScaleType } from "../../types";
-import { LayerType } from "../../types/enum";
+import { ScaleType, LayerType } from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers/LayersManager";
 import { parser } from "../../utils/utils";

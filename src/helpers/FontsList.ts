@@ -1,5 +1,5 @@
 
-import { FontWeight } from "../types/enum";
+import { FontWeight } from "../types";
 /**
  * The bundled fonts in this package.
  * Used fonts:
