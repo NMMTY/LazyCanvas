@@ -13,23 +13,70 @@ import {
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { LayersManager } from "../managers/LayersManager";
 
+/**
+ * Interface representing an Image Layer.
+ */
 export interface IImageLayer extends IBaseLayer {
+    /**
+     * The type of the layer, which is `Image`.
+     */
+    type: LayerType.Image;
+
+    /**
+     * The properties specific to the Image Layer.
+     */
     props: IImageLayerProps;
 }
 
+/**
+ * Interface representing the properties of an Image Layer.
+ */
 export interface IImageLayerProps extends IBaseLayerProps {
+    /**
+     * The source of the image, which can be a URL or a Buffer.
+     */
     src: string | Buffer;
+
+    /**
+     * Whether the image should be resized.
+     */
     resize: boolean;
+
+    /**
+     * The size of the image, including width, height, and radius.
+     */
     size: {
+        /**
+         * The width of the image.
+         */
         width: ScaleType;
+
+        /**
+         * The height of the image.
+         */
         height: ScaleType;
+
+        /**
+         * The radius of the image.
+         */
         radius: ScaleType;
-    }
+    };
 }
 
+/**
+ * Class representing an Image Layer, extending the BaseLayer class.
+ */
 export class ImageLayer extends BaseLayer<IImageLayerProps> {
+    /**
+     * The properties of the Image Layer.
+     */
     props: IImageLayerProps;
 
+    /**
+     * Constructs a new ImageLayer instance.
+     * @param props {IImageLayerProps} - The properties of the Image Layer.
+     * @param misc {IBaseLayerMisc} - Miscellaneous options for the layer.
+     */
     constructor(props?: IImageLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.Image, props || {} as IImageLayerProps, misc);
         this.props = props ? props : {} as IImageLayerProps;
@@ -38,8 +85,10 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     }
 
     /**
-     * @description Sets the source of the image, it can be like link to website or path to file.
-     * @param src {string} - The `src` of the image.
+     * Sets the source of the image.
+     * @param src {string} - The source of the image, which can be a URL or file path.
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If the source is not a valid URL.
      */
     setSrc(src: string) {
         if (!isImageUrlValid(src)) throw new LazyError('The src of the image must be a valid URL');
@@ -48,10 +97,11 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     }
 
     /**
-     * @description Set the size of the image. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param width {ScaleType} - The `width` of the image.
-     * @param height {ScaleType} - The `height` of the image.
-     * @param radius {ScaleType} - The `radius` of the image. (optional)
+     * Sets the size of the image.
+     * @param width {ScaleType} - The width of the image.
+     * @param height {ScaleType} - The height of the image.
+     * @param radius {ScaleType} - The radius of the image (optional).
+     * @returns {this} The current instance for chaining.
      */
     setSize(width: ScaleType, height: ScaleType, radius?: ScaleType) {
         this.props.size = {
@@ -62,11 +112,23 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         return this;
     }
 
+    /**
+     * Disables resizing for the image.
+     * @returns {this} The current instance for chaining.
+     */
     dontResize() {
         this.props.resize = false;
         return this;
     }
 
+    /**
+     * Draws the Image Layer on the canvas.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @param debug {boolean} - Whether to enable debug logging.
+     * @throws {LazyError} If the image could not be loaded.
+     */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -74,12 +136,10 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
             xs: { v: this.props.x },
             ys: { v: this.props.y, options: defaultArg.vl(true) },
             w: { v: this.props.size.width }
-        })
+        });
 
         const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
-
-        const r = parcer.parse(this.props.size.radius, defaultArg.wh(w / 2, h / 2), defaultArg.vl(false, true))
-
+        const r = parcer.parse(this.props.size.radius, defaultArg.wh(w / 2, h / 2), defaultArg.vl(false, true));
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
 
         if (debug) LazyLog.log('none', `ImageLayer:`, { x, y, w, h, r });
@@ -95,7 +155,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         if (!image) throw new LazyError('The image could not be loaded');
         if (r) {
             ctx.beginPath();
-            ctx.moveTo(x + (w /2), y);
+            ctx.moveTo(x + (w / 2), y);
             ctx.arcTo(x + w, y, x + w, y + (h / 2), r);
             ctx.arcTo(x + w, y + h, x + (w / 2), y + h, r);
             ctx.arcTo(x, y + h, x, y + (h / 2), r);
@@ -110,7 +170,8 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     }
 
     /**
-     * @returns {IImageLayer}
+     * Converts the Image Layer to a JSON representation.
+     * @returns {IImageLayer} The JSON representation of the Image Layer.
      */
     toJSON(): IImageLayer {
         let data = super.toJSON();
@@ -124,5 +185,4 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
 
         return { ...data } as IImageLayer;
     }
-
 }

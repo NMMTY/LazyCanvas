@@ -1,21 +1,72 @@
 import { AnyLayer, LayerType } from "../../types";
 import { generateID } from "../../utils/utils";
 
+/**
+ * Interface representing a group of layers.
+ */
 export interface IGroup {
+    /**
+     * The unique identifier of the group.
+     */
     id: string;
-    type: LayerType;
+
+    /**
+     * The type of the group, which is `Group`.
+     */
+    type: LayerType.Group;
+
+    /**
+     * The visibility of the group.
+     */
     visible: boolean;
+
+    /**
+     * The z-index of the group, determining its stacking order.
+     */
     zIndex: number;
+
+    /**
+     * The layers contained within the group.
+     */
     layers: Array<AnyLayer>;
 }
 
+/**
+ * Class representing a group of layers.
+ */
 export class Group implements IGroup {
+    /**
+     * The unique identifier of the group.
+     */
     id: string;
-    type: LayerType = LayerType.Group;
+
+    /**
+     * The type of the group, which is `Group`.
+     */
+    type: LayerType.Group = LayerType.Group;
+
+    /**
+     * The visibility of the group.
+     */
     visible: boolean;
+
+    /**
+     * The z-index of the group, determining its stacking order.
+     */
     zIndex: number;
+
+    /**
+     * The layers contained within the group.
+     */
     layers: Array<any>;
 
+    /**
+     * Constructs a new Group instance.
+     * @param opts {Object} - Optional parameters for the group.
+     * @param opts.id {string} - The unique identifier of the group.
+     * @param opts.visible {boolean} - The visibility of the group.
+     * @param opts.zIndex {number} - The z-index of the group.
+     */
     constructor(opts?: { id?: string, visible?: boolean, zIndex?: number }) {
         this.id = opts?.id || generateID(LayerType.Group);
         this.visible = opts?.visible || true;
@@ -24,8 +75,9 @@ export class Group implements IGroup {
     }
 
     /**
-     * Set the ID of the group
-     * @param id {string} - The `id` of the group
+     * Sets the ID of the group.
+     * @param id {string} - The unique identifier of the group.
+     * @returns {this} The current instance for chaining.
      */
     setID(id: string) {
         this.id = id;
@@ -33,8 +85,9 @@ export class Group implements IGroup {
     }
 
     /**
-     * Set the visibility of the group
-     * @param visible {boolean} - The `visibility` of the group
+     * Sets the visibility of the group.
+     * @param visible {boolean} - The visibility state of the group.
+     * @returns {this} The current instance for chaining.
      */
     setVisible(visible: boolean) {
         this.visible = visible;
@@ -42,8 +95,9 @@ export class Group implements IGroup {
     }
 
     /**
-     * Set the zIndex of the group
-     * @param zIndex {number} - The `zIndex` of the group
+     * Sets the z-index of the group.
+     * @param zIndex {number} - The z-index value of the group.
+     * @returns {this} The current instance for chaining.
      */
     setZIndex(zIndex: number) {
         this.zIndex = zIndex;
@@ -51,8 +105,9 @@ export class Group implements IGroup {
     }
 
     /**
-     * Add a component to the group
-     * @param components {AnyLayer[]} - The `components` to add to the group
+     * Adds components to the group.
+     * @param components {AnyLayer[]} - The components to add to the group.
+     * @returns {this} The current instance for chaining.
      */
     add(...components: AnyLayer[]) {
         let layersArray = components.flat();
@@ -63,8 +118,9 @@ export class Group implements IGroup {
     }
 
     /**
-     * Remove a component from the group
-     * @param id {any} - The `id` of the component to remove
+     * Removes a component from the group by its ID.
+     * @param id {string} - The unique identifier of the component to remove.
+     * @returns {this} The current instance for chaining.
      */
     remove(id: string) {
         this.layers = this.layers.filter(c => c.id !== id);
@@ -72,7 +128,8 @@ export class Group implements IGroup {
     }
 
     /**
-     * Clear all components from the group
+     * Clears all components from the group.
+     * @returns {this} The current instance for chaining.
      */
     clear() {
         this.layers = [];
@@ -80,27 +137,34 @@ export class Group implements IGroup {
     }
 
     /**
-     * Get a component from the group
-     * @param id {string} - The `id` of the component to get
+     * Retrieves a component from the group by its ID.
+     * @param id {string} - The unique identifier of the component to retrieve.
+     * @returns {AnyLayer | undefined} The component with the specified ID, or undefined if not found.
      */
     get(id: string) {
         return this.layers.find(c => c.id === id);
     }
 
     /**
-     * Get all components from the group
+     * Retrieves all components from the group.
+     * @returns {AnyLayer[]} An array of all components in the group.
      */
     getAll() {
         return this.layers;
     }
 
     /**
-     * Get the length of the components
+     * Gets the number of components in the group.
+     * @returns {number} The number of components in the group.
      */
     get length() {
         return this.layers.length;
     }
 
+    /**
+     * Converts the group to a JSON representation.
+     * @returns {IGroup} The JSON representation of the group.
+     */
     toJSON(): IGroup {
         return {
             id: this.id,

@@ -24,7 +24,18 @@ import * as fs from "fs";
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
 import * as path from "path";
 
+/**
+ * Class responsible for reading and parsing JSON data into a LazyCanvas instance.
+ */
 export class JSONReader {
+    /**
+     * Reads JSON data and converts it into a LazyCanvas instance.
+     * @param data {IOLazyCanvas} - The JSON data to read.
+     * @param opts {Object} - Optional settings.
+     * @param opts.debug {boolean} - Whether to enable debug logging.
+     * @returns {LazyCanvas} The created LazyCanvas instance.
+     * @throws {LazyError} If the data contains invalid options or no layers are found.
+     */
     static read(data: IOLazyCanvas, opts?: { debug?: boolean }): LazyCanvas {
         if (data.options.width <= 0 || data.options.height <= 0) {
             throw new LazyError("Invalid width or height");
@@ -53,6 +64,14 @@ export class JSONReader {
         return canvas;
     }
 
+    /**
+     * Reads a JSON file and converts it into a LazyCanvas instance.
+     * @param file {string} - The path to the JSON file.
+     * @param opts {Object} - Optional settings.
+     * @param opts.debug {boolean} - Whether to enable debug logging.
+     * @returns {LazyCanvas} The created LazyCanvas instance.
+     * @throws {LazyError} If the file does not exist.
+     */
     static readFile(file: string, opts?: { debug?: boolean }): LazyCanvas {
         const filePath = path.resolve(file);
         if (!fs.existsSync(filePath)) throw new LazyError("File not found");
@@ -64,6 +83,13 @@ export class JSONReader {
         return JSONReader.read(data, opts);
     }
 
+    /**
+     * Parses an array of JSON layers into an array of AnyLayer or Group instances.
+     * @param data {Array<JSONLayer | Group>} - The array of JSON layers to parse.
+     * @param opts {Object} - Optional settings.
+     * @param opts.debug {boolean} - Whether to enable debug logging.
+     * @returns {Array<AnyLayer | Group>} The parsed layers.
+     */
     private static layersParse(data: Array<JSONLayer | Group>, opts?: { debug?: boolean }): Array<AnyLayer | Group> {
         return data.map((layer: any) => {
             if (opts?.debug) LazyLog.log('info', `Parsing layer ${layer.id}...\nData:`, layer);
@@ -80,7 +106,13 @@ export class JSONReader {
         });
     }
 
-    private static layerParse(layer: JSONLayer | Group, misc?: IBaseLayerMisc): AnyLayer | Group {
+    /**
+     * Parses a single JSON layer into an AnyLayer or Group instance.
+     * @param layer {JSONLayer | IGroup | Group} - The JSON layer to parse.
+     * @param misc {IBaseLayerMisc} - Miscellaneous options for the layer.
+     * @returns {AnyLayer | Group} The parsed layer.
+     */
+    private static layerParse(layer: JSONLayer | IGroup | Group, misc?: IBaseLayerMisc): AnyLayer | Group {
         if (layer instanceof Group) {
             return new Group(misc).add(...layer.layers.map((l: any) => this.layerParse(l)) as AnyLayer[]);
         } else {
@@ -108,6 +140,11 @@ export class JSONReader {
         }
     }
 
+    /**
+     * Parses the fill style of a layer.
+     * @param layer {JSONLayer} - The layer whose fill style is to be parsed.
+     * @returns {string | Gradient | Pattern} The parsed fill style.
+     */
     private static fillParse(layer: JSONLayer) {
         if ('fillStyle' in layer.props && layer.props.fillStyle && typeof layer.props.fillStyle !== 'string') {
             switch (layer.props.fillStyle?.fillType) {

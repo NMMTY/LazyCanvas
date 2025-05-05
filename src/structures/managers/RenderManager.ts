@@ -1,5 +1,4 @@
-import { Export } from "../../types/enum";
-import { AnyExport, AnyLayer } from "../../types";
+import { AnyExport, AnyLayer, Export } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { Group } from "../components";
@@ -7,24 +6,57 @@ import { LazyLog } from "../../utils/LazyUtil";
 // @ts-ignore
 import { GIFEncoder, quantize, applyPalette } from "gifenc";
 
+/**
+ * Interface representing the RenderManager.
+ */
 export interface IRenderManager {
+    /**
+     * The LazyCanvas instance used for rendering.
+     */
     lazyCanvas: LazyCanvas;
+
+    /**
+     * Whether debugging is enabled.
+     */
     debug: boolean;
 }
 
+/**
+ * Class responsible for managing rendering operations, including static and animated exports.
+ */
 export class RenderManager implements IRenderManager {
+    /**
+     * The LazyCanvas instance used for rendering.
+     */
     lazyCanvas: LazyCanvas;
+
+    /**
+     * Whether debugging is enabled.
+     */
     debug: boolean;
 
+    /**
+     * Constructs a new RenderManager instance.
+     * @param lazyCanvas {LazyCanvas} - The LazyCanvas instance to use for rendering.
+     * @param opts {Object} - Optional settings for the RenderManager.
+     * @param opts.debug {boolean} - Whether debugging is enabled.
+     */
     constructor(lazyCanvas: LazyCanvas, opts?: { debug?: boolean }) {
         this.lazyCanvas = lazyCanvas;
         this.debug = opts?.debug || false;
     }
 
+    /**
+     * Merges multiple ImageData objects into a single ImageData object.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param imageDataList {ImageData[]} - The list of ImageData objects to merge.
+     * @param width {number} - The width of the resulting ImageData.
+     * @param height {number} - The height of the resulting ImageData.
+     * @returns {ImageData} The merged ImageData object.
+     */
     private mergeImageData(ctx: SKRSContext2D, imageDataList: ImageData[], width: number, height: number): ImageData {
         const mergedData = ctx.createImageData(width, height);
         const mergedPixels = mergedData.data;
-
 
         for (const imageData of imageDataList) {
             const pixels = imageData.data;
@@ -50,29 +82,44 @@ export class RenderManager implements IRenderManager {
         return mergedData;
     }
 
-    private async renderLayer(layer: AnyLayer | Group) {
-        if (this.debug) LazyLog.log('info', `Rendering ${layer.id}...\nData:`,layer.toJSON());
+    /**
+     * Renders a single layer or group of layers.
+     * @param layer {AnyLayer | Group} - The layer or group to render.
+     * @returns {Promise<SKRSContext2D>} The canvas rendering context after rendering.
+     */
+    private async renderLayer(layer: AnyLayer | Group): Promise<SKRSContext2D> {
+        if (this.debug) LazyLog.log('info', `Rendering ${layer.id}...\nData:`, layer.toJSON());
         if (layer.visible) {
             if (layer instanceof Group) {
                 for (const subLayer of layer.layers) {
                     if (subLayer.visible) {
-                        if ('globalComposite' in subLayer.props && subLayer.props.globalComposite) this.lazyCanvas.ctx.globalCompositeOperation = subLayer.props.globalComposite;
-                        else this.lazyCanvas.ctx.globalCompositeOperation = 'source-over';
+                        if ('globalComposite' in subLayer.props && subLayer.props.globalComposite) {
+                            this.lazyCanvas.ctx.globalCompositeOperation = subLayer.props.globalComposite;
+                        } else {
+                            this.lazyCanvas.ctx.globalCompositeOperation = 'source-over';
+                        }
                         await subLayer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.manager.layers, this.debug);
                     }
                 }
             } else {
-                if ('globalComposite' in layer.props && layer.props.globalComposite) this.lazyCanvas.ctx.globalCompositeOperation = layer.props.globalComposite;
-                else this.lazyCanvas.ctx.globalCompositeOperation = 'source-over';
+                if ('globalComposite' in layer.props && layer.props.globalComposite) {
+                    this.lazyCanvas.ctx.globalCompositeOperation = layer.props.globalComposite;
+                } else {
+                    this.lazyCanvas.ctx.globalCompositeOperation = 'source-over';
+                }
                 await layer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.manager.layers, this.debug);
             }
             this.lazyCanvas.ctx.shadowColor = 'transparent';
         }
-        return this.lazyCanvas.ctx
+        return this.lazyCanvas.ctx;
     }
 
+    /**
+     * Renders all layers statically and exports the result in the specified format.
+     * @param exportType {AnyExport} - The export format (e.g., buffer, SVG, or context).
+     * @returns {Promise<Buffer | SKRSContext2D | string>} The rendered output in the specified format.
+     */
     private async renderStatic(exportType: AnyExport): Promise<Buffer | SKRSContext2D | string> {
-
         if (this.debug) LazyLog.log('info', `Rendering static...`);
 
         for (const layer of this.lazyCanvas.manager.layers.toArray()) {
@@ -99,6 +146,10 @@ export class RenderManager implements IRenderManager {
         }
     }
 
+    /**
+     * Renders an animated sequence of layers and exports it as a GIF.
+     * @returns {Promise<Buffer>} The rendered animation as a Buffer.
+     */
     private async renderAnimation(): Promise<Buffer> {
         const encoder = new GIFEncoder();
 
@@ -136,8 +187,9 @@ export class RenderManager implements IRenderManager {
     }
 
     /**
-     * This will render all the layers and return the rendered canvas buffer or ctx.
-     * @returns {Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string>}
+     * Renders all layers and exports the result in the specified format.
+     * @param format {AnyExport} - The export format (e.g., buffer, context, SVG, or canvas).
+     * @returns {Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string>} The rendered output in the specified format.
      */
     public async render(format: AnyExport): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string> {
         switch (format) {
@@ -162,6 +214,4 @@ export class RenderManager implements IRenderManager {
                 return this.renderStatic(Export.BUFFER);
         }
     }
-
-
 }

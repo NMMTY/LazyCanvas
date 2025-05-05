@@ -1,28 +1,91 @@
 import { AnyColorSpace, ColorSpace } from "../../types";
 
+/**
+ * Interface representing the animation manager.
+ */
 export interface IAnimationManager {
+    /**
+     * The options for the animation manager.
+     */
     options: IAnimationOptions;
+
+    /**
+     * Whether debugging is enabled.
+     */
     debug: boolean;
 }
 
+/**
+ * Interface representing the animation options.
+ */
 export interface IAnimationOptions {
+    /**
+     * The frame rate of the animation.
+     */
     frameRate: number;
+
+    /**
+     * The maximum number of colors in the animation.
+     */
     maxColors: number;
+
+    /**
+     * The color space used in the animation.
+     */
     colorSpace: AnyColorSpace;
+
+    /**
+     * Whether the animation should loop.
+     */
     loop: boolean;
+
+    /**
+     * Whether the animation should have transparency.
+     */
     transparency: boolean;
+
+    /**
+     * Utility options for the animation.
+     */
     utils: {
+        /**
+         * Whether to clear the content of previous frames.
+         */
         clear: boolean;
+
+        /**
+         * Buffer-related options.
+         */
         buffer: {
+            /**
+             * The size of the frame buffer.
+             */
             size: number;
-        }
-    }
+        };
+    };
 }
 
+/**
+ * Class representing the animation manager, which handles animation settings and options.
+ */
 export class AnimationManager implements IAnimationManager {
+    /**
+     * The options for the animation manager.
+     */
     options: IAnimationOptions;
+
+    /**
+     * Whether debugging is enabled.
+     */
     debug: boolean;
 
+    /**
+     * Constructs a new AnimationManager instance.
+     * @param opts {Object} - Optional settings for the animation manager.
+     * @param opts.debug {boolean} - Whether debugging is enabled.
+     * @param opts.settings {Object} - Additional settings for the animation manager.
+     * @param opts.settings.options {IAnimationOptions} - The animation options.
+     */
     constructor(opts?: { debug?: boolean, settings?: { options?: IAnimationOptions } }) {
         this.options = opts?.settings?.options || {
             frameRate: 30,
@@ -42,7 +105,8 @@ export class AnimationManager implements IAnimationManager {
 
     /**
      * Sets the frame rate of the animation.
-     * @param frameRate {number} - The frame rate of the animation (by default 30).
+     * @param frameRate {number} - The frame rate of the animation (default is 30).
+     * @returns {this} The current instance for chaining.
      */
     setFrameRate(frameRate: number): this {
         this.options.frameRate = frameRate;
@@ -50,8 +114,9 @@ export class AnimationManager implements IAnimationManager {
     }
 
     /**
-     * Sets the loop of the animation.
-     * @param loop {boolean} - Whether the animation should loop or not (by default true).
+     * Sets whether the animation should loop.
+     * @param loop {boolean} - Whether the animation should loop (default is true).
+     * @returns {this} The current instance for chaining.
      */
     setLoop(loop: boolean): this {
         this.options.loop = loop;
@@ -59,8 +124,9 @@ export class AnimationManager implements IAnimationManager {
     }
 
     /**
-     * Sets the transparency of the animation.
-     * @param transparency {boolean} - Whether the animation should have transparency or not (by default true).
+     * Sets whether the animation should have transparency.
+     * @param transparency {boolean} - Whether the animation should have transparency (default is true).
+     * @returns {this} The current instance for chaining.
      */
     setTransparent(transparency: boolean): this {
         this.options.transparency = transparency;
@@ -69,7 +135,8 @@ export class AnimationManager implements IAnimationManager {
 
     /**
      * Sets the RGB format of the animation.
-     * @param rgb {ColorSpace} - The RGB format of the animation (by default RGB565).
+     * @param rgb {ColorSpace} - The RGB format of the animation (default is RGB565).
+     * @returns {this} The current instance for chaining.
      */
     setRGBFormat(rgb: AnyColorSpace): this {
         this.options.colorSpace = rgb;
@@ -77,8 +144,9 @@ export class AnimationManager implements IAnimationManager {
     }
 
     /**
-     * Sets the maximum colors of the animation.
-     * @param maxColors {number} - The maximum colors of the animation (by default 256).
+     * Sets the maximum number of colors in the animation.
+     * @param maxColors {number} - The maximum number of colors (default is 256).
+     * @returns {this} The current instance for chaining.
      */
     setMaxColors(maxColors: number): this {
         this.options.maxColors = maxColors;
@@ -87,8 +155,9 @@ export class AnimationManager implements IAnimationManager {
 
     /**
      * Sets whether the content of previous frames will be cleared.
-     * @param clear {boolean} - Whether the animation should clear or not (by default true).
-     * @param bufferSize {number} - The size of the frame buffer (by default 0).
+     * @param clear {boolean} - Whether to clear the content of previous frames (default is true).
+     * @param bufferSize {number} - The size of the frame buffer (default is 0).
+     * @returns {this} The current instance for chaining.
      */
     setClear(clear: boolean, bufferSize?: number): this {
         this.options.utils.clear = clear;
@@ -97,5 +166,4 @@ export class AnimationManager implements IAnimationManager {
         }
         return this;
     }
-
 }

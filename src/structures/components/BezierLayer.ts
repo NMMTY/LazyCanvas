@@ -16,18 +16,50 @@ import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
 
+/**
+ * Interface representing a Bezier layer.
+ */
 export interface IBezierLayer extends IBaseLayer {
+    /**
+     * The type of the layer, which is a Bézier curve.
+     */
+    type: LayerType.BezierCurve;
+
+    /**
+     * The properties specific to the Bezier layer.
+     */
     props: IBezierLayerProps;
 }
 
+/**
+ * Interface representing the properties of a Bezier layer.
+ */
 export interface IBezierLayerProps extends IBaseLayerProps {
+    /**
+     * The control points of the Bézier curve.
+     */
     controlPoints: Array<Point>;
+
+    /**
+     * The end point of the Bézier curve.
+     */
     endPoint: Point;
 }
 
+/**
+ * Class representing a Bezier layer, extending the BaseLayer class.
+ */
 export class BezierLayer extends BaseLayer<IBezierLayerProps> {
+    /**
+     * The properties of the Bezier layer.
+     */
     props: IBezierLayerProps;
 
+    /**
+     * Constructs a new BezierLayer instance.
+     * @param props {IBezierLayerProps} - The properties of the Bezier layer.
+     * @param misc {IBaseLayerMisc} - Miscellaneous options for the layer.
+     */
     constructor(props?: IBezierLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.BezierCurve, props || {} as IBezierLayerProps, misc);
         this.props = props ? props : {} as IBezierLayerProps;
@@ -36,8 +68,10 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     }
 
     /**
-     * @description Sets the control points of the bezier layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param controlPoints {Array<{ x: ScaleType, y: ScaleType }>} - The `controlPoints` of the bezier layer.
+     * Sets the control points of the Bezier layer.
+     * @param controlPoints {Array<{ x: ScaleType, y: ScaleType }>} - The control points of the Bezier layer.
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If the number of control points is not exactly 2.
      */
     setControlPoints(...controlPoints: { x: ScaleType, y: ScaleType }[]) {
         if (controlPoints.length !== 2) throw new LazyError('The control points of the layer must be provided');
@@ -46,9 +80,10 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     }
 
     /**
-     * @description Sets the end point of the bezier layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param x {ScaleType} - The end `x` of the bezier layer.
-     * @param y {ScaleType} - The end `y` of the bezier layer.
+     * Sets the end position of the Bezier layer.
+     * @param x {ScaleType} - The x-coordinate of the end point.
+     * @param y {ScaleType} - The y-coordinate of the end point.
+     * @returns {this} The current instance for chaining.
      */
     setEndPosition(x: ScaleType, y: ScaleType) {
         this.props.endPoint = { x, y };
@@ -56,8 +91,10 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     }
 
     /**
-     * @description Sets the color of the layer. You can use `hex`, `rgb`, `rgba`, `hsl`, `hsla`, and `Gradient`color.
-     * @param color {string} - The `color` of the layer.
+     * Sets the color of the Bezier layer.
+     * @param color {ColorType} - The color of the layer.
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If the color is not provided or invalid.
      */
     setColor(color: ColorType) {
         if (!color) throw new LazyError('The color of the layer must be provided');
@@ -74,13 +111,14 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     }
 
     /**
-     * @description Sets the stroke of the layer.
-     * @param width {number} - The `width` of the stroke.
-     * @param cap {string} - The `cap` of the stroke.
-     * @param join {string} - The `join` of the stroke.
-     * @param dash {number[]} - The `dash` of the stroke.
-     * @param dashOffset {number} - The `dashOffset` of the stroke.
-     * @param miterLimit {number} - The `miterLimit` of the stroke.
+     * Sets the stroke properties of the Bezier layer.
+     * @param width {number} - The width of the stroke.
+     * @param cap {string} - The cap style of the stroke.
+     * @param join {string} - The join style of the stroke.
+     * @param dash {number[]} - The dash pattern of the stroke.
+     * @param dashOffset {number} - The dash offset of the stroke.
+     * @param miterLimit {number} - The miter limit of the stroke.
+     * @returns {this} The current instance for chaining.
      */
     setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
         this.props.stroke = {
@@ -94,6 +132,13 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         return this;
     }
 
+    /**
+     * Calculates the bounding box of the Bezier layer.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @returns {Object} The bounding box details including max, min, center, width, and height.
+     */
     getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -112,6 +157,13 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         return { max, min, center, width, height };
     }
 
+    /**
+     * Draws the Bezier layer on the canvas.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @param debug {boolean} - Whether to enable debug logging.
+     */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -155,7 +207,8 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     }
 
     /**
-     * @returns {IBezierLayer}
+     * Converts the Bezier layer to a JSON representation.
+     * @returns {IBezierLayer} The JSON representation of the Bezier layer.
      */
     public toJSON(): IBezierLayer {
         let data = super.toJSON();

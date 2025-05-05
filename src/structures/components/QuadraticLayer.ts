@@ -1,4 +1,4 @@
-import {BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps} from "./BaseLayer";
+import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { ColorType, ScaleType, Point, Centring, LayerType } from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
@@ -16,18 +16,50 @@ import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
 
+/**
+ * Interface representing a Quadratic Layer.
+ */
 export interface IQuadraticLayer extends IBaseLayer {
+    /**
+     * The type of the layer, which is `QuadraticCurve`.
+     */
+    type: LayerType.QuadraticCurve;
+
+    /**
+     * The properties specific to the Quadratic Layer.
+     */
     props: IQuadraticLayerProps;
 }
 
+/**
+ * Interface representing the properties of a Quadratic Layer.
+ */
 export interface IQuadraticLayerProps extends IBaseLayerProps {
+    /**
+     * The control point of the quadratic curve, including x and y coordinates.
+     */
     controlPoint: Point;
+
+    /**
+     * The end point of the quadratic curve, including x and y coordinates.
+     */
     endPoint: Point;
 }
 
+/**
+ * Class representing a Quadratic Layer, extending the BaseLayer class.
+ */
 export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
+    /**
+     * The properties of the Quadratic Layer.
+     */
     props: IQuadraticLayerProps;
 
+    /**
+     * Constructs a new QuadraticLayer instance.
+     * @param props {IQuadraticLayerProps} - The properties of the Quadratic Layer.
+     * @param misc {IBaseLayerMisc} - Miscellaneous options for the layer.
+     */
     constructor(props?: IQuadraticLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.QuadraticCurve, props || {} as IQuadraticLayerProps, misc);
         this.props = props ? props : {} as IQuadraticLayerProps;
@@ -36,9 +68,10 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     }
 
     /**
-     * @description Sets the control point of the quadratic layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param x {ScaleType} - The control `x` of the quadratic layer.
-     * @param y {ScaleType} - The control `y` of the quadratic layer.
+     * Sets the control point of the quadratic layer.
+     * @param x {ScaleType} - The x-coordinate of the control point.
+     * @param y {ScaleType} - The y-coordinate of the control point.
+     * @returns {this} The current instance for chaining.
      */
     setControlPoint(x: ScaleType, y: ScaleType) {
         this.props.controlPoint = { x, y };
@@ -46,9 +79,10 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     }
 
     /**
-     * @description Sets the end point of the quadratic layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param x {ScaleType} - The end `x` of the quadratic layer.
-     * @param y {ScaleType} - The end `y` of the quadratic layer.
+     * Sets the end point of the quadratic layer.
+     * @param x {ScaleType} - The x-coordinate of the end point.
+     * @param y {ScaleType} - The y-coordinate of the end point.
+     * @returns {this} The current instance for chaining.
      */
     setEndPosition(x: ScaleType, y: ScaleType) {
         this.props.endPoint = { x, y };
@@ -56,8 +90,10 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     }
 
     /**
-     * @description Sets the color of the layer. You can use `hex`, `rgb`, `rgba`, `hsl`, `hsla`, and `Gradient`color.
-     * @param color {string} - The `color` of the layer.
+     * Sets the color of the layer.
+     * @param color {ColorType} - The color of the layer.
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If the color is not provided or invalid.
      */
     setColor(color: ColorType) {
         if (!color) throw new LazyError('The color of the layer must be provided');
@@ -74,13 +110,14 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     }
 
     /**
-     * @description Sets the stroke of the layer.
-     * @param width {number} - The `width` of the stroke.
-     * @param cap {string} - The `cap` of the stroke.
-     * @param join {string} - The `join` of the stroke.
-     * @param dash {number[]} - The `dash` of the stroke.
-     * @param dashOffset {number} - The `dashOffset` of the stroke.
-     * @param miterLimit {number} - The `miterLimit` of the stroke.
+     * Sets the stroke properties of the layer.
+     * @param width {number} - The width of the stroke.
+     * @param cap {CanvasLineCap} - The cap style of the stroke.
+     * @param join {CanvasLineJoin} - The join style of the stroke.
+     * @param dash {number[]} - The dash pattern of the stroke.
+     * @param dashOffset {number} - The dash offset of the stroke.
+     * @param miterLimit {number} - The miter limit of the stroke.
+     * @returns {this} The current instance for chaining.
      */
     setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
         this.props.stroke = {
@@ -94,6 +131,13 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         return this;
     }
 
+    /**
+     * Calculates the bounding box of the quadratic curve.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @returns {Object} The bounding box details including max, min, center, width, and height.
+     */
     getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -110,6 +154,13 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         return { max, min, center, width, height };
     }
 
+    /**
+     * Draws the quadratic curve on the canvas.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @param debug {boolean} - Whether to enable debug logging.
+     */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -151,7 +202,8 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     }
 
     /**
-     * @returns {IQuadraticLayer}
+     * Converts the Quadratic Layer to a JSON representation.
+     * @returns {IQuadraticLayer} The JSON representation of the Quadratic Layer.
      */
     public toJSON(): IQuadraticLayer {
         let data = super.toJSON();

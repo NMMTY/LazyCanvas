@@ -7,34 +7,60 @@ import { generateRandomName } from "../../utils/utils";
 import { LayersManager } from "../managers/LayersManager";
 import * as _yaml from 'js-yaml';
 
+/**
+ * Class responsible for exporting a LazyCanvas instance to various formats.
+ */
 export class Exporter {
+    /**
+     * The LazyCanvas instance to be exported.
+     */
     canvas: LazyCanvas;
 
+    /**
+     * Constructs a new Exporter instance.
+     * @param canvas {LazyCanvas} - The LazyCanvas instance to be exported.
+     */
     constructor(canvas: LazyCanvas) {
         this.canvas = canvas;
     }
 
+    /**
+     * Saves a file to the filesystem.
+     * @param buffer {any} - The data to be saved.
+     * @param extension {Extensions} - The file extension.
+     * @param name {string} - The name of the file (optional).
+     * @throws {LazyError} If the buffer or extension is not provided.
+     */
     private async saveFile(buffer: any, extension: Extensions, name?: string) {
         if (!buffer) throw new LazyError('Buffer must be provided');
         if (!extension) throw new LazyError('Extension must be provided');
 
-        fs.writeFileSync(`${name === undefined ? generateRandomName() : name }.${extension}`, buffer);
+        fs.writeFileSync(`${name === undefined ? generateRandomName() : name}.${extension}`, buffer);
     }
 
-    // Okay, I have to add this shit in here, just because I'm too bad.
+    /**
+     * Exports all layers from the LayersManager as an array of JSON objects.
+     * @param manager {LayersManager} - The LayersManager instance.
+     * @returns {any[]} An array of JSON representations of the layers.
+     */
     private exportLayers(manager: LayersManager): any[] {
-        let arr = []
+        let arr = [];
         for (const layer of Array.from(manager.map.values())) {
-            arr.push(layer.toJSON())
+            arr.push(layer.toJSON());
         }
         return arr;
     }
 
     /**
-     * Get the export
-     * @returns {Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string>} - The `export` of the canvas
+     * Exports the canvas to the specified format.
+     * @param exportType {AnyExport} - The type of export (e.g., "png", "json").
+     * @param opts {Object} - Optional settings.
+     * @param opts.name {string} - The name of the file (optional).
+     * @param opts.saveAsFile {boolean} - Whether to save the export as a file (optional).
+     * @returns {Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string>} The exported data.
+     * @throws {LazyError} If the export type is not supported.
      */
-    async export(exportType: AnyExport, opts?: { name?: string, saveAsFile?: boolean }): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string > {
+    async export(exportType: AnyExport, opts?: { name?: string, saveAsFile?: boolean }): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string> {
         switch (exportType) {
             case Export.CTX:
             case "ctx":
@@ -105,8 +131,9 @@ export class Exporter {
     }
 
     /**
-     * Get the export
-     * @returns {Promise<IOLazyCanvas | void>} - The `export` of the canvas
+     * Synchronously exports the canvas to the specified format.
+     * @param exportType {AnyExport} - The type of export (e.g., "json").
+     * @returns {IOLazyCanvas | void} The exported data or void if the export type is unsupported.
      */
     syncExport(exportType: AnyExport): IOLazyCanvas | void {
         switch (exportType) {

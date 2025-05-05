@@ -29,36 +29,120 @@ import {
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers/LayersManager";
 
+/**
+ * Interface representing a Text Layer.
+ */
 export interface ITextLayer extends IBaseLayer {
+    /**
+     * The type of the layer, which is `Text`.
+     */
+    type: LayerType.Text;
+
+    /**
+     * The properties specific to the Text Layer.
+     */
     props: ITextLayerProps;
 }
 
+/**
+ * Interface representing the properties of a Text Layer.
+ */
 export interface ITextLayerProps extends IBaseLayerProps {
+    /**
+     * The text content of the layer.
+     */
     text: string;
+
+    /**
+     * The font configuration for the text.
+     */
     font: {
+        /**
+         * The font family.
+         */
         family: string;
+
+        /**
+         * The font size.
+         */
         size: number;
+
+        /**
+         * The font weight.
+         */
         weight: AnyWeight;
     };
+
+    /**
+     * Configuration for multiline text.
+     */
     multiline: {
+        /**
+         * Whether multiline is enabled.
+         */
         enabled: boolean;
+
+        /**
+         * The spacing between lines (optional).
+         */
         spacing?: number;
     };
+
+    /**
+     * The size of the text layer, including width and height.
+     */
     size: {
+        /**
+         * The width of the text layer.
+         */
         width: ScaleType;
+
+        /**
+         * The height of the text layer.
+         */
         height: ScaleType;
     };
+
+    /**
+     * The alignment of the text.
+     */
     align: AnyTextAlign;
+
+    /**
+     * The baseline of the text.
+     */
     baseline: AnyTextBaseline;
+
+    /**
+     * The direction of the text.
+     */
     direction: AnyTextDirection;
+
+    /**
+     * The spacing between letters.
+     */
     letterSpacing: number;
+
+    /**
+     * The spacing between words.
+     */
     wordSpacing: number;
 }
 
-
+/**
+ * Class representing a Text Layer, extending the BaseLayer class.
+ */
 export class TextLayer extends BaseLayer<ITextLayerProps> {
+    /**
+     * The properties of the Text Layer.
+     */
     props: ITextLayerProps;
 
+    /**
+     * Constructs a new TextLayer instance.
+     * @param props {ITextLayerProps} - The properties of the Text Layer.
+     * @param misc {IBaseLayerMisc} - Miscellaneous options for the layer.
+     */
     constructor(props?: ITextLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.Text, props || {} as ITextLayerProps, misc);
         this.props = props ? props : {} as ITextLayerProps;
@@ -84,8 +168,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Sets the text of the text layer.
-     * @param text {string} - The `text` of the text layer.
+     * Sets the text of the text layer.
+     * @param text {string} - The text content of the layer.
+     * @returns {this} The current instance for chaining.
      */
     setText(text: string) {
         this.props.text = text;
@@ -93,10 +178,12 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Set the font of the text layer. You can use `Geist` and `GeistMono`, or you can upload your own font from file/base64 buffer.
-     * @param familyOrConfig {string | { font: string; size: number; weight: AnyWeight }} - The `family` of the font. If you want to use FontsList, you can use the object config.
-     * @param size {number} - The `size` of the font.
-     * @param weight {AnyWeight} - The `weight` of the font.
+     * Sets the font of the text layer.
+     * @param familyOrConfig {string | { family: string; size: number; weight: AnyWeight }} - The font family or configuration object.
+     * @param size {number} - The font size (required if `familyOrConfig` is a string).
+     * @param weight {AnyWeight} - The font weight (required if `familyOrConfig` is a string).
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If size or weight is not provided when `familyOrConfig` is a string.
      */
     setFont(familyOrConfig: string | { family: string; size: number; weight: AnyWeight }, size?: number, weight?: AnyWeight) {
         if (typeof familyOrConfig === "string") {
@@ -118,11 +205,12 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Set the multiline of the text layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param enabled {boolean} - Whether the text is multiline.
-     * @param width {ScaleType} - width of "window" the multiline text. Can be used in one line text for text max width.
-     * @param height {ScaleType} - height of "window" the multiline text.
-     * @param spacing {number} - The space between the lines.
+     * Configures the multiline properties of the text layer.
+     * @param enabled {boolean} - Whether multiline is enabled.
+     * @param width {ScaleType} - The width of the multiline text area.
+     * @param height {ScaleType} - The height of the multiline text area.
+     * @param spacing {number} - The spacing between lines (optional).
+     * @returns {this} The current instance for chaining.
      */
     setMultiline(enabled: boolean, width: ScaleType, height: ScaleType, spacing?: number) {
         this.props.multiline = {
@@ -137,8 +225,10 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Sets the color of the layer. You can use `hex`, `rgb`, `rgba`, `hsl`, `hsla`, and `Gradient`color.
-     * @param color {string} - The `color` of the layer.
+     * Sets the color of the text layer.
+     * @param color {ColorType} - The color of the text.
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If the color is not provided or invalid.
      */
     setColor(color: ColorType) {
         if (!color) throw new LazyError('The color of the layer must be provided');
@@ -155,8 +245,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Set the align of the text layer.
-     * @param align {AnyTextAlign} - The `align` of the text layer.
+     * Sets the alignment of the text layer.
+     * @param align {AnyTextAlign} - The alignment of the text.
+     * @returns {this} The current instance for chaining.
      */
     setAlign(align: AnyTextAlign) {
         this.props.align = align;
@@ -164,8 +255,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Set the baseline of the text layer.
-     * @param baseline {AnyTextBaseline} - The `baseline` of the text layer.
+     * Sets the baseline of the text layer.
+     * @param baseline {AnyTextBaseline} - The baseline of the text.
+     * @returns {this} The current instance for chaining.
      */
     setBaseline(baseline: AnyTextBaseline) {
         this.props.baseline = baseline;
@@ -173,8 +265,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Set the direction of the text layer.
-     * @param direction {AnyTextDirection} - The `direction` of the text layer.
+     * Sets the direction of the text layer.
+     * @param direction {AnyTextDirection} - The direction of the text.
+     * @returns {this} The current instance for chaining.
      */
     setDirection(direction: AnyTextDirection) {
         this.props.direction = direction;
@@ -182,13 +275,14 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Set the stroke of the layer.
-     * @param width {number} - The `width` of the stroke.
-     * @param cap {string} - The `cap` of the stroke.
-     * @param join {string} - The `join` of the stroke.
-     * @param dash {number[]} - The `dash` of the stroke.
-     * @param dashOffset {number} - The `dashOffset` of the stroke.
-     * @param miterLimit {number} - The `miterLimit` of the stroke.
+     * Configures the stroke properties of the text layer.
+     * @param width {number} - The width of the stroke.
+     * @param cap {string} - The cap style of the stroke (optional).
+     * @param join {string} - The join style of the stroke (optional).
+     * @param dash {number[]} - The dash pattern of the stroke (optional).
+     * @param dashOffset {number} - The dash offset of the stroke (optional).
+     * @param miterLimit {number} - The miter limit of the stroke (optional).
+     * @returns {this} The current instance for chaining.
      */
     setStroke(width: number, cap?: LineCap, join?: LineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
         this.props.stroke = {
@@ -203,8 +297,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Sets the fills of the layer. If `true` the layer will be filled, if `false` the layer will be stroked.
-     * @param filled {boolean} - The `filled` of the layer.
+     * Sets whether the text layer should be filled or stroked.
+     * @param filled {boolean} - If true, the layer will be filled; otherwise, it will be stroked.
+     * @returns {this} The current instance for chaining.
      */
     setFilled(filled: boolean) {
         this.props.filled = filled;
@@ -212,8 +307,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Sets the spacing between the words.
-     * @param wordSpacing {number} - The `wordSpacing` of the text layer.
+     * Sets the spacing between words in the text layer.
+     * @param wordSpacing {number} - The spacing between words.
+     * @returns {this} The current instance for chaining.
      */
     setWordSpacing(wordSpacing: number) {
         this.props.wordSpacing = wordSpacing;
@@ -221,14 +317,21 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @description Sets the letter spacing.
-     * @param letterSpacing {number} - The `letterSpacing` of the text layer.
+     * Sets the spacing between letters in the text layer.
+     * @param letterSpacing {number} - The spacing between letters.
+     * @returns {this} The current instance for chaining.
      */
     setLetterSpacing(letterSpacing: number) {
         this.props.letterSpacing = letterSpacing;
         return this;
     }
 
+    /**
+     * Measures the dimensions of the text.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @returns {Object} The width and height of the text.
+     */
     measureText(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas): { width: number, height: number } {
         const w = parseToNormal(this.props.size?.width, ctx, canvas);
         const h = parseToNormal(this.props.size?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
@@ -242,6 +345,13 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         }
     }
 
+    /**
+     * Draws the text layer on the canvas.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @param debug {boolean} - Whether to enable debug logging.
+     */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -296,17 +406,27 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
             }
             for (let line of lines) {
-                this.drawText(this.props, ctx, await parseFillStyle(ctx, this.props.fillStyle), line.text, line.x, line.y, w, h);
+                this.drawText(this.props, ctx, await parseFillStyle(ctx, this.props.fillStyle), line.text, line.x, line.y, w);
             }
         } else {
             ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
-            this.drawText(this.props, ctx, await parseFillStyle(ctx, this.props.fillStyle), this.props.text, x, y, w, h);
+            this.drawText(this.props, ctx, await parseFillStyle(ctx, this.props.fillStyle), this.props.text, x, y, w);
         }
         ctx.closePath();
         ctx.restore();
     }
 
-    private drawText(props: ITextLayerProps, ctx: SKRSContext2D, fillStyle: string | CanvasGradient | CanvasPattern, text: string, x: number, y: number, w: number, h: number) {
+    /**
+     * Draws the text on the canvas.
+     * @param props {ITextLayerProps} - The properties of the text layer.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param fillStyle {string | CanvasGradient | CanvasPattern} - The fill style for the text.
+     * @param text {string} - The text content.
+     * @param x {number} - The x-coordinate of the text.
+     * @param y {number} - The y-coordinate of the text.
+     * @param w {number} - The width of the text area.
+     */
+    private drawText(props: ITextLayerProps, ctx: SKRSContext2D, fillStyle: string | CanvasGradient | CanvasPattern, text: string, x: number, y: number, w: number) {
         if (props.filled) {
             ctx.fillStyle = fillStyle;
             ctx.fillText(text, x, y, w);
@@ -323,7 +443,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * @returns {ITextLayer}
+     * Converts the Text Layer to a JSON representation.
+     * @returns {ITextLayer} The JSON representation of the Text Layer.
      */
     public toJSON(): ITextLayer {
         let data = super.toJSON();

@@ -15,20 +15,55 @@ import { Gradient, Pattern } from "../helpers";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers/LayersManager";
 
+/**
+ * Interface representing a Line Layer.
+ */
 export interface ILineLayer extends IBaseLayer {
+    /**
+     * The type of the layer, which is `Line`.
+     */
+    type: LayerType.Line;
+
+    /**
+     * The properties specific to the Line Layer.
+     */
     props: ILineLayerProps;
 }
 
+/**
+ * Interface representing the properties of a Line Layer.
+ */
 export interface ILineLayerProps extends IBaseLayerProps {
+    /**
+     * The end point of the line, including x and y coordinates.
+     */
     endPoint: {
-        x: ScaleType,
-        y: ScaleType
-    }
+        /**
+         * The x-coordinate of the end point.
+         */
+        x: ScaleType;
+
+        /**
+         * The y-coordinate of the end point.
+         */
+        y: ScaleType;
+    };
 }
 
+/**
+ * Class representing a Line Layer, extending the BaseLayer class.
+ */
 export class LineLayer extends BaseLayer<ILineLayerProps> {
+    /**
+     * The properties of the Line Layer.
+     */
     props: ILineLayerProps;
 
+    /**
+     * Constructs a new LineLayer instance.
+     * @param props {ILineLayerProps} - The properties of the Line Layer.
+     * @param misc {IBaseLayerMisc} - Miscellaneous options for the layer.
+     */
     constructor(props?: ILineLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.Line, props || {} as ILineLayerProps, misc);
         this.props = props ? props : {} as ILineLayerProps;
@@ -37,9 +72,10 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     }
 
     /**
-     * @description Sets the end point of the line layer. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param x {ScaleType} - The end `x` of the line layer.
-     * @param y {ScaleType} - The end `y` of the line layer.
+     * Sets the end position of the line layer.
+     * @param x {ScaleType} - The x-coordinate of the end point.
+     * @param y {ScaleType} - The y-coordinate of the end point.
+     * @returns {this} The current instance for chaining.
      */
     setEndPosition(x: ScaleType, y: ScaleType) {
         this.props.endPoint = { x, y };
@@ -47,8 +83,10 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     }
 
     /**
-     * @description Sets the color of the layer. You can use `hex`, `rgb`, `rgba`, `hsl`, `hsla`, and `Gradient`color.
-     * @param color {string} - The `color` of the layer.
+     * Sets the color of the line layer.
+     * @param color {ColorType} - The color of the line.
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If the color is not provided or invalid.
      */
     setColor(color: ColorType) {
         if (!color) throw new LazyError('The color of the layer must be provided');
@@ -65,13 +103,14 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     }
 
     /**
-     * @description Sets the stroke of the layer.
-     * @param width {number} - The `width` of the stroke.
-     * @param cap {string} - The `cap` of the stroke.
-     * @param join {string} - The `join` of the stroke.
-     * @param dash {number[]} - The `dash` of the stroke.
-     * @param dashOffset {number} - The `dashOffset` of the stroke.
-     * @param miterLimit {number} - The `miterLimit` of the stroke.
+     * Sets the stroke properties of the line layer.
+     * @param width {number} - The width of the stroke.
+     * @param cap {CanvasLineCap} - The cap style of the stroke.
+     * @param join {CanvasLineJoin} - The join style of the stroke.
+     * @param dash {number[]} - The dash pattern of the stroke.
+     * @param dashOffset {number} - The dash offset of the stroke.
+     * @param miterLimit {number} - The miter limit of the stroke.
+     * @returns {this} The current instance for chaining.
      */
     setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
         this.props.stroke = {
@@ -85,6 +124,13 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         return this;
     }
 
+    /**
+     * Calculates the bounding box of the line layer.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @returns {Object} The bounding box details including start and end points, width, and height.
+     */
     getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -100,6 +146,13 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         return { xs, ys, xe, ye, width, height };
     }
 
+    /**
+     * Draws the line layer on the canvas.
+     * @param ctx {SKRSContext2D} - The canvas rendering context.
+     * @param canvas {Canvas | SvgCanvas} - The canvas instance.
+     * @param manager {LayersManager} - The layers manager.
+     * @param debug {boolean} - Whether to enable debug logging.
+     */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
         const parcer = parser(ctx, canvas, manager);
 
@@ -139,6 +192,10 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         ctx.restore();
     }
 
+    /**
+     * Converts the Line Layer to a JSON representation.
+     * @returns {ILineLayer} The JSON representation of the Line Layer.
+     */
     toJSON(): ILineLayer {
         let data = super.toJSON();
         let copy: any = { ...this.props };
@@ -151,5 +208,4 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
 
         return { ...data, props: copy } as ILineLayer;
     }
-
 }

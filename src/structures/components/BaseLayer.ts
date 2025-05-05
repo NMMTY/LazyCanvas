@@ -51,13 +51,45 @@ export interface IBaseLayerMisc {
     visible?: boolean;
 }
 
+/**
+ * Represents a base layer with generic properties and methods for managing
+ * its position, visibility, transformations, and other attributes.
+ *
+ * @template T - A type extending `IBaseLayerProps` that defines the properties of the layer.
+ */
 export class BaseLayer<T extends IBaseLayerProps> {
+    /**
+     * The unique identifier of the layer.
+     * @type {string}
+     */
     id: string;
+    /**
+     * The type of the layer.
+     * @type {LayerType}
+     */
     type: LayerType;
+    /**
+     * The z-index of the layer, determining its stacking order.
+     * @type {number}
+     */
     zIndex: number;
+    /**
+     * The visibility of the layer.
+     * @type {boolean}
+     */
     visible: boolean;
+    /**
+     * The properties of the layer, defined by the generic type `T`.
+     * @type {T}
+     */
     props: T;
 
+    /**
+     * Constructs a new `BaseLayer` instance.
+     * @param {LayerType} [type] - The type of the layer.
+     * @param {T} [props] - The properties of the layer.
+     * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
+     */
     constructor(type?: LayerType, props?: T, misc?: IBaseLayerMisc) {
         this.id = misc?.id || generateID(type ? type : LayerType.Base);
         this.type = type ? type : LayerType.Base;
@@ -72,9 +104,10 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Position of the layer in the 2D plane. You can use `numbers`, `percentages`, `px`, `vw`, `vh`, `vmin`, `vmax`.
-     * @param x {ScaleType} - The `x` position of the layer
-     * @param y {ScaleType} - The `y` position of the layer
+     * Sets the position of the layer in the 2D plane.
+     * @param {ScaleType} x - The x-coordinate of the layer.
+     * @param {ScaleType} y - The y-coordinate of the layer.
+     * @returns {this} The current instance for chaining.
      */
     setPosition(x: ScaleType, y: ScaleType) {
         this.props.x = x;
@@ -83,8 +116,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Opacity of the layer. The value must be between `0` and `1`.
-     * @param opacity {number} - The `opacity` of the layer
+     * Sets the opacity of the layer.
+     * @param {number} opacity - The opacity value, between 0 and 1.
+     * @returns {this} The current instance for chaining.
      */
     setOpacity(opacity: number) {
         this.props.opacity = opacity;
@@ -92,8 +126,10 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Sets the `id` of the layer.
-     * @param id {string} - The `id` of the layer
+     * Sets the unique identifier of the layer.
+     *
+     * @param {string} id - The unique identifier.
+     * @returns {this} The current instance for chaining.
      */
     setID(id: string) {
         this.id = id;
@@ -101,11 +137,13 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Sets shadow of layer.
-     * @param color {string} - The `color` of the filter
-     * @param blur {number} - The `blur` of the filter
-     * @param offsetX {number} - The `offsetX` of the filter
-     * @param offsetY {number} - The `offsetY` of the filter
+     * Sets the shadow properties of the layer.
+     * @param {string} color - The color of the shadow.
+     * @param {number} [blur] - The blur radius of the shadow.
+     * @param {number} [offsetX] - The horizontal offset of the shadow.
+     * @param {number} [offsetY] - The vertical offset of the shadow.
+     * @returns {this} The current instance for chaining.
+     * @throws {LazyError} If the color is invalid or not provided.
      */
     setShadow(color: string, blur?: number, offsetX?: number, offsetY?: number) {
         if (!color) throw new LazyError('The color of the shadow must be provided');
@@ -121,8 +159,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Matrix of the layer in the 2D plane.
-     * @param matrix {DOMMatrix2DInit} - The `matrix` of the layer
+     * Sets the transformation matrix of the layer.
+     * @param {DOMMatrix2DInit} matrix - The transformation matrix.
+     * @returns {this} The current instance for chaining.
      */
     setMatrix(matrix: DOMMatrix2DInit) {
         this.props.transform = { ...this.props.transform, matrix };
@@ -130,9 +169,10 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Scale of the layer in the x and y direction by the given amount from their current position.
-     * @param x {number} - The `x` scale of the layer
-     * @param y {number} - The `y` scale of the layer
+     * Sets the scale of the layer in the x and y directions.
+     * @param {number} x - The scale factor in the x direction.
+     * @param {number} y - The scale factor in the y direction.
+     * @returns {this} The current instance for chaining.
      */
     setScale(x: number, y: number) {
         this.props.transform = { ...this.props.transform, scale: { x, y } };
@@ -140,8 +180,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Rotate of the layer in the clockwise direction by the given amount from its current position.
-     * @param rotate {number} - The `rotate` of the layer
+     * Sets the rotation of the layer.
+     * @param {number} rotate - The rotation angle in degrees.
+     * @returns {this} The current instance for chaining.
      */
     setRotate(rotate: number) {
         this.props.transform = { ...this.props.transform, rotate };
@@ -149,9 +190,10 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Translate of the layer in the x and y direction by the given amount from their current position.
-     * @param x {number} - The `x` translation of the layer
-     * @param y {number} - The `y` translation of the layer
+     * Sets the translation of the layer in the x and y directions.
+     * @param {number} x - The translation in the x direction.
+     * @param {number} y - The translation in the y direction.
+     * @returns {this} The current instance for chaining.
      */
     setTranslate(x: number, y: number) {
         this.props.transform = { ...this.props.transform, translate: { x, y } };
@@ -159,9 +201,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description The **`CanvasRenderingContext2D`**. filter property of the Canvas 2D API provides filter effects such as blurring and grayscaling.
-     * It is similar to the CSS [`filter`](https://developer.mozilla.org/en-US/docs/Web/CSS/filter) property and accepts the same values.
-     * @param filter {AnyFilter} - The `filter` of the layer. Multiple filters are supported.
+     * Sets the filter effects for the layer.
+     * @param {...AnyFilter} filter - The filter effects to apply.
+     * @returns {this} The current instance for chaining.
      */
     setFilters(...filter: AnyFilter[]) {
         this.props.filter = filter.join(' ');
@@ -169,8 +211,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Sets type of centring of the layer.
-     * @param centring {AnyCentring} - The `centring` of the layer
+     * Sets the centring type of the layer. **Don't affect on Bezier, Line, Quadratic and Text layers**.
+     * @param {AnyCentring} centring - The centring type.
+     * @returns {this} The current instance for chaining.
      */
     setCentring(centring: AnyCentring) {
         this.props.centring = centring;
@@ -178,8 +221,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Sets the visibility of the layer.
-     * @param visible {boolean} - The `visibility` of the layer
+     * Sets the visibility of the layer.
+     * @param {boolean} visible - The visibility state.
+     * @returns {this} The current instance for chaining.
      */
     setVisible(visible: boolean) {
         this.visible = visible;
@@ -187,8 +231,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Sets zIndex of the layer.
-     * @param zIndex {number} - The `zIndex` of the layer
+     * Sets the z-index of the layer.
+     * @param {number} zIndex - The z-index value.
+     * @returns {this} The current instance for chaining.
      */
     setZIndex(zIndex: number) {
         this.zIndex = zIndex;
@@ -196,8 +241,9 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @description Sets global composite operation of the layer.
-     * @param operation {AnyGlobalCompositeOperation} - The `operation` of the layer
+     * Sets the global composite operation for the layer.
+     * @param {AnyGlobalCompositeOperation} operation - The composite operation.
+     * @returns {this} The current instance for chaining.
      */
     setGlobalCompositeOperation(operation: AnyGlobalCompositeOperation) {
         this.props.globalComposite = operation;
@@ -205,7 +251,8 @@ export class BaseLayer<T extends IBaseLayerProps> {
     }
 
     /**
-     * @returns {IBaseLayer}
+     * Converts the layer to a JSON representation.
+     * @returns {IBaseLayer} The JSON representation of the layer.
      */
     toJSON(): IBaseLayer {
         return {

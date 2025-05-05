@@ -1,23 +1,10 @@
-import { Centring, LayerType, LinkType, TextAlign } from "../types";
-import type {
-    Transform,
-    ScaleType,
-    ColorType,
-    PointNumber,
-    AnyCentring,
-    AnyTextAlign,
-} from "../types";
-import { Gradient, Pattern, Link } from "../structures/helpers";
-import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { defaultArg, LazyError } from "./LazyUtil";
-import { LayersManager } from "../structures/managers/LayersManager";
-import {
-    Group,
-    TextLayer,
-    BezierLayer,
-    QuadraticLayer,
-    LineLayer,
-} from "../structures/components";
+import type {AnyCentring, AnyTextAlign, ColorType, PointNumber, ScaleType, Transform,} from "../types";
+import {Centring, LayerType, LinkType, TextAlign} from "../types";
+import {Gradient, Link, Pattern} from "../structures/helpers";
+import {Canvas, loadImage, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
+import {defaultArg, LazyError} from "./LazyUtil";
+import {LayersManager} from "../structures/managers/LayersManager";
+import {BezierLayer, Group, LineLayer, QuadraticLayer, TextLayer,} from "../structures/components";
 
 export function generateID(type: string) {
     return `${type}-${Math.random().toString(36).substr(2, 9)}`;
@@ -310,6 +297,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     x -= width / 2;
                     y -= height / 2;
                     break;
@@ -320,6 +308,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     x -= width / 2;
                     break;
             }
@@ -329,6 +318,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     x -= width / 2;
                     y -= height;
                     break;
@@ -339,6 +329,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     y -= height / 2;
                     break;
             }
@@ -351,6 +342,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     y -= height;
                     break;
             }
@@ -360,6 +352,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     x -= width;
                     y -= height / 2;
                     break;
@@ -370,6 +363,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     x -= width;
                     break;
             }
@@ -379,6 +373,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
+                case LayerType.Clear:
                     x -= width;
                     y -= height;
                     break;
