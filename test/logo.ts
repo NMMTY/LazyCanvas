@@ -4,7 +4,7 @@ const canvas = new LazyCanvas({ debug: true })
     .create(210, 210)
 
 const pattern = new LazyCanvas()
-    .create(200, 200)
+    .create(400, 400)
 
 pattern.manager.layers.add(
     new ImageLayer()
@@ -49,4 +49,6 @@ for (let i = 1; i < 5; i += 1) {
     )
 }
 
-new Exporter(canvas).export('json', { name: 'test', saveAsFile: true })
+canvas.resize(2)
+
+new Exporter(canvas).export('png', { name: 'test', saveAsFile: true })

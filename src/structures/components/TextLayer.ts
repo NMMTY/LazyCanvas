@@ -127,6 +127,41 @@ export interface ITextLayerProps extends IBaseLayerProps {
      * The spacing between words.
      */
     wordSpacing: number;
+
+    /**
+     * The stroke properties of the text.
+     */
+    stroke: {
+        /**
+         * The width of the stroke.
+         */
+        width: number;
+
+        /**
+         * The cap style of the stroke.
+         */
+        cap: CanvasLineCap;
+
+        /**
+         * The join style of the stroke.
+         */
+        join: CanvasLineJoin;
+
+        /**
+         * The dash offset of the stroke.
+         */
+        dashOffset: number;
+
+        /**
+         * The dash pattern of the stroke.
+         */
+        dash: number[];
+
+        /**
+         * The miter limit of the stroke.
+         */
+        miterLimit: number;
+    };
 }
 
 /**

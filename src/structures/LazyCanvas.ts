@@ -1,4 +1,4 @@
-import { Export, AnyExport, JSONLayer } from "../types";
+import {Export, AnyExport, JSONLayer, ScaleType} from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
 import { LayersManager } from "./managers/LayersManager";
 import { RenderManager } from "./managers/RenderManager";
@@ -6,6 +6,7 @@ import { FontsManager } from "./managers/FontsManager";
 import { AnimationManager, IAnimationOptions } from "./managers/AnimationManager";
 import { Group } from "./components";
 import { LazyLog } from "../utils/LazyUtil";
+import { resizeLayers, resize } from "../utils/utils";
 
 /**
  * Interface representing the LazyCanvas structure.
@@ -147,7 +148,7 @@ export class LazyCanvas implements ILazyCanvas {
      * @param type {AnyExport} - The export type (e.g., buffer, SVG, etc.).
      * @returns {this} The current instance for chaining.
      */
-    public setExportType(type: AnyExport) {
+    public setExportType(type: AnyExport): this {
         this.options.exportType = type;
         switch (type) {
             case Export.BUFFER:
@@ -169,7 +170,7 @@ export class LazyCanvas implements ILazyCanvas {
      * @param flag {SvgExportFlag} - The SVG export flag.
      * @returns {this} The current instance for chaining.
      */
-    setSvgExportFlag(flag: SvgExportFlag) {
+    setSvgExportFlag(flag: SvgExportFlag): this {
         if (this.options.exportType === Export.SVG) {
             this.canvas = new Canvas(this.options.width, this.options.height, flag);
             this.ctx = this.canvas.getContext('2d');
@@ -182,8 +183,30 @@ export class LazyCanvas implements ILazyCanvas {
      * Enables animation for the canvas.
      * @returns {this} The current instance for chaining.
      */
-    animated() {
+    animated(): this {
         this.options.animated = true;
+        return this;
+    }
+
+    /**
+     * Resizes the canvas to the specified dimensions.
+     * @param ratio {number} - The ratio to resize the canvas.
+     * @returns {this} The current instance for chaining.
+     */
+    resize(ratio: number): this {
+        if (this.options.width <= 0 || this.options.height <= 0) {
+            throw new Error('Canvas dimensions are not set.');
+        }
+        this.options.width = resize(this.options.width, ratio) as number;
+        this.options.height = resize(this.options.height, ratio) as number;
+        if (this.options.exportType === Export.SVG) {
+            this.canvas = new Canvas(this.options.width, this.options.height, this.options.flag || SvgExportFlag.RelativePathEncoding);
+        } else {
+            this.canvas = new Canvas(this.options.width, this.options.height);
+        }
+        this.ctx = this.canvas.getContext('2d');
+        const layers = resizeLayers(this.manager.layers.toArray(), ratio);
+        this.manager.layers.fromArray(layers)
         return this;
     }
 

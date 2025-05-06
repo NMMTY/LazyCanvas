@@ -67,45 +67,45 @@ export class Exporter {
                 return await this.canvas.manager.render.render(exportType);
             case Export.SVG:
             case "svg":
-                const svg = await this.canvas.manager.render.render(exportType);
+                const svg = await this.canvas.manager.render.render('svg');
                 if (opts?.saveAsFile) {
                     await this.saveFile(svg, 'svg', opts.name);
                 }
                 return svg;
             case Export.BUFFER:
             case "buffer":
-                const buffer = await this.canvas.manager.render.render(exportType);
+                const buffer = await this.canvas.manager.render.render('buffer');
                 if (opts?.saveAsFile) {
                     await this.saveFile(buffer, 'png', opts.name);
                 }
                 return buffer;
             case Export.GIF:
             case "gif":
-                const gif = await this.canvas.manager.render.render(exportType);
+                const gif = await this.canvas.manager.render.render('buffer');
                 if (opts?.saveAsFile) {
                     await this.saveFile(gif, 'gif', opts.name);
                 }
                 return gif;
             case Export.WEBP:
             case "webp":
-                const webp = await this.canvas.manager.render.render(exportType);
+                const webp = await this.canvas.manager.render.render('buffer');
                 if (opts?.saveAsFile) {
                     await this.saveFile(webp, 'webp', opts.name);
                 }
                 return webp;
             case Export.JPEG:
             case "jpeg":
-                const jpeg = await this.canvas.manager.render.render(exportType);
+                const jpeg = await this.canvas.manager.render.render('buffer');
                 await this.saveFile(jpeg, 'jpeg', opts?.name);
                 return jpeg;
             case Export.JPG:
             case "jpg":
-                const jpg = await this.canvas.manager.render.render(exportType);
+                const jpg = await this.canvas.manager.render.render('buffer');
                 await this.saveFile(jpg, 'jpg', opts?.name);
                 return jpg;
             case Export.PNG:
             case "png":
-                const png = await this.canvas.manager.render.render(exportType);
+                const png = await this.canvas.manager.render.render('buffer');
                 await this.saveFile(png, 'png', opts?.name);
                 return png;
             case Export.JSON:

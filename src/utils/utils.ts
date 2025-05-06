@@ -1,4 +1,4 @@
-import type {AnyCentring, AnyTextAlign, ColorType, PointNumber, ScaleType, Transform,} from "../types";
+import type {AnyCentring, AnyLayer, AnyTextAlign, ColorType, PointNumber, ScaleType, Transform,} from "../types";
 import {Centring, LayerType, LinkType, TextAlign} from "../types";
 import {Gradient, Link, Pattern} from "../structures/helpers";
 import {Canvas, loadImage, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
@@ -419,4 +419,75 @@ export function getBoundingBoxBezier(points: PointNumber[], steps = 100) {
     }
 
     return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY }, center: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 }, width: maxX - minX, height: maxY - minY };
+}
+
+export function resize(value: ScaleType, ratio: number): number | string {
+    if (typeof value === 'number') {
+        return value * ratio;
+    } else if (typeof value === 'string') {
+        if (pxReg.test(value)) {
+            return parseFloat(value) * ratio;
+        } else if (linkReg.test(value)) {
+            let match = value.match(linkReg) as RegExpMatchArray;
+            return `${match[1]}-${match[2]}-${parseFloat(match[3]) * ratio}`;
+        }
+    } else if (value instanceof Link) {
+        return `${value.type}-${value.source}-${resize(value.additionalSpacing, ratio)}`;
+    }
+    return value;
+}
+
+export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
+    let newLayers: Array<AnyLayer | Group> = [];
+    if (layers.length > 0) {
+        for (const layer of layers) {
+            if (!(layer instanceof Group)) {
+                layer.props.x = resize(layer.props.x, ratio) as ScaleType;
+                layer.props.y = resize(layer.props.y, ratio) as ScaleType;
+
+                if ('size' in layer.props) {
+                    layer.props.size.width = resize(layer.props.size.width, ratio) as ScaleType;
+                    layer.props.size.height = resize(layer.props.size.height, ratio) as ScaleType;
+                    if ('radius' in layer.props.size) {
+                        layer.props.size.radius = resize(layer.props.size.radius, ratio) as ScaleType;
+                    }
+                }
+
+                if ('stroke' in layer.props) {
+                    layer.props.stroke.width = resize(layer.props.stroke.width, ratio) as number;
+                }
+
+                if ('endPoint' in layer.props) {
+                    layer.props.endPoint.x = resize(layer.props.endPoint.x, ratio) as ScaleType;
+                    layer.props.endPoint.y = resize(layer.props.endPoint.y, ratio) as ScaleType;
+                }
+
+                if ('controlPoints' in layer.props) {
+                    for (const point of layer.props.controlPoints) {
+                        point.x = resize(point.x, ratio) as ScaleType;
+                        point.y = resize(point.y, ratio) as ScaleType;
+                    }
+                }
+
+                if ('font' in layer.props) {
+                    layer.props.font.size = resize(layer.props.font.size, ratio) as number;
+                }
+
+                if ('transform' in layer.props) {
+                    if (layer.props.transform.translate) {
+                        layer.props.transform.translate.x = resize(layer.props.transform.translate.x, ratio) as number;
+                        layer.props.transform.translate.y = resize(layer.props.transform.translate.y, ratio) as number;
+                    }
+                    if (layer.props.transform.scale) {
+                        layer.props.transform.scale.x = resize(layer.props.transform.scale.x, ratio) as number;
+                        layer.props.transform.scale.y = resize(layer.props.transform.scale.y, ratio) as number;
+                    }
+                }
+            } else {
+                layer.layers = resizeLayers(layer.layers, ratio);
+            }
+            newLayers.push(layer)
+        }
+    }
+    return newLayers;
 }

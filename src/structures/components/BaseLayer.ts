@@ -11,43 +11,128 @@ import {
 import { generateID, isColor, parseColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
 
-export interface IBaseLayer{
+/**
+ * Interface representing the base structure of a layer.
+ */
+export interface IBaseLayer {
+    /**
+     * The unique identifier of the layer.
+     */
     id: string;
+
+    /**
+     * The type of the layer.
+     */
     type: LayerType;
+
+    /**
+     * The z-index of the layer, determining its stacking order.
+     */
     zIndex: number;
+
+    /**
+     * Whether the layer is visible.
+     */
     visible: boolean;
+
+    /**
+     * The properties of the layer.
+     */
     props: IBaseLayerProps;
 }
 
+/**
+ * Interface representing the properties of a base layer.
+ */
 export interface IBaseLayerProps {
+    /**
+     * The x-coordinate of the layer.
+     */
     x: ScaleType;
+
+    /**
+     * The y-coordinate of the layer.
+     */
     y: ScaleType;
+
+    /**
+     * The centring type of the layer.
+     */
     centring: AnyCentring;
+
+    /**
+     * The filter effects applied to the layer.
+     */
     filter: string;
+
+    /**
+     * The opacity of the layer, ranging from 0 to 1.
+     */
     opacity: number;
+
+    /**
+     * Whether the layer is filled.
+     */
     filled: boolean;
+
+    /**
+     * The fill style (color or pattern) of the layer.
+     */
     fillStyle: ColorType;
-    stroke: {
-        width: number;
-        cap: CanvasLineCap;
-        join: CanvasLineJoin;
-        dashOffset: number;
-        dash: number[];
-        miterLimit: number;
-    };
+
+    /**
+     * The shadow properties of the layer.
+     */
     shadow: {
+        /**
+         * The color of the shadow.
+         */
         color: string;
+
+        /**
+         * The blur radius of the shadow.
+         */
         blur: number;
+
+        /**
+         * The horizontal offset of the shadow.
+         */
         offsetX: number;
+
+        /**
+         * The vertical offset of the shadow.
+         */
         offsetY: number;
     };
+
+    /**
+     * The transformation properties of the layer.
+     */
     transform: Transform;
+
+    /**
+     * The global composite operation applied to the layer.
+     */
     globalComposite: AnyGlobalCompositeOperation;
 }
 
+/**
+ * Interface representing miscellaneous options for a base layer.
+ */
 export interface IBaseLayerMisc {
+    /**
+     * The unique identifier of the layer (optional).
+     */
     id?: string;
+
+    /**
+     * The z-index of the layer (optional).
+     */
     zIndex?: number;
+
+    /**
+     * Whether the layer is visible (optional).
+     */
     visible?: boolean;
 }
 

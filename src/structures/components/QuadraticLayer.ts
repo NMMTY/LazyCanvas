@@ -38,12 +38,47 @@ export interface IQuadraticLayerProps extends IBaseLayerProps {
     /**
      * The control point of the quadratic curve, including x and y coordinates.
      */
-    controlPoint: Point;
+    controlPoints: Array<Point>;
 
     /**
      * The end point of the quadratic curve, including x and y coordinates.
      */
     endPoint: Point;
+
+    /**
+     * The stroke properties of the quadratic curve.
+     */
+    stroke: {
+        /**
+         * The width of the stroke.
+         */
+        width: number;
+
+        /**
+         * The cap style of the stroke.
+         */
+        cap: CanvasLineCap;
+
+        /**
+         * The join style of the stroke.
+         */
+        join: CanvasLineJoin;
+
+        /**
+         * The dash offset of the stroke.
+         */
+        dashOffset: number;
+
+        /**
+         * The dash pattern of the stroke.
+         */
+        dash: number[];
+
+        /**
+         * The miter limit of the stroke.
+         */
+        miterLimit: number;
+    };
 }
 
 /**
@@ -74,7 +109,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
      * @returns {this} The current instance for chaining.
      */
     setControlPoint(x: ScaleType, y: ScaleType) {
-        this.props.controlPoint = { x, y };
+        this.props.controlPoints = [{ x, y }];
         return this;
     }
 
@@ -144,8 +179,8 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
             xs: { v: this.props.x },
             ys: { v: this.props.y, options: defaultArg.vl(true) },
-            cx: { v: this.props.controlPoint.x },
-            cy: { v: this.props.controlPoint.y, options: defaultArg.vl(true) },
+            cx: { v: this.props.controlPoints[0].x },
+            cy: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
             xe: { v: this.props.endPoint.x },
             ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) }
         });
@@ -167,8 +202,8 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
             xs: { v: this.props.x },
             ys: { v: this.props.y, options: defaultArg.vl(true) },
-            cx: { v: this.props.controlPoint.x },
-            cy: { v: this.props.controlPoint.y, options: defaultArg.vl(true) },
+            cx: { v: this.props.controlPoints[0].x },
+            cy: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
             xe: { v: this.props.endPoint.x },
             ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) }
         });

@@ -8,6 +8,7 @@ import {
 
 const canvas = new LazyCanvas({ debug: true })
     .create(400, 400)
+    .animated()
 
 canvas.manager.animation.setFrameRate(60)
     .setClear(true, 30)
@@ -21,4 +22,4 @@ for (let i = 0; i < 200; i++) {
     )
 }
 
-new Exporter(canvas).export('webp', { name: 'animation', saveAsFile: true })
+new Exporter(canvas).export('gif', { name: 'animation', saveAsFile: true })
