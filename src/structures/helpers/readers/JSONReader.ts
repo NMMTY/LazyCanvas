@@ -1,8 +1,9 @@
-import { LayerType, AnyLayer, JSONLayer } from "../../../types";
+import { AnyLayer, JSONLayer, LayerType } from "../../../types";
 import {
     BezierLayer,
     ClearLayer,
     Group,
+    IBaseLayerMisc,
     IBezierLayerProps,
     IClearLayerProps,
     IGroup,
@@ -10,15 +11,15 @@ import {
     ILineLayerProps,
     ImageLayer,
     IMorphLayerProps,
+    IPath2DLayerProps,
     IQuadraticLayerProps,
     ITextLayerProps,
     LineLayer,
-    MorphLayer,
+    MorphLayer, Path2DLayer,
     QuadraticLayer,
-    TextLayer,
-    IBaseLayerMisc
+    TextLayer
 } from "../../components";
-import { Pattern, IPattern, Gradient, IGradient, Link, ILink } from "../";
+import { Gradient, IGradient, IPattern, Pattern } from "../";
 import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
 import * as fs from "fs";
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
@@ -131,6 +132,8 @@ export class JSONReader {
                     return new LineLayer(layer.props as ILineLayerProps, misc).setColor(this.fillParse(layer));
                 case LayerType.Clear:
                     return new ClearLayer(layer.props as IClearLayerProps, misc);
+                case LayerType.Path:
+                    return new Path2DLayer(layer.props as IPath2DLayerProps, misc).setColor(this.fillParse(layer));
                 case LayerType.Group:
                     return new Group(misc)
                         .add(...((layer as unknown as IGroup).layers.map((l: any) => this.layerParse(l)) as AnyLayer[]));

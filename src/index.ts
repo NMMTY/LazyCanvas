@@ -10,34 +10,7 @@ export { IAnimationManager, IAnimationOptions } from "./structures/managers/Anim
 export { IRenderManager } from "./structures/managers/RenderManager";
 export { ILayersManager } from "./structures/managers/LayersManager";
 
-export {
-    ImageLayer,
-    MorphLayer,
-    TextLayer,
-    BezierLayer,
-    QuadraticLayer,
-    LineLayer,
-    ClearLayer,
-    BaseLayer,
-    Group,
-    IImageLayer,
-    IImageLayerProps,
-    IMorphLayer,
-    IMorphLayerProps,
-    ITextLayer,
-    ITextLayerProps,
-    IBezierLayer,
-    IBezierLayerProps,
-    IQuadraticLayer,
-    IQuadraticLayerProps,
-    ILineLayer,
-    ILineLayerProps,
-    IBaseLayer,
-    IBaseLayerProps,
-    IClearLayer,
-    IClearLayerProps,
-    IGroup,
-} from "./structures/components";
+export * from "./structures/components";
 
 export {
     LayerType,

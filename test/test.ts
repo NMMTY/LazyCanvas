@@ -11,7 +11,8 @@ import {
     Filters,
     BezierLayer,
     QuadraticLayer,
-    Link
+    Link,
+    Path2DLayer
 } from "../src";
 
 const canvas = new LazyCanvas({ debug: true })
@@ -80,6 +81,10 @@ canvas.manager.layers.add(
         .setEndPosition(600, 600)
         .setColor("rgb(0, 200, 0)")
         .setStroke(5, "round", "round", [20, 10], 0, 10),
+    new Path2DLayer()
+        .setPath('M 50 600 L 150 700 L 250 600 Z')
+        .setColor("rgb(255, 59, 0)")
+        .setStroke(5, "round", "round", [20, 10], 0, 10)
 )
 
 new Exporter(canvas).export('png', { name: 'test', saveAsFile: true })

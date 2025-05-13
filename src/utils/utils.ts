@@ -4,7 +4,7 @@ import {Gradient, Link, Pattern} from "../structures/helpers";
 import {Canvas, loadImage, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
 import {defaultArg, LazyError} from "./LazyUtil";
 import {LayersManager} from "../structures/managers/LayersManager";
-import {BezierLayer, Group, LineLayer, QuadraticLayer, TextLayer,} from "../structures/components";
+import {BezierLayer, Group, LineLayer, Path2DLayer, QuadraticLayer, TextLayer,} from "../structures/components";
 
 export function generateID(type: string) {
     return `${type}-${Math.random().toString(36).substr(2, 9)}`;
@@ -112,7 +112,7 @@ export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas |
 
             let anyLayer = manager.get(match[2], true);
 
-            if (!anyLayer || anyLayer instanceof Group) return 0;
+            if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
 
             const parcer = parser(ctx, canvas, manager);
 
@@ -144,7 +144,7 @@ export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas |
 
         let anyLayer = manager.get(v.source, true);
 
-        if (!anyLayer || anyLayer instanceof Group) return 0;
+        if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
 
         const parcer = parser(ctx, canvas, manager);
 
@@ -441,7 +441,7 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
     let newLayers: Array<AnyLayer | Group> = [];
     if (layers.length > 0) {
         for (const layer of layers) {
-            if (!(layer instanceof Group)) {
+            if (!(layer instanceof Group || layer instanceof Path2DLayer)) {
                 layer.props.x = resize(layer.props.x, ratio) as ScaleType;
                 layer.props.y = resize(layer.props.y, ratio) as ScaleType;
 
@@ -483,7 +483,7 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
                         layer.props.transform.scale.y = resize(layer.props.transform.scale.y, ratio) as number;
                     }
                 }
-            } else {
+            } else if (layer instanceof Group) {
                 layer.layers = resizeLayers(layer.layers, ratio);
             }
             newLayers.push(layer)

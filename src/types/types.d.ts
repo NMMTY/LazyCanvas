@@ -7,6 +7,7 @@ import {
     QuadraticLayer,
     LineLayer,
     ClearLayer,
+    Path2DLayer,
     IMorphLayer,
     IBezierLayer,
     IClearLayer,
@@ -14,6 +15,7 @@ import {
     ITextLayer,
     IQuadraticLayer,
     ILineLayer,
+    IPath2DLayer
 } from "../structures/components";
 import {
     FontWeight,
@@ -35,9 +37,9 @@ export type ScaleType = `link-w-${string}-${number}` | `link-h-${string}-${numbe
 
 export type ColorType = Gradient | Pattern | `rgba(${number}, ${number}, ${number}, ${number})` | `rgb(${number}, ${number}, ${number})` | `hsl(${number}, ${number}%, ${number}%)` | `hsla(${number}, ${number}%, ${number}%, ${number})` | `#${string}` | string;
 
-export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IClearLayer;
+export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IClearLayer | IPath2DLayer;
 
-export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | ClearLayer;
+export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | ClearLayer | Path2DLayer;
 
 export type AnyWeight = FontWeight | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 
