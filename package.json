@@ -10,7 +10,6 @@
     "logo": "tsc ./test/logo.ts && node ./test/logo.js",
     "text": "tsc ./test/text.ts && node ./test/text.js",
     "animation": "tsc ./test/animation.ts && node ./test/animation.js",
-    "resize": "tsc ./test/resize.ts && node ./test/resize.js",
     "iotest": "tsc ./test/iotest.ts && node ./test/iotest.js",
     "doc": "tsx docgen.ts",
     "font": "tsc ./scripts/font-gen.ts && node ./scripts/font-gen.js",
