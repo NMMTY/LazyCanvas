@@ -6,13 +6,11 @@ import {
     filters,
     isColor,
     opacity,
-    parseColor,
     transform,
     centring,
     parseFillStyle, parser
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
 
 /**
@@ -119,7 +117,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      * @param radius {ScaleType} - The radius of the Morph Layer (optional).
      * @returns {this} The current instance for chaining.
      */
-    setSize(width: ScaleType, height: ScaleType, radius?: ScaleType) {
+    setSize(width: ScaleType, height: ScaleType, radius?: ScaleType): this {
         this.props.size = {
             width: width,
             height: height,
@@ -134,17 +132,10 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the color is not provided or invalid.
      */
-    setColor(color: ColorType) {
+    setColor(color: ColorType): this {
         if (!color) throw new LazyError('The color of the layer must be provided');
         if (!isColor(color)) throw new LazyError('The color of the layer must be a valid color');
-        let fill = parseColor(color);
-        if (fill instanceof Gradient || fill instanceof Pattern) {
-            this.props.fillStyle = fill;
-        } else {
-            let arr = fill.split(':');
-            this.props.fillStyle = arr[0];
-            this.props.opacity = parseFloat(arr[1]) || 1;
-        }
+        this.props.fillStyle = color;
         return this;
     }
 
@@ -158,7 +149,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      * @param miterLimit {number} - The miter limit of the stroke.
      * @returns {this} The current instance for chaining.
      */
-    setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
+    setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number): this {
         this.props.stroke = {
             width,
             cap: cap || 'butt',
@@ -175,7 +166,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      * @param filled {boolean} - If true, the layer will be filled; otherwise, it will be stroked.
      * @returns {this} The current instance for chaining.
      */
-    setFilled(filled: boolean) {
+    setFilled(filled: boolean): this {
         this.props.filled = filled;
         return this;
     }
@@ -187,7 +178,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      * @param manager {LayersManager} - The layers manager.
      * @param debug {boolean} - Whether to enable debug logging.
      */
-    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, w } = parcer.parseBatch({

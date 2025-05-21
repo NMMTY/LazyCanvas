@@ -71,7 +71,7 @@ export class Font implements IFont {
      * @returns {this} The current instance for chaining.
      * @throws {Error} If the family is not provided.
      */
-    setFamily(family: string) {
+    setFamily(family: string): this {
         if (!family) throw new Error("Family must be provided");
         this.family = family;
         return this;
@@ -83,7 +83,7 @@ export class Font implements IFont {
      * @returns {this} The current instance for chaining.
      * @throws {Error} If the weight is not provided.
      */
-    setWeight(weight: AnyWeight) {
+    setWeight(weight: AnyWeight): this {
         if (!weight) throw new Error("Weight must be provided");
         this.weight = weight;
         return this;
@@ -95,7 +95,7 @@ export class Font implements IFont {
      * @returns {this} The current instance for chaining.
      * @throws {Error} If the path is not provided.
      */
-    setPath(path: string) {
+    setPath(path: string): this {
         if (!path) throw new Error("Path must be provided");
         this.path = path;
         return this;
@@ -107,7 +107,7 @@ export class Font implements IFont {
      * @returns {this} The current instance for chaining.
      * @throws {Error} If the base64 is not provided.
      */
-    setBase64(base64: Buffer) {
+    setBase64(base64: Buffer): this {
         if (!base64) throw new Error("Base64 must be provided");
         this.base64 = base64;
         return this;

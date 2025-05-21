@@ -2,6 +2,7 @@ import { FillType, PatternType, AnyPatternType } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { Exporter } from "./Exporter";
+import { LazyError } from "../../utils/LazyUtil";
 
 /**
  * Interface representing a pattern.
@@ -57,7 +58,7 @@ export class Pattern implements IPattern {
      * @param type {AnyPatternType} - The type of the pattern (e.g., repeat, no-repeat).
      * @returns {this} The current instance for chaining.
      */
-    setType(type: AnyPatternType) {
+    setType(type: AnyPatternType): this {
         this.type = type;
         return this;
     }
@@ -67,7 +68,7 @@ export class Pattern implements IPattern {
      * @param src {string | LazyCanvas} - The source of the pattern, which can be a string (URL or path) or a LazyCanvas instance.
      * @returns {this} The current instance for chaining.
      */
-    setSrc(src: string | LazyCanvas) {
+    setSrc(src: string | LazyCanvas): this {
         this.src = src;
         return this;
     }
@@ -75,14 +76,15 @@ export class Pattern implements IPattern {
     /**
      * Draws the pattern on a canvas context.
      * @param ctx {SKRSContext2D} - The canvas rendering context.
-     * @returns {Promise<CanvasPattern | null>} The created pattern or null if the pattern could not be created.
+     * @returns {Promise<CanvasPattern>} The created pattern.
      */
-    async draw(ctx: SKRSContext2D) {
+    async draw(ctx: SKRSContext2D): Promise<CanvasPattern> {
+        if (!this.src) throw new LazyError('Pattern source is not set');
+
         if (this.src instanceof LazyCanvas) {
             return ctx.createPattern((await this.src.manager.render.render('canvas')) as unknown as Canvas | SvgCanvas, this.type);
-        } else {
-            return ctx.createPattern(await loadImage(this.src), this.type);
         }
+        return ctx.createPattern(await loadImage(this.src), this.type);
     }
 
     /**

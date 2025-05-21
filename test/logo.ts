@@ -11,7 +11,6 @@ pattern.manager.layers.add(
         .setSize('vw', 'vh')
         .setPosition('50%', '50%')
         .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg")
-        .dontResize()
 )
 
 canvas.manager.layers.add(

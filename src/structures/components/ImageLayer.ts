@@ -38,11 +38,6 @@ export interface IImageLayerProps extends IBaseLayerProps {
     src: string | Buffer;
 
     /**
-     * Whether the image should be resized.
-     */
-    resize: boolean;
-
-    /**
      * The size of the image, including width, height, and radius.
      */
     size: {
@@ -81,7 +76,6 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         super(LayerType.Image, props || {} as IImageLayerProps, misc);
         this.props = props ? props : {} as IImageLayerProps;
         this.props.centring = Centring.Center;
-        this.props.resize = true;
     }
 
     /**
@@ -90,7 +84,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the source is not a valid URL.
      */
-    setSrc(src: string) {
+    setSrc(src: string): this {
         if (!isImageUrlValid(src)) throw new LazyError('The src of the image must be a valid URL');
         this.props.src = src;
         return this;
@@ -103,21 +97,12 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
      * @param radius {ScaleType} - The radius of the image (optional).
      * @returns {this} The current instance for chaining.
      */
-    setSize(width: ScaleType, height: ScaleType, radius?: ScaleType) {
+    setSize(width: ScaleType, height: ScaleType, radius?: ScaleType): this {
         this.props.size = {
             width: width,
             height: height,
             radius: radius || 0,
         };
-        return this;
-    }
-
-    /**
-     * Disables resizing for the image.
-     * @returns {this} The current instance for chaining.
-     */
-    dontResize() {
-        this.props.resize = false;
         return this;
     }
 
@@ -129,7 +114,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
      * @param debug {boolean} - Whether to enable debug logging.
      * @throws {LazyError} If the image could not be loaded.
      */
-    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, w } = parcer.parseBatch({

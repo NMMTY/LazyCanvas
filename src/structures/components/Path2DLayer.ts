@@ -1,59 +1,26 @@
 import {
+    Canvas,
+    DOMMatrix2DInit,
+    FillType,
     Path2D,
     PathOp,
-    FillType,
-    StrokeOptions,
-    DOMMatrix2DInit,
     SKRSContext2D,
-    Canvas,
+    StrokeOptions,
     SvgCanvas
 } from "@napi-rs/canvas";
-import { AnyGlobalCompositeOperation, ColorType, Transform, LayerType, AnyFilter } from "../../types";
-import {generateID, parseFillStyle, transform, opacity, isColor, parseColor} from "../../utils/utils";
-import { IBaseLayerMisc } from "./BaseLayer";
+import { AnyFilter, AnyGlobalCompositeOperation, ColorType, LayerType } from "../../types";
+import { generateID, isColor, opacity, parseFillStyle, transform } from "../../utils/utils";
+import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { LayersManager } from "../managers/LayersManager";
-import {LazyError} from "../../utils/LazyUtil";
-import {Gradient, Pattern} from "../helpers";
+import { LazyError } from "../../utils/LazyUtil";
 
-export interface IPath2DLayer {
-    id: string;
+export interface IPath2DLayer extends IBaseLayer {
     type: LayerType.Path;
-    zIndex: number;
-    visible: boolean;
     props: IPath2DLayerProps;
 }
 
-export interface IPath2DLayerProps {
+export interface IPath2DLayerProps extends IBaseLayerProps {
     path2D: Path2D;
-    /**
-     * The filter effects applied to the layer.
-     */
-    filter: string;
-
-    /**
-     * The opacity of the layer, ranging from 0 to 1.
-     */
-    opacity: number;
-
-    /**
-     * Whether the layer is filled.
-     */
-    filled: boolean;
-
-    /**
-     * The fill style (color or pattern) of the layer.
-     */
-    fillStyle: ColorType;
-
-    /**
-     * The transformation properties of the layer.
-     */
-    transform: Transform;
-
-    /**
-     * The global composite operation applied to the layer.
-     */
-    globalComposite: AnyGlobalCompositeOperation;
 
     /**
      * The stroke properties of the Path2D.
@@ -94,7 +61,7 @@ export interface IPath2DLayerProps {
     clipPath: boolean;
 }
 
-export class Path2DLayer implements IPath2DLayer {
+export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     id: string;
     type: LayerType.Path = LayerType.Path;
     zIndex: number;
@@ -102,28 +69,11 @@ export class Path2DLayer implements IPath2DLayer {
     props: IPath2DLayerProps;
 
     constructor(props?: IPath2DLayerProps, misc?: IBaseLayerMisc) {
+        super(LayerType.Path, props || {} as IPath2DLayerProps, misc);
         this.id = misc?.id || generateID(LayerType.Path);
         this.zIndex = misc?.zIndex || 1;
         this.visible = misc?.visible || true;
-        this.props = {
-            path2D: props?.path2D || new Path2D(),
-            filter: props?.filter || "",
-            opacity: props?.opacity || 1,
-            filled: props?.filled || true,
-            fillStyle: props?.fillStyle || "#000000",
-            transform: props?.transform || {} as Transform,
-            globalComposite: props?.globalComposite || "source-over",
-            stroke: {
-                width: props?.stroke?.width || 1,
-                cap: props?.stroke?.cap || "butt",
-                join: props?.stroke?.join || "miter",
-                dashOffset: props?.stroke?.dashOffset || 0,
-                dash: props?.stroke?.dash || [],
-                miterLimit: props?.stroke?.miterLimit || 10,
-            },
-            loadFromSVG: props?.loadFromSVG || false,
-            clipPath: props?.clipPath || false,
-        };
+        this.props = props ? props : {} as IPath2DLayerProps;
 
     }
 
@@ -133,7 +83,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param {string} id - The unique identifier.
      * @returns {this} The current instance for chaining.
      */
-    setID(id: string) {
+    setID(id: string): this {
         this.id = id;
         return this;
     }
@@ -143,7 +93,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param visible {boolean} - The visibility state of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setVisible(visible: boolean) {
+    setVisible(visible: boolean): this {
         this.visible = visible;
         return this;
     }
@@ -153,7 +103,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param zIndex {number} - The z-index value of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setZIndex(zIndex: number) {
+    setZIndex(zIndex: number): this {
         this.zIndex = zIndex;
         return this;
     }
@@ -163,7 +113,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param {AnyGlobalCompositeOperation} operation - The composite operation.
      * @returns {this} The current instance for chaining.
      */
-    setGlobalCompositeOperation(operation: AnyGlobalCompositeOperation) {
+    setGlobalCompositeOperation(operation: AnyGlobalCompositeOperation): this {
         this.props.globalComposite = operation;
         return this;
     }
@@ -173,7 +123,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param {...AnyFilter} filter - The filter effects to apply.
      * @returns {this} The current instance for chaining.
      */
-    setFilters(...filter: AnyFilter[]) {
+    setFilters(...filter: AnyFilter[]): this {
         this.props.filter = filter.join(' ');
         return this;
     }
@@ -183,7 +133,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param {DOMMatrix2DInit} matrix - The transformation matrix.
      * @returns {this} The current instance for chaining.
      */
-    setMatrix(matrix: DOMMatrix2DInit) {
+    setMatrix(matrix: DOMMatrix2DInit): this {
         this.props.transform = { ...this.props.transform, matrix };
         return this;
     }
@@ -194,7 +144,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param {number} y - The scale factor in the y direction.
      * @returns {this} The current instance for chaining.
      */
-    setScale(x: number, y: number) {
+    setScale(x: number, y: number): this {
         this.props.transform = { ...this.props.transform, scale: { x, y } };
         return this;
     }
@@ -205,7 +155,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param {number} y - The translation in the y direction.
      * @returns {this} The current instance for chaining.
      */
-    setTranslate(x: number, y: number) {
+    setTranslate(x: number, y: number): this {
         this.props.transform = { ...this.props.transform, translate: { x, y } };
         return this;
     }
@@ -215,7 +165,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param {number} opacity - The opacity value, between 0 and 1.
      * @returns {this} The current instance for chaining.
      */
-    setOpacity(opacity: number) {
+    setOpacity(opacity: number): this {
         this.props.opacity = opacity;
         return this;
     }
@@ -230,7 +180,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param miterLimit {number} - The miter limit of the stroke.
      * @returns {this} The current instance for chaining.
      */
-    setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
+    setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number): this {
         this.props.stroke = {
             width,
             cap: cap || 'butt',
@@ -247,7 +197,7 @@ export class Path2DLayer implements IPath2DLayer {
      * @param filled {boolean} - If true, the layer will be filled; otherwise, it will be stroked.
      * @returns {this} The current instance for chaining.
      */
-    setFilled(filled: boolean) {
+    setFilled(filled: boolean): this {
         this.props.filled = filled;
         return this;
     }
@@ -258,150 +208,143 @@ export class Path2DLayer implements IPath2DLayer {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the color is not provided or invalid.
      */
-    setColor(color: ColorType) {
+    setColor(color: ColorType): this {
         if (!color) throw new LazyError('The color of the layer must be provided');
         if (!isColor(color)) throw new LazyError('The color of the layer must be a valid color');
-        let fill = parseColor(color);
-        if (fill instanceof Gradient || fill instanceof Pattern) {
-            this.props.fillStyle = fill;
-        } else {
-            let arr = fill.split(':');
-            this.props.fillStyle = arr[0];
-            this.props.opacity = parseFloat(arr[1]) || 1;
-        }
+        this.props.fillStyle = color;
         return this;
     }
 
-    setPath(path: Path2D | string) {
+    setPath(path: Path2D | string): this {
         this.props.path2D = path instanceof Path2D ? path : new Path2D(path);
         return this;
     }
 
-    loadFromSVG(path: true) {
+    loadFromSVG(path: true): this {
         this.props.loadFromSVG = path;
         return this;
     }
 
-    setClipPath(clipPath: boolean) {
+    setClipPath(clipPath: boolean): this {
         this.props.clipPath = clipPath;
         return this;
     }
 
-    toSVGString() {
+    toSVGString(): string {
         return this.props.path2D.toSVGString();
     }
 
-    addPath(path: Path2D, transform?: DOMMatrix2DInit | undefined) {
+    addPath(path: Path2D, transform?: DOMMatrix2DInit | undefined): this {
         this.props.path2D.addPath(path, transform);
         return this;
     }
 
-    arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean) {
+    arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean): this {
         this.props.path2D.arc(x, y, radius, startAngle, endAngle, anticlockwise);
         return this;
     }
 
-    arcTo(x1: number, y1: number, x2: number, y2: number, radius: number) {
+    arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): this {
         this.props.path2D.arcTo(x1, y1, x2, y2, radius);
         return this;
     }
 
-    bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number) {
+    bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): this {
         this.props.path2D.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
         return this;
     }
 
-    closePath() {
+    closePath(): this {
         this.props.path2D.closePath();
         return this;
     }
 
-    ellipse(x: number, y: number, radiusX: number, radiusY: number, rotation: number, startAngle: number, endAngle: number, anticlockwise?: boolean) {
+    ellipse(x: number, y: number, radiusX: number, radiusY: number, rotation: number, startAngle: number, endAngle: number, anticlockwise?: boolean): this {
         this.props.path2D.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise);
         return this;
     }
 
-    lineTo(x: number, y: number) {
+    lineTo(x: number, y: number): this {
         this.props.path2D.lineTo(x, y);
         return this;
     }
 
-    moveTo(x: number, y: number) {
+    moveTo(x: number, y: number): this {
         this.props.path2D.moveTo(x, y);
         return this;
     }
 
-    quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
+    quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): this {
         this.props.path2D.quadraticCurveTo(cpx, cpy, x, y);
         return this;
     }
 
-    rect(x: number, y: number, width: number, height: number) {
+    rect(x: number, y: number, width: number, height: number): this {
         this.props.path2D.rect(x, y, width, height);
         return this;
     }
 
-    stroke(stroke?: StrokeOptions) {
+    stroke(stroke?: StrokeOptions): this {
         this.props.path2D.stroke(stroke);
         return this;
     }
 
-    op(path: Path2D, op: PathOp) {
+    op(path: Path2D, op: PathOp): this {
         this.props.path2D.op(path, op);
         return this;
     }
 
-    getFillType() {
+    getFillType(): FillType {
         return this.props.path2D.getFillType();
     }
 
-    getFillTypeString() {
+    getFillTypeString(): string {
         return this.props.path2D.getFillTypeString();
     }
 
-    setFillType(fillType: FillType) {
+    setFillType(fillType: FillType): this {
         this.props.path2D.setFillType(fillType);
         return this;
     }
 
-    simplify() {
+    simplify(): this {
         this.props.path2D.simplify();
         return this;
     }
 
-    asWinding() {
+    asWinding(): this {
         this.props.path2D.asWinding();
         return this;
     }
 
-    transform(matrix: DOMMatrix2DInit) {
+    transform(matrix: DOMMatrix2DInit): this {
         this.props.path2D.transform(matrix);
         return this;
     }
 
-    getBounds() {
+    getBounds(): [left: number, top: number, right: number, bottom: number] {
         return this.props.path2D.getBounds();
     }
 
-    computeTightBounds() {
+    computeTightBounds(): [left: number, top: number, right: number, bottom: number] {
         return this.props.path2D.computeTightBounds();
     }
 
-    trim(start: number, end: number, isComplement?: boolean) {
+    trim(start: number, end: number, isComplement?: boolean): this {
         this.props.path2D.trim(start, end, isComplement);
         return this;
     }
 
-    equals(path: Path2DLayer) {
+    equals(path: Path2DLayer): boolean {
         return this.props.path2D.equals(path.props.path2D);
     }
 
-    roundRect(x: number, y: number, width: number, height: number, radius: number) {
+    roundRect(x: number, y: number, width: number, height: number, radius: number): this {
         this.props.path2D.roundRect(x, y, width, height, radius);
         return this;
     }
 
-    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         ctx.beginPath();
         ctx.save();
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);

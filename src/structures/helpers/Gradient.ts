@@ -1,6 +1,5 @@
-import { AnyGradientType, FillType, GradientType } from "../../types";
+import { AnyGradientType, FillType, GradientType, StringColorType } from "../../types";
 import { SKRSContext2D } from "@napi-rs/canvas";
-import { parseHex } from "../../utils/utils";
 
 /**
  * Interface representing a gradient.
@@ -34,7 +33,7 @@ export interface GradientColorStop {
     /**
      * The color of the stop in hexadecimal format.
      */
-    color: string;
+    color: StringColorType;
 
     /**
      * The offset of the stop, ranging from 0 to 1.
@@ -107,7 +106,7 @@ export class Gradient implements IGradient {
      * @param type {AnyGradientType} - The type of the gradient (e.g., linear, radial, conic).
      * @returns {this} The current instance for chaining.
      */
-    setType(type: AnyGradientType) {
+    setType(type: AnyGradientType): this {
         this.type = type;
         return this;
     }
@@ -117,7 +116,7 @@ export class Gradient implements IGradient {
      * @param points {GradientPoint[]} - The points to add to the gradient.
      * @returns {this} The current instance for chaining.
      */
-    addPoints(...points: GradientPoint[]) {
+    addPoints(...points: GradientPoint[]): this {
         this.points.push(...points);
         return this;
     }
@@ -127,7 +126,7 @@ export class Gradient implements IGradient {
      * @param stops {GradientColorStop[]} - The color stops to add to the gradient.
      * @returns {this} The current instance for chaining.
      */
-    addStops(...stops: GradientColorStop[]) {
+    addStops(...stops: GradientColorStop[]): this {
         this.stops.push(...stops);
         return this;
     }
@@ -137,7 +136,7 @@ export class Gradient implements IGradient {
      * @param ctx {SKRSContext2D} - The canvas rendering context.
      * @returns {CanvasGradient} The created gradient.
      */
-    draw(ctx: SKRSContext2D) {
+    draw(ctx: SKRSContext2D): CanvasGradient {
         let gradientData = this.toJSON();
         let gradient;
         switch (gradientData.type) {
@@ -179,7 +178,7 @@ export class Gradient implements IGradient {
                 break;
         }
         for (let stop of gradientData.stops) {
-            gradient.addColorStop(stop.offset, parseHex(stop.color));
+            gradient.addColorStop(stop.offset, stop.color);
         }
         return gradient;
     }

@@ -47,7 +47,7 @@ export class LayersManager implements ILayersManager {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If a layer with the same ID already exists.
      */
-    public add(...layers: Array<AnyLayer | Group>) {
+    public add(...layers: Array<AnyLayer | Group>): this {
         if (this.debug) LazyLog.log('info', `Adding layers...\nlength: ${layers.length}`);
         let layersArray = layers.flat();
         layersArray = layersArray.filter(l => l !== undefined);
@@ -65,7 +65,7 @@ export class LayersManager implements ILayersManager {
      * @param ids {string[]} - The IDs of the layers or groups to remove.
      * @returns {this} The current instance for chaining.
      */
-    public remove(...ids: string[]) {
+    public remove(...ids: string[]): this {
         for (const id of ids) {
             this.map.delete(id);
         }
@@ -76,7 +76,7 @@ export class LayersManager implements ILayersManager {
      * Clears all layers and groups from the map.
      * @returns {this} The current instance for chaining.
      */
-    public clear() {
+    public clear(): this {
         this.map.clear();
         return this;
     }
@@ -138,7 +138,7 @@ export class LayersManager implements ILayersManager {
      * @param callbackfn {Function} - The callback function to execute.
      * @returns {this} The current instance for chaining.
      */
-    public forEach(callbackfn: (value: AnyLayer | Group, key: string, map: Map<string, AnyLayer | Group>) => void) {
+    public forEach(callbackfn: (value: AnyLayer | Group, key: string, map: Map<string, AnyLayer | Group>) => void): this {
         this.map.forEach(callbackfn);
         return this;
     }
@@ -156,7 +156,7 @@ export class LayersManager implements ILayersManager {
      * @param json {object} - The JSON object to populate the map from.
      * @returns {this} The current instance for chaining.
      */
-    public fromJSON(json: object) {
+    public fromJSON(json: object): this {
         this.map = new Map(Object.entries(json));
         return this;
     }
@@ -174,7 +174,7 @@ export class LayersManager implements ILayersManager {
      * @param array {Array<AnyLayer | Group>} - The array of layers and groups to populate the map from.
      * @returns {this} The current instance for chaining.
      */
-    public fromArray(array: Array<AnyLayer | Group>) {
+    public fromArray(array: Array<AnyLayer | Group>): this {
         this.map = new Map(array.map(l => [l.id, l]));
         return this;
     }
@@ -183,7 +183,7 @@ export class LayersManager implements ILayersManager {
      * Sorts the layers and groups in the map by their zIndex property.
      * @returns {void}
      */
-    public sort() {
+    public sort(): void {
         this.fromArray(this.toArray().sort((a, b) => a.zIndex - b.zIndex));
     }
 

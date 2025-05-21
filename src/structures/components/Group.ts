@@ -79,7 +79,7 @@ export class Group implements IGroup {
      * @param id {string} - The unique identifier of the group.
      * @returns {this} The current instance for chaining.
      */
-    setID(id: string) {
+    setID(id: string): this {
         this.id = id;
         return this;
     }
@@ -89,7 +89,7 @@ export class Group implements IGroup {
      * @param visible {boolean} - The visibility state of the group.
      * @returns {this} The current instance for chaining.
      */
-    setVisible(visible: boolean) {
+    setVisible(visible: boolean): this {
         this.visible = visible;
         return this;
     }
@@ -99,7 +99,7 @@ export class Group implements IGroup {
      * @param zIndex {number} - The z-index value of the group.
      * @returns {this} The current instance for chaining.
      */
-    setZIndex(zIndex: number) {
+    setZIndex(zIndex: number): this {
         this.zIndex = zIndex;
         return this;
     }
@@ -109,7 +109,7 @@ export class Group implements IGroup {
      * @param components {AnyLayer[]} - The components to add to the group.
      * @returns {this} The current instance for chaining.
      */
-    add(...components: AnyLayer[]) {
+    add(...components: AnyLayer[]): this {
         let layersArray = components.flat();
         layersArray = layersArray.filter(l => l !== undefined);
         layersArray = layersArray.sort((a, b) => a.zIndex - b.zIndex);
@@ -122,7 +122,7 @@ export class Group implements IGroup {
      * @param id {string} - The unique identifier of the component to remove.
      * @returns {this} The current instance for chaining.
      */
-    remove(id: string) {
+    remove(id: string): this {
         this.layers = this.layers.filter(c => c.id !== id);
         return this;
     }
@@ -131,7 +131,7 @@ export class Group implements IGroup {
      * Clears all components from the group.
      * @returns {this} The current instance for chaining.
      */
-    clear() {
+    clear(): this {
         this.layers = [];
         return this;
     }
@@ -141,7 +141,7 @@ export class Group implements IGroup {
      * @param id {string} - The unique identifier of the component to retrieve.
      * @returns {AnyLayer | undefined} The component with the specified ID, or undefined if not found.
      */
-    get(id: string) {
+    get(id: string): AnyLayer | undefined {
         return this.layers.find(c => c.id === id);
     }
 
@@ -149,7 +149,7 @@ export class Group implements IGroup {
      * Retrieves all components from the group.
      * @returns {AnyLayer[]} An array of all components in the group.
      */
-    getAll() {
+    getAll(): AnyLayer[] {
         return this.layers;
     }
 
@@ -157,7 +157,7 @@ export class Group implements IGroup {
      * Gets the number of components in the group.
      * @returns {number} The number of components in the group.
      */
-    get length() {
+    get length(): number {
         return this.layers.length;
     }
 

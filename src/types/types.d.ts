@@ -35,7 +35,9 @@ import {
 
 export type ScaleType = `link-w-${string}-${number}` | `link-h-${string}-${number}` | `link-x-${string}-${number}` | `link-y-${string}-${number}` | `${number}%` | `${number}px` | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link;
 
-export type ColorType = Gradient | Pattern | `rgba(${number}, ${number}, ${number}, ${number})` | `rgb(${number}, ${number}, ${number})` | `hsl(${number}, ${number}%, ${number}%)` | `hsla(${number}, ${number}%, ${number}%, ${number})` | `#${string}` | string;
+export type StringColorType = `rgba(${number}, ${number}, ${number}, ${number})` | `rgb(${number}, ${number}, ${number})` | `hsl(${number}, ${number}%, ${number}%)` | `hsla(${number}, ${number}%, ${number}%, ${number})` | `#${string}` | string;
+
+export type ColorType = Gradient | Pattern | StringColorType;
 
 export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IClearLayer | IPath2DLayer;
 

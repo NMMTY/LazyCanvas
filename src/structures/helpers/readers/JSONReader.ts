@@ -148,7 +148,7 @@ export class JSONReader {
      * @param layer {JSONLayer} - The layer whose fill style is to be parsed.
      * @returns {string | Gradient | Pattern} The parsed fill style.
      */
-    private static fillParse(layer: JSONLayer) {
+    private static fillParse(layer: JSONLayer): string | Gradient | Pattern {
         if ('fillStyle' in layer.props && layer.props.fillStyle && typeof layer.props.fillStyle !== 'string') {
             switch (layer.props.fillStyle?.fillType) {
                 case 'gradient':

@@ -8,7 +8,7 @@ import {
     Centring,
     LayerType
 } from "../../types";
-import { generateID, isColor, parseColor } from "../../utils/utils";
+import { generateID, isColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
 
 /**
@@ -194,7 +194,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {ScaleType} y - The y-coordinate of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setPosition(x: ScaleType, y: ScaleType) {
+    setPosition(x: ScaleType, y: ScaleType): this {
         this.props.x = x;
         this.props.y = y;
         return this;
@@ -205,7 +205,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {number} opacity - The opacity value, between 0 and 1.
      * @returns {this} The current instance for chaining.
      */
-    setOpacity(opacity: number) {
+    setOpacity(opacity: number): this {
         this.props.opacity = opacity;
         return this;
     }
@@ -216,7 +216,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {string} id - The unique identifier.
      * @returns {this} The current instance for chaining.
      */
-    setID(id: string) {
+    setID(id: string): this {
         this.id = id;
         return this;
     }
@@ -230,12 +230,11 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the color is invalid or not provided.
      */
-    setShadow(color: string, blur?: number, offsetX?: number, offsetY?: number) {
+    setShadow(color: string, blur?: number, offsetX?: number, offsetY?: number): this {
         if (!color) throw new LazyError('The color of the shadow must be provided');
         if (!isColor(color)) throw new LazyError('The color of the shadow must be a valid color');
-        let parse = parseColor(color) as string;
         this.props.shadow = {
-            color: parse,
+            color: color,
             blur: blur || 0,
             offsetX: offsetX || 0,
             offsetY: offsetY || 0,
@@ -248,7 +247,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {DOMMatrix2DInit} matrix - The transformation matrix.
      * @returns {this} The current instance for chaining.
      */
-    setMatrix(matrix: DOMMatrix2DInit) {
+    setMatrix(matrix: DOMMatrix2DInit): this {
         this.props.transform = { ...this.props.transform, matrix };
         return this;
     }
@@ -259,7 +258,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {number} y - The scale factor in the y direction.
      * @returns {this} The current instance for chaining.
      */
-    setScale(x: number, y: number) {
+    setScale(x: number, y: number): this {
         this.props.transform = { ...this.props.transform, scale: { x, y } };
         return this;
     }
@@ -269,7 +268,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {number} rotate - The rotation angle in degrees.
      * @returns {this} The current instance for chaining.
      */
-    setRotate(rotate: number) {
+    setRotate(rotate: number): this {
         this.props.transform = { ...this.props.transform, rotate };
         return this;
     }
@@ -280,7 +279,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {number} y - The translation in the y direction.
      * @returns {this} The current instance for chaining.
      */
-    setTranslate(x: number, y: number) {
+    setTranslate(x: number, y: number): this {
         this.props.transform = { ...this.props.transform, translate: { x, y } };
         return this;
     }
@@ -290,7 +289,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {...AnyFilter} filter - The filter effects to apply.
      * @returns {this} The current instance for chaining.
      */
-    setFilters(...filter: AnyFilter[]) {
+    setFilters(...filter: AnyFilter[]): this {
         this.props.filter = filter.join(' ');
         return this;
     }
@@ -300,7 +299,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {AnyCentring} centring - The centring type.
      * @returns {this} The current instance for chaining.
      */
-    setCentring(centring: AnyCentring) {
+    setCentring(centring: AnyCentring): this {
         this.props.centring = centring;
         return this;
     }
@@ -310,7 +309,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {boolean} visible - The visibility state.
      * @returns {this} The current instance for chaining.
      */
-    setVisible(visible: boolean) {
+    setVisible(visible: boolean): this {
         this.visible = visible;
         return this;
     }
@@ -320,7 +319,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {number} zIndex - The z-index value.
      * @returns {this} The current instance for chaining.
      */
-    setZIndex(zIndex: number) {
+    setZIndex(zIndex: number): this {
         this.zIndex = zIndex;
         return this;
     }
@@ -330,7 +329,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @param {AnyGlobalCompositeOperation} operation - The composite operation.
      * @returns {this} The current instance for chaining.
      */
-    setGlobalCompositeOperation(operation: AnyGlobalCompositeOperation) {
+    setGlobalCompositeOperation(operation: AnyGlobalCompositeOperation): this {
         this.props.globalComposite = operation;
         return this;
     }

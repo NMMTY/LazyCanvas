@@ -216,7 +216,7 @@ export class LazyCanvas implements ILazyCanvas {
      * @param height {number} - The height of the canvas.
      * @returns {this} The current instance for chaining.
      */
-    create(width: number, height: number) {
+    create(width: number, height: number): this {
         this.options.width = width;
         this.options.height = height;
         if (this.options.exportType === Export.SVG) {

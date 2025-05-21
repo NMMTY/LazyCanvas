@@ -7,13 +7,11 @@ import {
     getBoundingBoxBezier,
     isColor,
     opacity,
-    parseColor,
     parseFillStyle,
     parser,
     transform
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
 
 /**
@@ -108,7 +106,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the number of control points is not exactly 2.
      */
-    setControlPoints(...controlPoints: { x: ScaleType, y: ScaleType }[]) {
+    setControlPoints(...controlPoints: { x: ScaleType, y: ScaleType }[]): this {
         if (controlPoints.length !== 2) throw new LazyError('The control points of the layer must be provided');
         this.props.controlPoints = controlPoints.flat();
         return this;
@@ -120,7 +118,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * @param y {ScaleType} - The y-coordinate of the end point.
      * @returns {this} The current instance for chaining.
      */
-    setEndPosition(x: ScaleType, y: ScaleType) {
+    setEndPosition(x: ScaleType, y: ScaleType): this {
         this.props.endPoint = { x, y };
         return this;
     }
@@ -131,17 +129,10 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the color is not provided or invalid.
      */
-    setColor(color: ColorType) {
+    setColor(color: ColorType): this {
         if (!color) throw new LazyError('The color of the layer must be provided');
         if (!isColor(color)) throw new LazyError('The color of the layer must be a valid color');
-        let fill = parseColor(color);
-        if (fill instanceof Gradient || fill instanceof Pattern) {
-            this.props.fillStyle = fill;
-        } else {
-            let arr = fill.split(':');
-            this.props.fillStyle = arr[0];
-            this.props.opacity = parseFloat(arr[1]) || 1;
-        }
+        this.props.fillStyle = color;
         return this;
     }
 
@@ -155,7 +146,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * @param miterLimit {number} - The miter limit of the stroke.
      * @returns {this} The current instance for chaining.
      */
-    setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
+    setStroke(width: number, cap?: CanvasLineCap, join?: CanvasLineJoin, dash?: number[], dashOffset?: number, miterLimit?: number): this {
         this.props.stroke = {
             width,
             cap: cap || 'butt',
@@ -174,7 +165,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * @param manager {LayersManager} - The layers manager.
      * @returns {Object} The bounding box details including max, min, center, width, and height.
      */
-    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
+    getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager): { max: Point, min: Point, center: Point, width: number, height: number } {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({
@@ -199,7 +190,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * @param manager {LayersManager} - The layers manager.
      * @param debug {boolean} - Whether to enable debug logging.
      */
-    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({

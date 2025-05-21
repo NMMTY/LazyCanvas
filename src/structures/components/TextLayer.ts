@@ -14,13 +14,11 @@ import {
     Centring
 } from "../../types";
 import { LazyError, LazyLog, defaultArg } from "../../utils/LazyUtil";
-import { Gradient, Pattern } from "../helpers";
 import {
     drawShadow,
     filters,
     isColor,
     opacity,
-    parseColor,
     parseFillStyle,
     parser,
     parseToNormal,
@@ -207,7 +205,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param text {string} - The text content of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setText(text: string) {
+    setText(text: string): this {
         this.props.text = text;
         return this;
     }
@@ -220,7 +218,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If size or weight is not provided when `familyOrConfig` is a string.
      */
-    setFont(familyOrConfig: string | { family: string; size: number; weight: AnyWeight }, size?: number, weight?: AnyWeight) {
+    setFont(familyOrConfig: string | { family: string; size: number; weight: AnyWeight }, size?: number, weight?: AnyWeight): this {
         if (typeof familyOrConfig === "string") {
             if (!size) throw new LazyError('The size of the font must be provided');
             if (!weight) throw new LazyError('The weight of the font must be provided');
@@ -247,7 +245,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param spacing {number} - The spacing between lines (optional).
      * @returns {this} The current instance for chaining.
      */
-    setMultiline(enabled: boolean, width: ScaleType, height: ScaleType, spacing?: number) {
+    setMultiline(enabled: boolean, width: ScaleType, height: ScaleType, spacing?: number): this {
         this.props.multiline = {
             enabled: enabled,
             spacing: spacing || 1.1,
@@ -265,17 +263,10 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the color is not provided or invalid.
      */
-    setColor(color: ColorType) {
+    setColor(color: ColorType): this {
         if (!color) throw new LazyError('The color of the layer must be provided');
         if (!isColor(color)) throw new LazyError('The color of the layer must be a valid color');
-        let fill = parseColor(color);
-        if (fill instanceof Gradient || fill instanceof Pattern) {
-            this.props.fillStyle = fill;
-        } else {
-            let arr = fill.split(':');
-            this.props.fillStyle = arr[0];
-            this.props.opacity = parseFloat(arr[1]) || 1;
-        }
+        this.props.fillStyle = color;
         return this;
     }
 
@@ -284,7 +275,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param align {AnyTextAlign} - The alignment of the text.
      * @returns {this} The current instance for chaining.
      */
-    setAlign(align: AnyTextAlign) {
+    setAlign(align: AnyTextAlign): this {
         this.props.align = align;
         return this;
     }
@@ -294,7 +285,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param baseline {AnyTextBaseline} - The baseline of the text.
      * @returns {this} The current instance for chaining.
      */
-    setBaseline(baseline: AnyTextBaseline) {
+    setBaseline(baseline: AnyTextBaseline): this {
         this.props.baseline = baseline;
         return this;
     }
@@ -304,7 +295,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param direction {AnyTextDirection} - The direction of the text.
      * @returns {this} The current instance for chaining.
      */
-    setDirection(direction: AnyTextDirection) {
+    setDirection(direction: AnyTextDirection): this {
         this.props.direction = direction;
         return this;
     }
@@ -319,7 +310,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param miterLimit {number} - The miter limit of the stroke (optional).
      * @returns {this} The current instance for chaining.
      */
-    setStroke(width: number, cap?: LineCap, join?: LineJoin, dash?: number[], dashOffset?: number, miterLimit?: number) {
+    setStroke(width: number, cap?: LineCap, join?: LineJoin, dash?: number[], dashOffset?: number, miterLimit?: number): this {
         this.props.stroke = {
             width,
             cap: cap || 'butt',
@@ -336,7 +327,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param filled {boolean} - If true, the layer will be filled; otherwise, it will be stroked.
      * @returns {this} The current instance for chaining.
      */
-    setFilled(filled: boolean) {
+    setFilled(filled: boolean): this {
         this.props.filled = filled;
         return this;
     }
@@ -346,7 +337,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param wordSpacing {number} - The spacing between words.
      * @returns {this} The current instance for chaining.
      */
-    setWordSpacing(wordSpacing: number) {
+    setWordSpacing(wordSpacing: number): this {
         this.props.wordSpacing = wordSpacing;
         return this;
     }
@@ -356,7 +347,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param letterSpacing {number} - The spacing between letters.
      * @returns {this} The current instance for chaining.
      */
-    setLetterSpacing(letterSpacing: number) {
+    setLetterSpacing(letterSpacing: number): this {
         this.props.letterSpacing = letterSpacing;
         return this;
     }
@@ -387,7 +378,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param manager {LayersManager} - The layers manager.
      * @param debug {boolean} - Whether to enable debug logging.
      */
-    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void>  {
         const parcer = parser(ctx, canvas, manager);
 
         const { x, y, w } = parcer.parseBatch({

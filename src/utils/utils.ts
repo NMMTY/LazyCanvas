@@ -25,68 +25,6 @@ export function isColor(v: ColorType) {
     return typeof (v === 'string' && (hexReg.test(v) || rgbReg.test(v) || rgbaReg.test(v) || hslReg.test(v) || hslaReg.test(v))) || v instanceof Gradient || v instanceof Pattern;
 }
 
-function tooShort(v: string) {
-    return v.length < 2 ? `0${v}` : v;
-}
-
-export function parseHex(v: string) {
-    if (hexReg.test(v)) {
-        return v;
-    } else if (rgbReg.test(v)) {
-        let match = v.match(rgbReg) as RegExpMatchArray;
-        let r = parseInt(match[1]);
-        let g = parseInt(match[2]);
-        let b = parseInt(match[3]);
-        return `#${tooShort(r.toString(16))}${tooShort(g.toString(16))}${tooShort(b.toString(16))}`;
-    } else if (rgbaReg.test(v)) {
-        let match = v.match(rgbaReg) as RegExpMatchArray;
-        let r = parseInt(match[1]);
-        let g = parseInt(match[2]);
-        let b = parseInt(match[3]);
-        let a = parseFloat(match[4]);
-        return `#${tooShort(r.toString(16))}${tooShort(g.toString(16))}${tooShort(b.toString(16))}:${a}`;
-    } else if (hslReg.test(v)) {
-        let match = v.match(hslReg) as RegExpMatchArray;
-        let h = parseInt(match[1]);
-        let s = parseInt(match[2]);
-        let l = parseInt(match[3]);
-        l /= 100;
-        const b = s * Math.min(l, 1 - l) / 100;
-        const f = (n: number) => {
-            const k = (n + h / 30) % 12;
-            const color = l - b * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-            return Math.round(255 * color).toString(16).padStart(2, '0');
-        };
-        return `#${f(0)}${f(8)}${f(4)}`;
-    } else if (hslaReg.test(v)) {
-        let match = v.match(hslaReg) as RegExpMatchArray;
-        let h = parseInt(match[1]);
-        let s = parseInt(match[2]);
-        let l = parseInt(match[3]);
-        let a = parseFloat(match[4]);
-        l /= 100;
-        const b = s * Math.min(l, 1 - l) / 100;
-        const f = (n: number) => {
-            const k = (n + h / 30) % 12;
-            const color = l - b * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-            return Math.round(255 * color).toString(16).padStart(2, '0');
-        };
-        return `#${f(0)}${f(8)}${f(4)}:${a}`;
-    } else {
-        return '#000000';
-    }
-}
-
-export function parseColor(v: ColorType) {
-    if (typeof v === 'string') {
-        return parseHex(v);
-    } else if (v instanceof Gradient || v instanceof Pattern) {
-        return v;
-    } else {
-        return '#000000';
-    }
-}
-
 export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, layer: { width: number, height: number } = { width: 0, height: 0 }, options: { vertical?: boolean, layer?: boolean } = { vertical: false, layer: false }, manager?: LayersManager): number {
     if (typeof v === 'number') {
         return v;
@@ -221,11 +159,13 @@ export function filters(ctx: SKRSContext2D, filters: string) {
 }
 
 export function parseFillStyle(ctx: SKRSContext2D, color: ColorType) {
+    if (!ctx) throw new LazyError('The context is not defined');
+    if (!color) throw new LazyError('The color is not defined');
+
     if (color instanceof Gradient || color instanceof Pattern) {
         return color.draw(ctx);
-    } else {
-        return color;
     }
+    return color;
 }
 
 export function transform(ctx: SKRSContext2D, transform: Transform, layer: { width: number, height: number, x: number, y: number, type: LayerType } = { width: 0, height: 0, x: 0, y: 0, type: LayerType.Morph }, extra: { text: string, textAlign: AnyTextAlign, fontSize: number, multiline: boolean} = { text: '', textAlign: TextAlign.Left, fontSize: 0, multiline: false }) {

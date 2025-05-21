@@ -6,14 +6,12 @@ import {
     filters,
     isColor,
     opacity,
-    parseColor,
     transform,
     parseFillStyle,
     getBoundingBoxBezier,
     parser
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { Gradient, Pattern } from "../helpers";
 import { LayersManager } from "../managers/LayersManager";
 
 /**
@@ -133,14 +131,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     setColor(color: ColorType) {
         if (!color) throw new LazyError('The color of the layer must be provided');
         if (!isColor(color)) throw new LazyError('The color of the layer must be a valid color');
-        let fill = parseColor(color);
-        if (fill instanceof Gradient || fill instanceof Pattern) {
-            this.props.fillStyle = fill;
-        } else {
-            let arr = fill.split(':');
-            this.props.fillStyle = arr[0];
-            this.props.opacity = parseFloat(arr[1]) || 1;
-        }
+        this.props.fillStyle = color;
         return this;
     }
 
@@ -196,7 +187,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
      * @param manager {LayersManager} - The layers manager.
      * @param debug {boolean} - Whether to enable debug logging.
      */
-    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({

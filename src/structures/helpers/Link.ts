@@ -5,7 +5,7 @@ import { AnyLinkType, ScaleType, LinkType } from "../../types";
  */
 export interface ILink {
     /**
-     * The source layer's ID.
+     * The source layers ID.
      */
     source: string;
 
@@ -25,7 +25,7 @@ export interface ILink {
  */
 export class Link {
     /**
-     * The source layer's ID.
+     * The source layers ID.
      */
     source: string;
 
@@ -55,7 +55,7 @@ export class Link {
      * @param source {string} - The ID of the layer to link.
      * @returns {this} The current instance for chaining.
      */
-    setSource(source: string) {
+    setSource(source: string): this {
         this.source = source;
         return this;
     }
@@ -65,7 +65,7 @@ export class Link {
      * @param type {AnyLinkType} - The type of the link.
      * @returns {this} The current instance for chaining.
      */
-    setType(type: AnyLinkType) {
+    setType(type: AnyLinkType): this {
         this.type = type;
         return this;
     }
@@ -75,7 +75,7 @@ export class Link {
      * @param additionalSpacing {ScaleType} - The additional spacing of the link.
      * @returns {this} The current instance for chaining.
      */
-    setSpacing(additionalSpacing: ScaleType) {
+    setSpacing(additionalSpacing: ScaleType): this {
         this.additionalSpacing = additionalSpacing;
         return this;
     }

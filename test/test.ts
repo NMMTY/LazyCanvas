@@ -53,7 +53,7 @@ canvas.manager.layers.add(
                     { x: 150, y: 450, r: 100 }
                 ).addStops(
                     { offset: 0, color: "#ffffff" },
-                    { offset: 1, color: "#999900" }
+                    { offset: 1, color: "rgba(100, 200, 100, 0)" }
                 )
         )
         .setFont("Geist", 50, FontWeight.Thin)

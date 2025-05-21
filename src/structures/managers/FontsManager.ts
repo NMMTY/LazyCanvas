@@ -49,7 +49,7 @@ export class FontsManager implements IFontsManager {
      * @param fontList {IFonts} - The fonts to load into the manager.
      * @returns {this} The current instance for chaining.
      */
-    loadFonts(fontList: IFonts) {
+    loadFonts(fontList: IFonts): this {
         this.add(
             ...Object.entries(fontList).map(([fontFamily, fontWeights]) => {
                 return Object.entries(fontWeights).map(([weight, base64]) => {
@@ -73,7 +73,7 @@ export class FontsManager implements IFontsManager {
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If required font properties are missing or the font already exists.
      */
-    public add(...fonts: Font[]) {
+    public add(...fonts: Font[]): this {
         if (this.debug) LazyLog.log('info', `Adding fonts...\nlength: ${fonts.length}`);
         for (const font of fonts) {
             if (this.debug) LazyLog.log('none', `Data:`, font.toJSON());
@@ -93,7 +93,7 @@ export class FontsManager implements IFontsManager {
      * @param array {Array<{ family: string, weight: string }>} - The family and weight of the fonts to remove.
      * @returns {this} The current instance for chaining.
      */
-    public remove(...array: Array<{ family: string, weight: string }> ) {
+    public remove(...array: Array<{ family: string, weight: string }> ): this {
         for (const font of array) {
             this.map.delete(`${font.family}_${font.weight}`);
         }
@@ -104,7 +104,7 @@ export class FontsManager implements IFontsManager {
      * Clears all fonts from the manager.
      * @returns {this} The current instance for chaining.
      */
-    public clear() {
+    public clear(): this {
         this.map.clear();
         return this;
     }
@@ -169,7 +169,7 @@ export class FontsManager implements IFontsManager {
      * @param thisArg {any} - The `this` context to use (optional).
      * @returns {this} The current instance for chaining.
      */
-    public forEach(callbackfn: (value: Font, key: string, map: Map<string, Font>) => void, thisArg?: any) {
+    public forEach(callbackfn: (value: Font, key: string, map: Map<string, Font>) => void, thisArg?: any): this {
         this.map.forEach(callbackfn, thisArg);
         return this;
     }
@@ -187,7 +187,7 @@ export class FontsManager implements IFontsManager {
      * @param json {object} - The JSON object to populate the map from.
      * @returns {this} The current instance for chaining.
      */
-    public fromJSON(json: object) {
+    public fromJSON(json: object): this {
         this.map = new Map(Object.entries(json));
         return this;
     }
@@ -205,7 +205,7 @@ export class FontsManager implements IFontsManager {
      * @param array {Font[]} - The array of fonts to populate the map from.
      * @returns {this} The current instance for chaining.
      */
-    public fromArray(array: Font[]) {
+    public fromArray(array: Font[]): this {
         for (const font of array) {
             this.map.set(`${font.family}_${font.weight}`, font);
         }

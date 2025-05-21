@@ -126,7 +126,7 @@ export class ClearLayer implements IClearLayer {
      * @param y {ScaleType} - The y-coordinate of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setPosition(x: ScaleType, y: ScaleType) {
+    setPosition(x: ScaleType, y: ScaleType): this {
         this.props.x = x;
         this.props.y = y;
         return this;
@@ -138,7 +138,7 @@ export class ClearLayer implements IClearLayer {
      * @param height {ScaleType} - The height of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setSize(width: ScaleType, height: ScaleType) {
+    setSize(width: ScaleType, height: ScaleType): this {
         this.props.size = {
             width,
             height
@@ -152,7 +152,7 @@ export class ClearLayer implements IClearLayer {
      * @param {string} id - The unique identifier.
      * @returns {this} The current instance for chaining.
      */
-    setID(id: string) {
+    setID(id: string): this {
         this.id = id;
         return this;
     }
@@ -162,7 +162,7 @@ export class ClearLayer implements IClearLayer {
      * @param centring {AnyCentring} - The centring type of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setCentring(centring: AnyCentring) {
+    setCentring(centring: AnyCentring): this {
         this.props.centring = centring;
         return this;
     }
@@ -172,7 +172,7 @@ export class ClearLayer implements IClearLayer {
      * @param visible {boolean} - The visibility state of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setVisible(visible: boolean) {
+    setVisible(visible: boolean): this {
         this.visible = visible;
         return this;
     }
@@ -182,7 +182,7 @@ export class ClearLayer implements IClearLayer {
      * @param zIndex {number} - The z-index value of the layer.
      * @returns {this} The current instance for chaining.
      */
-    setZIndex(zIndex: number) {
+    setZIndex(zIndex: number): this {
         this.zIndex = zIndex;
         return this;
     }
@@ -194,7 +194,7 @@ export class ClearLayer implements IClearLayer {
      * @param manager {LayersManager} - The layers manager.
      * @param debug {boolean} - Whether to enable debug logging.
      */
-    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+    async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, w } = parcer.parseBatch({
