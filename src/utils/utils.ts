@@ -30,7 +30,8 @@ export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas |
         return v;
     } else if (typeof v === 'string') {
         if (percentReg.test(v)) {
-            return (parseFloat(v) / 100) * (options.layer ? (options.vertical ? layer.width : layer.height) : (options.vertical ? canvas.width : canvas.height));
+            console.log(options, layer, canvas.width, canvas.height, parseFloat(v));
+            return (parseFloat(v) / 100) * (options.layer ? (options.vertical ? layer.height : layer.width) : (options.vertical ? canvas.height : canvas.width ));
         } else if (pxReg.test(v)) {
             return parseFloat(v);
         } else if (canvasReg.test(v)) {
