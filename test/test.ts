@@ -23,7 +23,7 @@ canvas.manager.layers.add(
         .setID('morph')
         .setPosition('25%', 200)
         .setColor("rgb(0, 200, 0)")
-        .setSize(250, 250, 0)
+        .setSize(250, 250)
         .setFilters(Filters.blur(10))
         .setRotate(45),
     new MorphLayer()
@@ -32,7 +32,14 @@ canvas.manager.layers.add(
             .setSource('bezier')
             .setSpacing(-200), 200)
         .setColor("rgba(255, 0, 14, 1)")
-        .setSize(200, 200, 60),
+        .setSize(200, 200,
+            {
+                all: 30,
+                rightTop: 40,
+                rightBottom: 50,
+                leftTop: 20,
+                leftBottom: 10
+            }),
     new TextLayer()
         .setText("Hello, World!")
         .setPosition(300, 500)
@@ -60,7 +67,13 @@ canvas.manager.layers.add(
         .setMultiline(true, 200, 500),
     new ImageLayer()
         .setPosition('70%', '25%')
-        .setSize(200, 200, 60)
+        .setSize(200, 200, {
+            all: 30,
+            rightTop: 40,
+            rightBottom: 50,
+            leftTop: 20,
+            leftBottom: 10
+        })
         .setSrc("https://i.pinimg.com/1200x/f3/32/19/f332192b2090f437ca9f49c1002287b6.jpg"),
     new BezierLayer()
         .setID('bezier')

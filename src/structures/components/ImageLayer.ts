@@ -1,5 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ScaleType, Centring, LayerType } from "../../types";
+import {ScaleType, Centring, LayerType, radiusCorner} from "../../types";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     centring,
@@ -12,6 +12,7 @@ import {
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { LayersManager } from "../managers/LayersManager";
+import {Link} from "../helpers";
 
 /**
  * Interface representing an Image Layer.
@@ -54,7 +55,7 @@ export interface IImageLayerProps extends IBaseLayerProps {
         /**
          * The radius of the image.
          */
-        radius: ScaleType;
+        radius: { [corner in radiusCorner]?: ScaleType };
     };
 }
 
@@ -94,18 +95,17 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
      * Sets the size of the image.
      * @param width {ScaleType} - The width of the image.
      * @param height {ScaleType} - The height of the image.
-     * @param radius {ScaleType} - The radius of the image (optional).
+     * @param radius {{ [corner in radiusCorner]?: ScaleType }} - The radius of the image (optional).
      * @returns {this} The current instance for chaining.
      */
-    setSize(width: ScaleType, height: ScaleType, radius?: ScaleType): this {
+    setSize(width: ScaleType, height: ScaleType, radius?: { [corner in radiusCorner]?: ScaleType }): this {
         this.props.size = {
             width: width,
             height: height,
-            radius: radius || 0,
+            radius: radius || { all: 0 },
         };
         return this;
     }
-
     /**
      * Draws the Image Layer on the canvas.
      * @param ctx {SKRSContext2D} - The canvas rendering context.
@@ -124,10 +124,17 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         });
 
         const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
-        const r = parcer.parse(this.props.size.radius, defaultArg.wh(w / 2, h / 2), defaultArg.vl(false, true));
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
 
-        if (debug) LazyLog.log('none', `ImageLayer:`, { x, y, w, h, r });
+        const rad: { [corner in radiusCorner]?: number } = {};
+        if (typeof this.props.size.radius === 'object' && this.props.size.radius !== Link) {
+            for (const corner in this.props.size.radius) {
+                // @ts-ignore
+                rad[corner] = parcer.parse(this.props.size.radius[corner], defaultArg.wh(w / 2, h / 2), defaultArg.vl(false, true));
+            }
+        }
+
+        if (debug) LazyLog.log('none', `ImageLayer:`, { x, y, w, h, rad });
 
         ctx.save();
         transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
@@ -138,13 +145,13 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         image.width = w;
         image.height = h;
         if (!image) throw new LazyError('The image could not be loaded');
-        if (r) {
+        if (Object.keys(rad).length > 0) {
             ctx.beginPath();
             ctx.moveTo(x + (w / 2), y);
-            ctx.arcTo(x + w, y, x + w, y + (h / 2), r);
-            ctx.arcTo(x + w, y + h, x + (w / 2), y + h, r);
-            ctx.arcTo(x, y + h, x, y + (h / 2), r);
-            ctx.arcTo(x, y, x + (w / 2), y, r);
+            ctx.arcTo(x + w, y, x + w, y + (h / 2), rad.rightTop || rad.all || 0);
+            ctx.arcTo(x + w, y + h, x + (w / 2), y + h, rad.rightBottom || rad.all || 0);
+            ctx.arcTo(x, y + h, x, y + (h / 2), rad.leftBottom || rad.all || 0);
+            ctx.arcTo(x, y, x + (w / 2), y, rad.leftTop || rad.all || 0);
             ctx.closePath();
             ctx.clip();
             ctx.drawImage(image, x, y, w, h);

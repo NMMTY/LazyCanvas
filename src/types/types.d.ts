@@ -95,3 +95,5 @@ export interface Transform {
     };
     matrix: DOMMatrix2DInit;
 }
+
+export type radiusCorner = 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom' | 'all';

@@ -390,7 +390,10 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
                     layer.props.size.width = resize(layer.props.size.width, ratio) as ScaleType;
                     layer.props.size.height = resize(layer.props.size.height, ratio) as ScaleType;
                     if ('radius' in layer.props.size) {
-                        layer.props.size.radius = resize(layer.props.size.radius, ratio) as ScaleType;
+                        for (const corner in layer.props.size.radius) {
+                            // @ts-ignore
+                            layer.props.size.radius[corner] = resize(layer.props.size.radius[corner], ratio) as ScaleType;
+                        }
                     }
                 }
 
