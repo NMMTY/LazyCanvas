@@ -90,25 +90,10 @@ export class RenderManager implements IRenderManager {
     private async renderLayer(layer: AnyLayer | Group): Promise<SKRSContext2D> {
         if (this.debug) LazyLog.log('info', `Rendering ${layer.id}...\nData:`, layer.toJSON());
         if (layer.visible) {
-            if (layer instanceof Group) {
-                for (const subLayer of layer.layers) {
-                    if (subLayer.visible) {
-                        if ('globalComposite' in subLayer.props && subLayer.props.globalComposite) {
-                            this.lazyCanvas.ctx.globalCompositeOperation = subLayer.props.globalComposite;
-                        } else {
-                            this.lazyCanvas.ctx.globalCompositeOperation = 'source-over';
-                        }
-                        await subLayer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.manager.layers, this.debug);
-                    }
-                }
-            } else {
-                if ('globalComposite' in layer.props && layer.props.globalComposite) {
-                    this.lazyCanvas.ctx.globalCompositeOperation = layer.props.globalComposite;
-                } else {
-                    this.lazyCanvas.ctx.globalCompositeOperation = 'source-over';
-                }
-                await layer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.manager.layers, this.debug);
-            }
+            this.lazyCanvas.ctx.globalCompositeOperation = layer.props?.globalComposite || 'source-over';
+
+            await layer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.manager.layers, this.debug);
+
             this.lazyCanvas.ctx.shadowColor = 'transparent';
         }
         return this.lazyCanvas.ctx;

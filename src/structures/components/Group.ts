@@ -1,5 +1,8 @@
-import { AnyLayer, LayerType } from "../../types";
+import {AnyGlobalCompositeOperation, AnyLayer, LayerType} from "../../types";
 import { generateID } from "../../utils/utils";
+import {Canvas, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
+import {LayersManager} from "../managers/LayersManager";
+import {LazyLog} from "../../utils/LazyUtil";
 
 /**
  * Interface representing a group of layers.
@@ -29,6 +32,18 @@ export interface IGroup {
      * The layers contained within the group.
      */
     layers: Array<AnyLayer>;
+
+    /**
+     *
+     */
+    props?: IGroupProps;
+}
+
+export interface IGroupProps {
+    /**
+     * Don't use, this is just for compatibility.
+     */
+    globalComposite: AnyGlobalCompositeOperation;
 }
 
 /**
@@ -60,6 +75,8 @@ export class Group implements IGroup {
      */
     layers: Array<any>;
 
+    props?: IGroupProps;
+
     /**
      * Constructs a new Group instance.
      * @param opts {Object} - Optional parameters for the group.
@@ -72,6 +89,7 @@ export class Group implements IGroup {
         this.visible = opts?.visible || true;
         this.zIndex = opts?.zIndex || 1;
         this.layers = [];
+        this.props = {} as IGroupProps;
     }
 
     /**
@@ -159,6 +177,21 @@ export class Group implements IGroup {
      */
     get length(): number {
         return this.layers.length;
+    }
+
+    public async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean) {
+        for (const subLayer of this.layers) {
+            if (debug) LazyLog.log('info', `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
+            if (subLayer.visible) {
+                if ('globalComposite' in subLayer.props && subLayer.props.globalComposite) {
+                    ctx.globalCompositeOperation = subLayer.props.globalComposite;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                await subLayer.draw(ctx, canvas, manager, debug);
+                ctx.shadowColor = 'transparent';
+            }
+        }
     }
 
     /**

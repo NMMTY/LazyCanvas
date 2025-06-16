@@ -1,4 +1,4 @@
-import { ScaleType, LayerType, AnyCentring } from "../../types";
+import {ScaleType, LayerType, AnyCentring, AnyGlobalCompositeOperation} from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers/LayersManager";
 import { parser, centring } from "../../utils/utils";
@@ -69,6 +69,11 @@ export interface IClearLayerProps {
      * The centring type of the layer.
      */
     centring: AnyCentring;
+
+    /**
+     * Don't use, this is just for compatibility.
+     */
+    globalComposite: AnyGlobalCompositeOperation;
 }
 
 /**

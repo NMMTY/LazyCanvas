@@ -10,12 +10,12 @@ arr.forEach( async (item, index) => {
         new MorphLayer()
             .setPosition(200, 200)
             .setColor("rgb(0, 200, 0)")
-            .setSize(200, 200, 0)
+            .setSize(200, 200)
             .setCentring(Centring.Center),
         new MorphLayer()
             .setPosition(200, 200)
             .setColor("rgba(255, 0, 14, 0.5)")
-            .setSize(200, 200, 60)
+            .setSize(200, 200, { all: 60 })
             .setCentring(item as Centring),
     )
 
