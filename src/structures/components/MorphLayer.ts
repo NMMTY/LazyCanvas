@@ -199,7 +199,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
         }
 
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring }, manager });
 
         if (debug) LazyLog.log('none', `MorphLayer:`, { x, y, w, h, rad });
 

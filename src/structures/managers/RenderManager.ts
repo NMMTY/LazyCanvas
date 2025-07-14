@@ -1,6 +1,6 @@
 import { AnyExport, AnyLayer, Export } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
+import { Canvas, SKRSContext2D, SvgCanvas, ImageData } from "@napi-rs/canvas";
 import { Group } from "../components";
 import { LazyLog } from "../../utils/LazyUtil";
 // @ts-ignore

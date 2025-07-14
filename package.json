@@ -11,6 +11,7 @@
     "text": "tsc ./test/text.ts && node ./test/text.js",
     "animation": "tsc ./test/animation.ts && node ./test/animation.js",
     "iotest": "tsc ./test/iotest.ts && node ./test/iotest.js",
+    "gradient": "tsc ./test/gradient.ts && node ./test/gradient.js",
     "doc": "tsx docgen.ts",
     "font": "tsc ./scripts/font-gen.ts && node ./scripts/font-gen.js",
     "build": "tsc"
@@ -33,7 +34,7 @@
   },
   "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.68",
+    "@napi-rs/canvas": "^0.1.72",
     "gifenc": "^1.0.3",
     "js-yaml": "^4.1.0",
     "path": "^0.12.7",

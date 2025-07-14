@@ -137,14 +137,16 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         if (debug) LazyLog.log('none', `ImageLayer:`, { x, y, w, h, rad });
 
         ctx.save();
-        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
-        drawShadow(ctx, this.props.shadow);
-        opacity(ctx, this.props.opacity);
-        filters(ctx, this.props.filter);
         let image = await loadImage(this.props.src);
         image.width = w;
         image.height = h;
         if (!image) throw new LazyError('The image could not be loaded');
+
+        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
+        drawShadow(ctx, this.props.shadow);
+        opacity(ctx, this.props.opacity);
+        filters(ctx, this.props.filter);
+
         if (Object.keys(rad).length > 0) {
             ctx.beginPath();
             ctx.moveTo(x + (w / 2), y);

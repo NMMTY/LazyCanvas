@@ -205,7 +205,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         });
 
         const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cp1x, y: cp1y }, { x: cp2x, y: cp2y }, { x: xe, y: ye } ]);
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, {  debug, layer: { width, height, x: min.x, y: min.y, align: 'none' }, manager });
 
         if (debug) LazyLog.log('none', `BezierLayer:`, { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye, max, min, center, width, height, fillStyle });
 

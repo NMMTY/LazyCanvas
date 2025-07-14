@@ -13,7 +13,7 @@ export function generateID(type: string) {
 let percentReg = /^(\d+)%$/;
 let pxReg = /^(\d+)px$/;
 let canvasReg = /^(vw|vh|vmin|vmax)$/;
-let linkReg = /^(link-w|link-h|link-x|link-y)-([A-Za-z0-9_]+)-(\d+)$/;
+let linkReg = /^(link-w|link-h|link-x|link-y)-([A-Za-z0-9_]+)-(\d+(.\d+)?)$/;
 
 let hexReg = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 let rgbReg = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
@@ -25,100 +25,92 @@ export function isColor(v: ColorType) {
     return typeof (v === 'string' && (hexReg.test(v) || rgbReg.test(v) || rgbaReg.test(v) || hslReg.test(v) || hslaReg.test(v))) || v instanceof Gradient || v instanceof Pattern;
 }
 
-export function parseToNormal(v: ScaleType, ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, layer: { width: number, height: number } = { width: 0, height: 0 }, options: { vertical?: boolean, layer?: boolean } = { vertical: false, layer: false }, manager?: LayersManager): number {
-    if (typeof v === 'number') {
-        return v;
-    } else if (typeof v === 'string') {
-        if (percentReg.test(v)) {
-            console.log(options, layer, canvas.width, canvas.height, parseFloat(v));
-            return (parseFloat(v) / 100) * (options.layer ? (options.vertical ? layer.height : layer.width) : (options.vertical ? canvas.height : canvas.width ));
-        } else if (pxReg.test(v)) {
-            return parseFloat(v);
-        } else if (canvasReg.test(v)) {
-            if (v === 'vw') {
-                return (options.layer ? layer.width : canvas.width);
-            } else if (v === 'vh') {
-                return (options.layer ? layer.height : canvas.height);
-            } else if (v === 'vmin') {
-                return (options.layer ? Math.max(layer.width, layer.height) : Math.min(canvas.width, canvas.height));
-            } else if (v === 'vmax') {
-                return (options.layer ? Math.max(layer.width, layer.height) : Math.max(canvas.width, canvas.height));
-            }
-        } else if (linkReg.test(v)) {
-            let match = v.match(linkReg) as RegExpMatchArray;
+export function parseToNormal(
+    v: ScaleType,
+    ctx: SKRSContext2D,
+    canvas: Canvas | SvgCanvas,
+    layer: { width: number; height: number } = { width: 0, height: 0 },
+    options: { vertical?: boolean; layer?: boolean } = { vertical: false, layer: false },
+    manager?: LayersManager
+): number {
+    if (typeof v === 'number') return v;
 
+    if (typeof v === 'string') {
+        if (percentReg.test(v)) {
+            const base = options.layer
+                ? options.vertical ? layer.height : layer.width
+                : options.vertical ? canvas.height : canvas.width;
+            return (parseFloat(v) / 100) * base;
+        }
+        if (pxReg.test(v)) return parseFloat(v);
+
+        if (canvasReg.test(v)) {
+            const base = options.layer ? layer : canvas;
+            switch (v) {
+                case 'vw': return base.width;
+                case 'vh': return base.height;
+                case 'vmin': return Math.min(base.width, base.height);
+                case 'vmax': return Math.max(base.width, base.height);
+            }
+        }
+
+        if (linkReg.test(v)) {
+            const match = v.match(linkReg) as RegExpMatchArray;
             if (!manager) return 0;
 
-            let anyLayer = manager.get(match[2], true);
-
+            const anyLayer = manager.get(match[2], true);
             if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
 
-            const parcer = parser(ctx, canvas, manager);
+            const parserInstance = parser(ctx, canvas, manager);
+            const additionalSpacing = parseInt(match[3]) || 0;
 
             switch (match[1]) {
-                case 'link-w':
-                    if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
-                        return anyLayer.getBoundingBox(ctx, canvas, manager).width + (parseInt(match[3]) || 0);
-                    } else if (anyLayer instanceof TextLayer) {
-                        return anyLayer.measureText(ctx, canvas).width + (parseInt(match[3]) || 0);
-                    } else {
-                        return (parcer.parse(anyLayer.props.size.width) || 0) + (parseInt(match[3]) || 0);
-                    }
-                case 'link-h':
-                    if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
-                        return anyLayer.getBoundingBox(ctx, canvas, manager).height + (parseInt(match[3]) || 0);
-                    } else if (anyLayer instanceof TextLayer) {
-                        return anyLayer.measureText(ctx, canvas).height + (parseInt(match[3]) || 0);
-                    } else {
-                        return (parcer.parse(anyLayer.props.size.height, defaultArg.wh(parcer.parse(anyLayer.props.size.width)), defaultArg.vl(true)) || 0) + (parseInt(match[3]) || 0);
-                    }
-                case 'link-x':
-                    return (parcer.parse(anyLayer.props.x) || 0) + (parseInt(match[3]) || 0);
-                case 'link-y':
-                    return (parcer.parse(anyLayer.props.y, defaultArg.wh(), defaultArg.vl(true)) || 0) + (parseInt(match[3]) || 0);
+                case 'link-w': return getLayerWidth(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
+                case 'link-h': return getLayerHeight(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
+                case 'link-x': return parserInstance.parse(anyLayer.props.x) + additionalSpacing;
+                case 'link-y': return parserInstance.parse(anyLayer.props.y) + additionalSpacing;
             }
         }
-    } else if (v instanceof Link) {
+    }
+
+    if (v instanceof Link) {
         if (!manager) return 0;
 
-        let anyLayer = manager.get(v.source, true);
-
+        const anyLayer = manager.get(v.source, true);
         if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
 
-        const parcer = parser(ctx, canvas, manager);
+        const parserInstance = parser(ctx, canvas, manager);
+        const additionalSpacing = parserInstance.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0;
 
         switch (v.type) {
-            case LinkType.Width:
-            case 'width':
-                if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
-                    return anyLayer.getBoundingBox(ctx, canvas, manager).width + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-                } else if (anyLayer instanceof TextLayer) {
-                    return anyLayer.measureText(ctx, canvas).width + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-                } else {
-                    return (parcer.parse(anyLayer.props.size.width) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-                }
-            case LinkType.Height:
-            case 'height':
-                if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
-                    return anyLayer.getBoundingBox(ctx, canvas, manager).height + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-                } else if (anyLayer instanceof TextLayer) {
-                    return anyLayer.measureText(ctx, canvas).height + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-                } else {
-                    return (parcer.parse(anyLayer.props.size.height, defaultArg.wh(parcer.parse(anyLayer.props.size.width)), defaultArg.vl(true)) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-                }
-            case LinkType.X:
-            case 'x':
-                return (parcer.parse(anyLayer.props.x) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-            case LinkType.Y:
-            case 'y':
-                return (parcer.parse(anyLayer.props.y) || 0) + (parcer.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0);
-            default:
-                return 0;
+            case LinkType.Width: return getLayerWidth(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
+            case LinkType.Height: return getLayerHeight(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
+            case LinkType.X: return parserInstance.parse(anyLayer.props.x) + additionalSpacing;
+            case LinkType.Y: return parserInstance.parse(anyLayer.props.y) + additionalSpacing;
         }
-    } else {
-        return 0;
     }
+
     return 0;
+}
+
+function getLayerWidth(anyLayer: AnyLayer, ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, parserInstance: any): number {
+    if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
+        return anyLayer.getBoundingBox(ctx, canvas, manager).width;
+    }
+    if (anyLayer instanceof TextLayer) {
+        return anyLayer.measureText(ctx, canvas).width;
+    }
+    return anyLayer instanceof Path2DLayer ? 0 : parserInstance.parse(anyLayer.props.size.width) || 0;
+}
+
+function getLayerHeight(anyLayer: AnyLayer, ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, parserInstance: any): number {
+    if (anyLayer instanceof LineLayer || anyLayer instanceof BezierLayer || anyLayer instanceof QuadraticLayer) {
+        return anyLayer.getBoundingBox(ctx, canvas, manager).height;
+    }
+    if (anyLayer instanceof TextLayer) {
+        return anyLayer.measureText(ctx, canvas).height;
+    }
+    return anyLayer instanceof Path2DLayer ? 0 : parserInstance.parse(anyLayer.props.size.height) || 0;
 }
 
 export function parser(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager?: LayersManager) {
@@ -159,12 +151,12 @@ export function filters(ctx: SKRSContext2D, filters: string) {
     }
 }
 
-export function parseFillStyle(ctx: SKRSContext2D, color: ColorType) {
+export function parseFillStyle(ctx: SKRSContext2D, color: ColorType, opts: { debug?: boolean, layer?: { width: number, height: number, x: number, y: number, align: AnyCentring }, manager?: LayersManager }) {
     if (!ctx) throw new LazyError('The context is not defined');
     if (!color) throw new LazyError('The color is not defined');
 
     if (color instanceof Gradient || color instanceof Pattern) {
-        return color.draw(ctx);
+        return color.draw(ctx, opts);
     }
     return color;
 }
@@ -251,6 +243,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Morph:
                 case LayerType.Clear:
                     x -= width / 2;
+                    y -= height;
                     break;
             }
             return { x, y };
@@ -277,9 +270,6 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
             return { x, y };
         case Centring.StartBottom:
         case "start-bottom":
-            return { x, y };
-        case Centring.StartTop:
-        case "start-top":
             switch (type) {
                 case LayerType.Image:
                 case LayerType.Morph:
@@ -287,6 +277,9 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                     y -= height;
                     break;
             }
+            return { x, y };
+        case Centring.StartTop:
+        case "start-top":
             return { x, y };
         case Centring.End:
         case "end":
@@ -306,6 +299,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Morph:
                 case LayerType.Clear:
                     x -= width;
+                    y -= height;
                     break;
             }
             return { x, y };
@@ -316,7 +310,6 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Morph:
                 case LayerType.Clear:
                     x -= width;
-                    y -= height;
                     break;
             }
             return { x, y };

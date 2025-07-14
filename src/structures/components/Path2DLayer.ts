@@ -347,7 +347,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         ctx.beginPath();
         ctx.save();
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, manager });
         transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
         opacity(ctx, this.props.opacity);
         ctx.globalCompositeOperation = this.props.globalComposite;

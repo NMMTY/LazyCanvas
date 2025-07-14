@@ -189,9 +189,9 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
             ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) },
         });
 
-        let width = xe - xs;
-        let height = ye - ys;
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
+        let width = Math.abs(xe - xs);
+        let height = Math.abs(ye - ys);
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width, height, x: Math.min(xs, xe), y: Math.min(ys, ye), align: 'none' }, manager });
 
         if (debug) LazyLog.log('none', `LineLayer:`, { xs, ys, xe, ye, width, height });
 

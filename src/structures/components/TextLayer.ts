@@ -397,11 +397,14 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         drawShadow(ctx, this.props.shadow);
         opacity(ctx, this.props.opacity);
         filters(ctx, this.props.filter);
+
         ctx.textAlign = this.props.align;
         ctx.letterSpacing = `${this.props.letterSpacing}px`;
         ctx.wordSpacing = `${this.props.wordSpacing}px`;
         if (this.props.baseline) ctx.textBaseline = this.props.baseline;
         if (this.props.direction) ctx.direction = this.props.direction;
+
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width: w, height: h, x, y, align: 'none' }, manager });
         if (this.props.multiline.enabled) {
             const words = this.props.text.split(' ');
 
@@ -432,11 +435,11 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
             }
             for (let line of lines) {
-                this.drawText(this.props, ctx, await parseFillStyle(ctx, this.props.fillStyle), line.text, line.x, line.y, w);
+                this.drawText(this.props, ctx, fillStyle, line.text, line.x, line.y, w);
             }
         } else {
             ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
-            this.drawText(this.props, ctx, await parseFillStyle(ctx, this.props.fillStyle), this.props.text, x, y, w);
+            this.drawText(this.props, ctx, fillStyle, this.props.text, x, y, w);
         }
         ctx.closePath();
         ctx.restore();

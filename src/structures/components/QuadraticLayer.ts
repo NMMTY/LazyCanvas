@@ -200,7 +200,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         });
 
         const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cx, y: cy }, { x: xe, y: ye } ]);
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle);
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width, height, x: min.x, y: min.y, align: 'none' }, manager });
 
         if (debug) LazyLog.log('none', `BezierLayer:`, { xs, ys, cx, cy, xe, ye, max, min, center, width, height, fillStyle });
 

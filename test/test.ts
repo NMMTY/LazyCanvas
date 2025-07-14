@@ -12,7 +12,7 @@ import {
     BezierLayer,
     QuadraticLayer,
     Link,
-    Path2DLayer
+    Path2DLayer, FontsList, Group
 } from "../src";
 
 const canvas = new LazyCanvas({ debug: true })
@@ -20,84 +20,126 @@ const canvas = new LazyCanvas({ debug: true })
 
 canvas.manager.layers.add(
     new MorphLayer()
-        .setID('morph')
-        .setPosition('25%', 200)
-        .setColor("rgb(0, 200, 0)")
-        .setSize(250, 250)
-        .setFilters(Filters.blur(10))
-        .setRotate(45),
-    new MorphLayer()
-        .setPosition(new Link()
-            .setType('x')
-            .setSource('bezier')
-            .setSpacing(-200), 200)
-        .setColor("rgba(255, 0, 14, 1)")
-        .setSize(200, 200,
-            {
-                all: 30,
-                rightTop: 40,
-                rightBottom: 50,
-                leftTop: 20,
-                leftBottom: 10
+        .setPosition('50%', '50%')
+        .setColor("rgb(255, 255, 255)")
+        .setSize(800, 800),
+    new Group()
+        .setID('rotation-test')
+        .add(
+            new TextLayer()
+                .setText('rotation')
+                .setPosition(690, 60)
+                .setColor("#000")
+                .setBaseline('middle')
+                .setFont(FontsList.GeistMono_Black(35))
+                .setAlign('center'),
+            ...[0, 45, 90, 135, 180, 225, 270, 315].flatMap((angle) => {
+                return [
+                    new MorphLayer()
+                        .setPosition(50 + 70 * (angle / 45), 50)
+                        .setColor("rgba(0, 0, 0, 0.8)")
+                        .setSize(60, 20, { all: 5 })
+                        .setRotate(angle)
+                        .setCentring('center')
+                        .setID(`${angle}deg`),
+                    new TextLayer()
+                        .setPosition(`link-x-${angle}deg-0`, `link-y-${angle}deg-60`)
+                        .setColor("#000")
+                        .setAlign('center')
+                        .setText(`${angle}°`)
+                        .setFont(FontsList.GeistMono_Regular(25))
+                ];
             }),
-    new TextLayer()
-        .setText("Hello, World!")
-        .setPosition(300, 500)
-        .setColor("hsl(10, 40%, 50%)")
-        .setFont("GeistMono", 50, FontWeight.Regular)
-        .setShadow('#000000', 10, 10, 10)
-        .setWordSpacing(10)
-        .setLetterSpacing(10)
-        .setRotate(45),
-    new TextLayer()
-        .setText("Lazy Canvas")
-        .setPosition(100, 400)
-        .setColor(
-            new Gradient()
-                .setType(GradientType.Radial)
-                .addPoints(
-                    { x: 155, y: 455, r: 10 },
-                    { x: 150, y: 450, r: 100 }
-                ).addStops(
-                    { offset: 0, color: "#ffffff" },
-                    { offset: 1, color: "rgba(100, 200, 100, 0)" }
-                )
-        )
-        .setFont("Geist", 50, FontWeight.Thin)
-        .setMultiline(true, 200, 500),
-    new ImageLayer()
-        .setPosition('70%', '25%')
-        .setSize(200, 200, {
-            all: 30,
-            rightTop: 40,
-            rightBottom: 50,
-            leftTop: 20,
-            leftBottom: 10
-        })
-        .setSrc("https://i.pinimg.com/1200x/f3/32/19/f332192b2090f437ca9f49c1002287b6.jpg"),
-    new BezierLayer()
-        .setID('bezier')
-        .setPosition('link-x-quadratic-0', 400)
-        .setControlPoints({ x: 400, y: 450 }, { x: 600, y: 650 })
-        .setEndPosition(600, 600)
-        .setColor("rgb(0, 200, 0)")
-        .setStroke(5, "round", "round", [20, 10], 0, 10),
-    new QuadraticLayer()
-        .setID('quadratic')
-        .setPosition(400, 400)
-        .setControlPoint(700, 500)
-        .setEndPosition(600, 600)
-        .setColor("rgb(255, 59, 0)")
-        .setStroke(5, "round", "round", [20, 10], 0, 10),
-    new LineLayer()
-        .setPosition(200, 400)
-        .setEndPosition(600, 600)
-        .setColor("rgb(0, 200, 0)")
-        .setStroke(5, "round", "round", [20, 10], 0, 10),
-    new Path2DLayer()
-        .setPath('M 50 600 L 150 700 L 250 600 Z')
-        .setColor("rgb(255, 59, 0)")
-        .setStroke(5, "round", "round", [20, 10], 0, 10)
+        ),
+    new Group()
+        .setID('filter-test')
+        .add(
+            new TextLayer()
+                .setText('filters')
+                .setPosition(690, 175)
+                .setColor("#000")
+                .setBaseline('middle')
+                .setFont(FontsList.GeistMono_Black(35))
+                .setAlign('center'),
+            new ImageLayer()
+                .setPosition(65, 175)
+                .setSize(90, 90)
+                .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg"),
+            new ImageLayer()
+                .setPosition(165, 175)
+                .setSize(90, 90)
+                .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg")
+                .setFilters(Filters.grayscale(100)),
+            new ImageLayer()
+                .setPosition(265, 175)
+                .setSize(90, 90)
+                .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg")
+                .setFilters(Filters.sepia(100)),
+            new ImageLayer()
+                .setPosition(365, 175)
+                .setSize(90, 90)
+                .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg")
+                .setFilters(Filters.invert(100)),
+            new ImageLayer()
+                .setPosition(465, 175)
+                .setSize(90, 90)
+                .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg")
+                .setFilters(Filters.invert(100)),
+        ),
+    new Group()
+        .setID('gradient-test')
+        .add(
+            new TextLayer()
+                .setText('gradient')
+                .setPosition(690, 330)
+                .setColor("#000")
+                .setBaseline('middle')
+                .setFont(FontsList.GeistMono_Black(35))
+                .setAlign('center'),
+            ...[0, 45, 90, 135, 180, 225, 270, 315].flatMap((angle) => {
+                return [
+                    new MorphLayer()
+                        .setPosition(50 + 70 * (angle / 45), 260)
+                        .setSize(60, 60, { all: 5 })
+                        .setCentring('center')
+                        .setColor(
+                            new Gradient()
+                                .setType(GradientType.Linear)
+                                .addStops({ offset: 0, color: "#ff8a8a" }, { offset: 1, color: "#8aff8a" })
+                                .setAngle(angle)
+                        )
+                        .setID(`gradient${angle}deg`),
+                    new MorphLayer()
+                        .setPosition(`link-x-gradient${angle}deg-0`, `link-y-gradient${angle}deg-70`)
+                        .setSize(60, 60, { all: 5 })
+                        .setCentring('center')
+                        .setColor(
+                            new Gradient()
+                                .setType(GradientType.Conic)
+                                .setAngle(angle)
+                                .addStops({ offset: 0, color: "#8a8aff" }, { offset: 1, color: "#ff8aff" })
+                                .setPoints({ x: `link-x-gradient${angle}deg-0`, y: `link-y-gradient${angle}deg-70` })
+                        ),
+                    new MorphLayer()
+                        .setPosition(`link-x-gradient${angle}deg-0`, `link-y-gradient${angle}deg-140`)
+                        .setSize(60, 60, { all: 5 })
+                        .setCentring('center')
+                        .setColor(
+                            new Gradient()
+                                .setType(GradientType.Radial)
+                                .addStops({ offset: 0, color: "#8abfff" }, { offset: 1, color: "#8affe0" })
+                                .setPoints({ x: `link-x-gradient${angle}deg-${angle * 0.1}`, y: `link-y-gradient${angle}deg-140`, r: 5 },
+                                    { x: `link-x-gradient${angle}deg-0`, y: `link-y-gradient${angle}deg-140`, r: 60 })
+                        ),
+                    new TextLayer()
+                        .setPosition(`link-x-gradient${angle}deg-0`, `link-y-gradient${angle}deg-200`)
+                        .setColor("#000")
+                        .setAlign('center')
+                        .setText(`${angle}°`)
+                        .setFont(FontsList.GeistMono_Regular(25))
+                ]
+            }),
+        ),
 )
 
 new Exporter(canvas).export('png', { name: 'test', saveAsFile: true })
