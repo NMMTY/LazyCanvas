@@ -109,27 +109,27 @@ export interface ITextLayerProps extends IBaseLayerProps {
     /**
      * The baseline of the text.
      */
-    baseline: AnyTextBaseline;
+    baseline?: AnyTextBaseline;
 
     /**
      * The direction of the text.
      */
-    direction: AnyTextDirection;
+    direction?: AnyTextDirection;
 
     /**
      * The spacing between letters.
      */
-    letterSpacing: number;
+    letterSpacing?: number;
 
     /**
      * The spacing between words.
      */
-    wordSpacing: number;
+    wordSpacing?: number;
 
     /**
      * The stroke properties of the text.
      */
-    stroke: {
+    stroke?: {
         /**
          * The width of the stroke.
          */
@@ -179,25 +179,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     constructor(props?: ITextLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.Text, props || {} as ITextLayerProps, misc);
         this.props = props ? props : {} as ITextLayerProps;
-        this.props.align = TextAlign.Left;
-        this.props.font = {
-            family: 'Geist',
-            size: 16,
-            weight: FontWeight.Regular,
-        };
-        this.props.fillStyle = '#ffffff';
-        this.props.filled = true;
-        this.props.multiline = {
-            enabled: false,
-            spacing: 1.1,
-        };
-        this.props.size = {
-            width: 'vw',
-            height: 0,
-        }
-        this.props.centring = Centring.Center;
-        this.props.wordSpacing = 0;
-        this.props.letterSpacing = 0;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -399,8 +381,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         filters(ctx, this.props.filter);
 
         ctx.textAlign = this.props.align;
-        ctx.letterSpacing = `${this.props.letterSpacing}px`;
-        ctx.wordSpacing = `${this.props.wordSpacing}px`;
+        if (this.props.letterSpacing) ctx.letterSpacing = `${this.props.letterSpacing}px`;
+        if (this.props.wordSpacing) ctx.wordSpacing = `${this.props.wordSpacing}px`;
         if (this.props.baseline) ctx.textBaseline = this.props.baseline;
         if (this.props.direction) ctx.direction = this.props.direction;
 
@@ -486,5 +468,33 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         }
 
         return { ...data, props: copy } as ITextLayer;
+    }
+
+    /**
+     * Validates the properties of the Text Layer.
+     * @param props {ITextLayerProps} - The properties to validate.
+     * @returns {ITextLayerProps} The validated properties.
+     */
+    protected validateProps(props: ITextLayerProps): ITextLayerProps {
+        return {
+            ...super.validateProps(props),
+            text: props.text || "",
+            font: {
+                family: props.font?.family || "Arial",
+                size: props.font?.size || 16,
+                weight: props.font?.weight || FontWeight.Regular,
+            },
+            multiline: {
+                enabled: props.multiline?.enabled || false,
+                spacing: props.multiline?.spacing || 1.1,
+            },
+            size: {
+                width: props.size?.width || "vw",
+                height: props.size?.height || 0,
+            },
+            align: props.align || TextAlign.Left,
+            fillStyle: props.fillStyle || "#000000",
+            filled: props.filled !== undefined ? props.filled : true,
+        };
     }
 }

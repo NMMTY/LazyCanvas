@@ -28,6 +28,9 @@ export interface IGradient {
      */
     stops: Array<GradientColorStop>;
 
+    /**
+     * The angle of the gradient (optional, used for linear gradients).
+     */
     angle?: number;
 }
 
@@ -90,6 +93,9 @@ export class Gradient implements IGradient {
      */
     stops: Array<GradientColorStop>;
 
+    /**
+     * The angle of the gradient (optional, used for linear gradients).
+     */
     angle?: number;
     /**
      * Constructs a new Gradient instance.
@@ -100,6 +106,7 @@ export class Gradient implements IGradient {
         this.type = opts?.props?.type || GradientType.Linear;
         this.points = opts?.props?.points || [];
         this.stops = opts?.props?.stops || [];
+        this.angle = opts?.props?.angle || 0;
     }
 
     /**

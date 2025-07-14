@@ -41,7 +41,8 @@ export {
     Link,
     ILink,
     Exporter,
-    JSONReader
+    JSONReader,
+    YAMLReader
 } from "./structures/helpers";
 
 export { Filters } from "./helpers/Filters";

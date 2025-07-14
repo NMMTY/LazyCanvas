@@ -76,7 +76,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     constructor(props?: IImageLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.Image, props || {} as IImageLayerProps, misc);
         this.props = props ? props : {} as IImageLayerProps;
-        this.props.centring = Centring.Center;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -178,5 +178,22 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         }
 
         return { ...data } as IImageLayer;
+    }
+
+    /**
+     * Validates the properties of the Image Layer.
+     * @param data {IImageLayerProps} - The properties to validate.
+     * @returns {IImageLayerProps} The validated properties.
+     */
+    protected validateProps(data: IImageLayerProps): IImageLayerProps {
+        return {
+            ...super.validateProps(data),
+            src: data.src || '',
+            size: {
+                width: data.size?.width || 0,
+                height: data.size?.height || 0,
+                radius: data.size?.radius || { all: 0 }
+            }
+        }
     }
 }

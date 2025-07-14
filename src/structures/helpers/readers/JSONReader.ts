@@ -56,7 +56,7 @@ export class JSONReader {
 
         if (opts?.debug) LazyLog.log("info", "Reading JSON...\nOptions:", data.options, "\nAnimation:", data.animation, "\nLayers Number:", data.layers.length, "\nLayers:", data.layers);
 
-        const layers = JSONReader.layersParse(data.layers);
+        const layers = JSONReader.layersParse(data.layers, opts);
 
         const canvas = new LazyCanvas({ settings: data, debug: opts?.debug })
             .create(data.options.width, data.options.height);
@@ -100,7 +100,7 @@ export class JSONReader {
                 visible: layer.visible,
             }
             if (layer.type === LayerType.Group) {
-                return new Group(misc).add(...layer.layers.map((l: any) => this.layerParse(l)));
+                return new Group(misc).add(...layer.layers.map((l: any) => this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible })));
             } else {
                 return this.layerParse(layer, misc);
             }
@@ -154,7 +154,6 @@ export class JSONReader {
                 case 'gradient':
                     return new Gradient({ props: layer.props.fillStyle as IGradient });
                 case 'pattern':
-                    console.log('Pattern:', layer.props.fillStyle);
                     return new Pattern()
                         .setType((layer.props.fillStyle as IPattern).type)
                         .setSrc(typeof (layer.props.fillStyle as IPattern).src === 'string' ? (layer.props.fillStyle as IPattern).src : this.read((layer.props.fillStyle as IPattern).src as unknown as IOLazyCanvas));
@@ -162,6 +161,7 @@ export class JSONReader {
                     return layer.props.fillStyle;
             }
         } else if ('fillStyle' in layer.props) {
+            console.log(layer.type, layer);
             return layer.props.fillStyle || '#000000';
         } else {
             return '#000000';

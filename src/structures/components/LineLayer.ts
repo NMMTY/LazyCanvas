@@ -100,8 +100,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     constructor(props?: ILineLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.Line, props || {} as ILineLayerProps, misc);
         this.props = props ? props : {} as ILineLayerProps;
-        if (!this.props.fillStyle) this.props.fillStyle = '#000000';
-        this.props.centring = Centring.None;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -233,5 +232,29 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         }
 
         return { ...data, props: copy } as ILineLayer;
+    }
+
+    /**
+     * Validates the properties of the Line Layer.
+     * @param data {ILineLayerProps} - The properties to validate.
+     * @returns {ILineLayerProps} The validated properties.
+     */
+    protected validateProps(data: ILineLayerProps): ILineLayerProps {
+        return {
+            ...super.validateProps(data),
+            centring: data.centring || Centring.None,
+            endPoint: {
+                x: data.endPoint?.x || 0,
+                y: data.endPoint?.y || 0,
+            },
+            stroke: {
+                width: data.stroke?.width || 1,
+                cap: data.stroke?.cap || 'butt',
+                join: data.stroke?.join || 'miter',
+                dashOffset: data.stroke?.dashOffset || 0,
+                dash: data.stroke?.dash || [],
+                miterLimit: data.stroke?.miterLimit || 10,
+            },
+        }
     }
 }

@@ -96,8 +96,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     constructor(props?: IBezierLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.BezierCurve, props || {} as IBezierLayerProps, misc);
         this.props = props ? props : {} as IBezierLayerProps;
-        if (!this.props.fillStyle) this.props.fillStyle = '#000000';
-        this.props.centring = Centring.None;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -261,5 +260,27 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         }
 
         return { ...data, props: copy } as IBezierLayer;
+    }
+
+    /**
+     * Validates the properties of the Bezier layer.
+     * @param data {IBezierLayerProps} - The properties to validate.
+     * @returns {IBezierLayerProps} The validated properties.
+     */
+    protected validateProps(data: IBezierLayerProps): IBezierLayerProps {
+        return {
+            ...super.validateProps(data),
+            centring: data.centring || Centring.None,
+            controlPoints: data.controlPoints || [{x: 0, y: 0}, {x: 0, y: 0}],
+            endPoint: data.endPoint || {x: 0, y: 0},
+            stroke: {
+                width: data.stroke?.width || 1,
+                cap: data.stroke?.cap || 'butt',
+                join: data.stroke?.join || 'miter',
+                dashOffset: data.stroke?.dashOffset || 0,
+                dash: data.stroke?.dash || [],
+                miterLimit: data.stroke?.miterLimit || 10,
+            }
+        };
     }
 }

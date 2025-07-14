@@ -106,9 +106,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     constructor(props?: IMorphLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.Morph, props || {} as IMorphLayerProps, misc);
         this.props = props ? props : {} as IMorphLayerProps;
-        if (!this.props.fillStyle) this.props.fillStyle = '#000000';
-        if (!this.props.filled && this.props.filled !== false) this.props.filled = true;
-        this.props.centring = Centring.Center;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -254,5 +252,29 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
         }
 
         return { ...data, props: copy } as IMorphLayer;
+    }
+
+    /**
+     * Validates the properties of the Morph Layer.
+     * @param data {IMorphLayerProps} - The properties to validate.
+     * @returns {IMorphLayerProps} The validated properties.
+     */
+    protected validateProps(data: IMorphLayerProps): IMorphLayerProps {
+        return {
+            ...super.validateProps(data),
+            size: {
+                width: data.size?.width || 100,
+                height: data.size?.height || 100,
+                radius: data.size?.radius || {all: 0},
+            },
+            stroke: {
+                width: data.stroke?.width || 1,
+                cap: data.stroke?.cap || 'butt',
+                join: data.stroke?.join || 'miter',
+                dashOffset: data.stroke?.dashOffset || 0,
+                dash: data.stroke?.dash || [],
+                miterLimit: data.stroke?.miterLimit || 10,
+            },
+        };
     }
 }

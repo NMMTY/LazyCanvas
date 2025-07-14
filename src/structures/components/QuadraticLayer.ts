@@ -96,8 +96,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     constructor(props?: IQuadraticLayerProps, misc?: IBaseLayerMisc) {
         super(LayerType.QuadraticCurve, props || {} as IQuadraticLayerProps, misc);
         this.props = props ? props : {} as IQuadraticLayerProps;
-        if (!this.props.fillStyle) this.props.fillStyle = '#000000';
-        this.props.centring = Centring.None;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -242,5 +241,27 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         }
 
         return { ...data, props: copy } as IQuadraticLayer;
+    }
+
+    /**
+     * Validates the properties of the Quadratic Layer.
+     * @param data {IQuadraticLayerProps} - The properties to validate.
+     * @returns {IQuadraticLayerProps} The validated properties.
+     */
+    protected validateProps(data: IQuadraticLayerProps): IQuadraticLayerProps {
+        return {
+            ...super.validateProps(data),
+            centring: data.centring || Centring.None,
+            controlPoints: data.controlPoints || [{ x: 0, y: 0 }],
+            endPoint: data.endPoint || { x: 0, y: 0 },
+            stroke: {
+                width: data.stroke?.width || 1,
+                cap: data.stroke?.cap || 'butt',
+                join: data.stroke?.join || 'miter',
+                dashOffset: data.stroke?.dashOffset || 0,
+                dash: data.stroke?.dash || [],
+                miterLimit: data.stroke?.miterLimit || 10,
+            }
+        }
     }
 }

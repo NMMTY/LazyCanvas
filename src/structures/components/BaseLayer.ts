@@ -63,7 +63,7 @@ export interface IBaseLayerProps {
     /**
      * The filter effects applied to the layer.
      */
-    filter: string;
+    filter?: string;
 
     /**
      * The opacity of the layer, ranging from 0 to 1.
@@ -83,7 +83,7 @@ export interface IBaseLayerProps {
     /**
      * The shadow properties of the layer.
      */
-    shadow: {
+    shadow?: {
         /**
          * The color of the shadow.
          */
@@ -181,11 +181,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
         this.zIndex = misc?.zIndex || 1;
         this.visible = misc?.visible || true;
         this.props = props ? props : {} as T;
-        if (!this.props.x) this.props.x = 0;
-        if (!this.props.y) this.props.y = 0;
-        if (!this.props.opacity) this.props.opacity = 1;
-        if (!this.props.centring) this.props.centring = Centring.Center;
-        if (!this.props.transform) this.props.transform = {} as Transform;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -345,6 +341,21 @@ export class BaseLayer<T extends IBaseLayerProps> {
             zIndex: this.zIndex,
             visible: this.visible,
             props: this.props,
+        };
+    }
+
+     protected validateProps(data: T): T {
+        return {
+            ...data,
+            x: data.x || 0,
+            y: data.y || 0,
+            centring: data.centring || Centring.Center,
+            filter: data.filter || '',
+            opacity: data.opacity || 1,
+            filled: data.filled || false,
+            fillStyle: data.fillStyle || '#000000',
+            transform: data.transform || {},
+            globalComposite: data.globalComposite || 'source-over',
         };
     }
 }

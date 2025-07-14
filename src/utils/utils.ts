@@ -139,13 +139,13 @@ export function drawShadow(ctx: SKRSContext2D, shadow: any) {
     }
 }
 
-export function opacity(ctx: SKRSContext2D, opacity: number) {
+export function opacity(ctx: SKRSContext2D, opacity: number = 1) {
     if (opacity < 1) {
         ctx.globalAlpha = opacity;
     }
 }
 
-export function filters(ctx: SKRSContext2D, filters: string) {
+export function filters(ctx: SKRSContext2D, filters: string | null | undefined) {
     if (filters) {
         ctx.filter = filters;
     }
@@ -390,7 +390,7 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
                     }
                 }
 
-                if ('stroke' in layer.props) {
+                if ('stroke' in layer.props && layer.props.stroke) {
                     layer.props.stroke.width = resize(layer.props.stroke.width, ratio) as number;
                 }
 

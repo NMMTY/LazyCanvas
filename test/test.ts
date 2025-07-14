@@ -142,5 +142,5 @@ canvas.manager.layers.add(
         ),
 )
 
-new Exporter(canvas).export('png', { name: 'test', saveAsFile: true })
+new Exporter(canvas).export('yaml', { name: 'test', saveAsFile: true })
 

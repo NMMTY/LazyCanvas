@@ -115,14 +115,8 @@ export class ClearLayer implements IClearLayer {
         this.type = LayerType.Clear;
         this.zIndex = misc?.zIndex || 1;
         this.visible = misc?.visible || true;
-        this.props = props ? props : {
-            x: 0,
-            y: 0,
-            size: {
-                width: 0,
-                height: 0
-            }
-        } as IClearLayerProps;
+        this.props = props ? props : {} as IClearLayerProps;
+        this.props = this.validateProps(this.props);
     }
 
     /**
@@ -235,5 +229,18 @@ export class ClearLayer implements IClearLayer {
             visible: this.visible,
             props: copy,
         };
+    }
+
+    protected validateProps(props: IClearLayerProps): IClearLayerProps {
+        return {
+            x: props.x || 0,
+            y: props.y || 0,
+            size: {
+                width: props.size?.width || 0,
+                height: props.size?.height || 0
+            },
+            centring: props.centring || 'none',
+            globalComposite: props.globalComposite || 'source-over'
+        }
     }
 }

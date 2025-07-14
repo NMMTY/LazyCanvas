@@ -74,6 +74,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
         this.zIndex = misc?.zIndex || 1;
         this.visible = misc?.visible || true;
         this.props = props ? props : {} as IPath2DLayerProps;
+        this.props = this.validateProps(this.props);
 
     }
 
@@ -381,6 +382,28 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
             zIndex: this.zIndex,
             visible: this.visible,
             props: this.props
+        };
+    }
+
+    /**
+     * Validates the properties of the Path2D Layer.
+     * @param data {IPath2DLayerProps} - The properties to validate.
+     * @returns {IPath2DLayerProps} The validated properties.
+     */
+    protected validateProps(data: IPath2DLayerProps): IPath2DLayerProps {
+        return {
+            ...super.validateProps(data),
+            path2D: data.path2D || new Path2D(),
+            stroke: {
+                width: data.stroke?.width || 1,
+                cap: data.stroke?.cap || 'butt',
+                join: data.stroke?.join || 'miter',
+                dashOffset: data.stroke?.dashOffset || 0,
+                dash: data.stroke?.dash || [],
+                miterLimit: data.stroke?.miterLimit || 10
+            },
+            loadFromSVG: data.loadFromSVG || false,
+            clipPath: data.clipPath || false
         };
     }
 }
