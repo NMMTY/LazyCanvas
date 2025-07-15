@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "0.6.0",
+  "version": "0.6.0-dev.f33019",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,8 +13,8 @@
     "iotest": "tsc ./test/iotest.ts && node ./test/iotest.js",
     "gradient": "tsc ./test/gradient.ts && node ./test/gradient.js",
     "doc": "tsx docgen.ts",
-    "font": "tsc ./scripts/font-gen.ts && node ./scripts/font-gen.js",
-    "build": "tsc"
+    "font": "tsx ./scripts/font-gen.ts",
+    "build": "tsc && tsx ./scripts/post-build.ts"
   },
   "repository": {
     "type": "git",
