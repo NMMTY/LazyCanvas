@@ -352,7 +352,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
             centring: data.centring || Centring.Center,
             filter: data.filter || '',
             opacity: data.opacity || 1,
-            filled: data.filled || false,
+            filled: data.filled || true,
             fillStyle: data.fillStyle || '#000000',
             transform: data.transform || {},
             globalComposite: data.globalComposite || 'source-over',
