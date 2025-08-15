@@ -157,16 +157,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
             dashOffset: dashOffset || 0,
             miterLimit: miterLimit || 10,
         };
-        return this;
-    }
-
-    /**
-     * Sets whether the Morph Layer should be filled or stroked.
-     * @param filled {boolean} - If true, the layer will be filled; otherwise, it will be stroked.
-     * @returns {this} The current instance for chaining.
-     */
-    setFilled(filled: boolean): this {
-        this.props.filled = filled;
+        this.props.filled = false; // Ensure filled is false when stroke is set
         return this;
     }
 

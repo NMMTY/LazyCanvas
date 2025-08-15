@@ -25,7 +25,6 @@ for (let i = 0; i < 100; i++) {
                     .setPosition(100 + i * 2, 100 + i * 2)
                     .setColor(`hsl(${Math.ceil(300 - (i * 1.5))}, 100%, 50%)`)
                     .setSize(200, 200, { all: 100 - i / 2 })
-                    .setFilled(false)
                     .setStroke(1, "round", "round")
             )
     )

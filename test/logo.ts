@@ -31,7 +31,6 @@ canvas.manager.layers.add(
                 .setPosition(105, 105)
                 .setColor("#ff8a8a")
                 .setSize(200, 200, { all: 100 })
-                .setFilled(false)
                 .setStroke(2.5, "round", "round"),
         )
 );
@@ -42,7 +41,6 @@ for (let i = 1; i < 5; i += 1) {
             .setPosition(105, 105)
             .setColor("#ff8a8a")
             .setSize(185 - (20 * i - (i > 2 ? (i) : 0)), 185 - (20 * i - (i > 2 ? (i) : 0)), { all: 47.5 - (5 * i + (i > 2 ? (i * 0.25) : 0)) })
-            .setFilled(false)
             .setStroke(2.5, "round", "round")
             .setRotate(45 + (15 * i)),
     )

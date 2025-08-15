@@ -12,7 +12,7 @@ import {
     BezierLayer,
     QuadraticLayer,
     Link,
-    Path2DLayer, FontsList, Group
+    Path2DLayer, FontsList, Group, Utils
 } from "../src";
 
 const canvas = new LazyCanvas({ debug: true })
@@ -140,6 +140,7 @@ canvas.manager.layers.add(
                 ]
             }),
         ),
+    Utils.grid({ x: 800, y: 800 }, { lineWidth: 0.5, cellWith: 40, cellHeight: 40 })
 )
 
 new Exporter(canvas).export('png', { name: 'test', saveAsFile: true })

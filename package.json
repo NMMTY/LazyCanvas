@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "0.6.0-dev.f33019",
+  "version": "0.6.0",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -45,6 +45,7 @@
     "@hitomihiumi/micro-docgen": "^0.3.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.2",
+    "@typescript-eslint/utils": "^8.39.1",
     "ava": "^6.2.0",
     "eslint": "^9.23.0",
     "eslint-config-neon": "^0.2.7",
