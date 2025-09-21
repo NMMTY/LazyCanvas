@@ -1,0 +1,134 @@
+---
+title: "PluginManager"
+summary: "Class representing a manager for handling plugins."
+updatedAt: "2025-09-21T00:58:12.197Z"
+navIcon: "class"
+---
+
+
+implements [IPluginManager](/LazyCanvas/interfaces/IPluginManager)
+
+Class representing a manager for handling plugins.
+
+
+
+```typescript
+new PluginManager(canvas, opts)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["canvas","[LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)","Yes","The LazyCanvas instance."],["opts","\\{\n  debug: boolean\n}","Yes","Optional settings for the PluginManager."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["canvas","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","Reference to the LazyCanvas instance."],["debug","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","Whether debugging is enabled."],["plugins","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","A map storing installed plugins with their names as keys."]] }} />
+
+## Methods
+
+### public clear()
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
+
+Clears all plugins.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L360)
+
+### private executeErrorHook(error)
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
+
+Executes the onError hook for all plugins when an error occurs.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["error","[Error](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error)","No","The error that occurred."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L329)
+
+### public executeHook(hookName?, args?)
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
+
+Executes a hook for all plugins that implement it.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["hookName","keyof [IPluginHooks](/LazyCanvas/interfaces/IPluginHooks)","Yes","The name of the hook to execute."],["args","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \\>","Yes","Arguments to pass to the hook."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L308)
+
+### public get(pluginName?)
+Returns [undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) | [ILazyCanvasPlugin](/LazyCanvas/interfaces/ILazyCanvasPlugin)
+
+Gets a plugin by name.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["pluginName","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The name of the plugin."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L282)
+
+### public getPluginInfo()
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< \{ 
+   dependencies :   Array\<string\> ;
+   description :   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ;
+   name :   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ;
+   version :   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ; 
+} \>
+
+Gets plugin information.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L348)
+
+### public has(pluginName?)
+Returns [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+Checks if a plugin is registered.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["pluginName","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The name of the plugin."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L299)
+
+### public list()
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \>
+
+Lists all registered plugin names.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L290)
+
+### public register(plugin?)
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
+
+Registers a plugin.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["plugin","[ILazyCanvasPlugin](/LazyCanvas/interfaces/ILazyCanvasPlugin)","Yes","The plugin to register."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L219)
+
+### public unregister(pluginName?)
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
+
+Unregisters a plugin by name.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["pluginName","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The name of the plugin to unregister."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/PluginManager.ts#L250)

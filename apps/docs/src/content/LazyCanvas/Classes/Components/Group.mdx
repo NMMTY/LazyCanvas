@@ -1,0 +1,138 @@
+---
+title: "Group"
+summary: "Class representing a group of layers."
+updatedAt: "2025-09-21T00:58:12.190Z"
+navIcon: "class"
+---
+
+
+implements [IGroup](/LazyCanvas/interfaces/IGroup)
+
+Class representing a group of layers.
+
+
+
+```typescript
+new Group(opts)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["opts","\\{\n  id: string,\n  visible: boolean,\n  zIndex: number\n}","Yes","-"]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["id","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The unique identifier of the group."],["layers","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The layers contained within the group."],["props","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","-"],["type","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of the group, which is `Group`."],["visible","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The visibility of the group."],["zIndex","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The z-index of the group, determining its stacking order."],["length","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","Gets the number of components in the group."]] }} />
+
+## Methods
+
+### public add(components?)
+Returns this
+
+Adds components to the group.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["components","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [AnyLayer](/LazyCanvas/types/AnyLayer) \\>","Yes","The components to add to the group."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L129)
+
+### public clear()
+Returns this
+
+Clears all components from the group.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L151)
+
+### public draw(ctx, canvas, manager, debug)
+Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) \>
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","No","-"],["canvas","Canvas | SvgCanvas","No","-"],["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","No","-"],["debug","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","No","-"]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L181)
+
+### public get(id?)
+Returns [undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) | [AnyLayer](/LazyCanvas/types/AnyLayer)
+
+Retrieves a component from the group by its ID.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The unique identifier of the component to retrieve."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L161)
+
+### public getAll()
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< [AnyLayer](/LazyCanvas/types/AnyLayer) \>
+
+Retrieves all components from the group.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L169)
+
+### public remove(id?)
+Returns this
+
+Removes a component from the group by its ID.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The unique identifier of the component to remove."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L142)
+
+### public setID(id?)
+Returns this
+
+Sets the ID of the group.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The unique identifier of the group."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L99)
+
+### public setVisible(visible?)
+Returns this
+
+Sets the visibility of the group.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["visible","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","The visibility state of the group."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L109)
+
+### public setZIndex(zIndex?)
+Returns this
+
+Sets the z-index of the group.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["zIndex","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The z-index value of the group."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L119)
+
+### public toJSON()
+Returns [IGroup](/LazyCanvas/interfaces/IGroup)
+
+Converts the group to a JSON representation.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/Group.ts#L200)

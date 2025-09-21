@@ -1,0 +1,133 @@
+---
+title: "ClearLayer"
+summary: "Class representing a Clear Layer."
+updatedAt: "2025-09-21T00:58:12.186Z"
+navIcon: "class"
+---
+
+
+implements [IClearLayer](/LazyCanvas/interfaces/IClearLayer)
+
+Class representing a Clear Layer.
+
+
+
+```typescript
+new ClearLayer(props, misc)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[IClearLayerProps](/LazyCanvas/interfaces/IClearLayerProps)","Yes","The properties of the Clear Layer."],["misc","[IBaseLayerMisc](/LazyCanvas/interfaces/IBaseLayerMisc)","Yes","Miscellaneous options for the layer."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["id","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The unique identifier of the layer."],["props","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The properties of the Clear Layer."],["type","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of the layer, which is `Clear`."],["visible","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The visibility of the layer."],["zIndex","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The z-index of the layer, determining its stacking order."]] }} />
+
+## Methods
+
+### public draw(ctx?, canvas?, manager?, debug?)
+Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) \>
+
+Draws the Clear Layer on the canvas.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."],["canvas","Canvas | SvgCanvas","Yes","The canvas instance."],["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","Yes","The layers manager."],["debug","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether to enable debug logging."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L196)
+
+### public setCentring(centring?)
+Returns this
+
+Sets the centring type of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["centring","[AnyCentring](/LazyCanvas/types/AnyCentring)","Yes","The centring type of the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L164)
+
+### public setID(id?)
+Returns this
+
+Sets the unique identifier of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The unique identifier."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L154)
+
+### public setPosition(x?, y?)
+Returns this
+
+Sets the position of the layer in the 2D plane.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["x","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The x-coordinate of the layer."],["y","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The y-coordinate of the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L128)
+
+### public setSize(width?, height?)
+Returns this
+
+Sets the size of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["width","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The width of the layer."],["height","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The height of the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L140)
+
+### public setVisible(visible?)
+Returns this
+
+Sets the visibility of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["visible","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","The visibility state of the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L174)
+
+### public setZIndex(zIndex?)
+Returns this
+
+Sets the z-index of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["zIndex","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The z-index value of the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L184)
+
+### public toJSON()
+Returns [IClearLayer](/LazyCanvas/interfaces/IClearLayer)
+
+Converts the Clear Layer to a JSON representation.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L217)
+
+### public validateProps(props)
+Returns [IClearLayerProps](/LazyCanvas/interfaces/IClearLayerProps)
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[IClearLayerProps](/LazyCanvas/interfaces/IClearLayerProps)","No","-"]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/ClearLayer.ts#L234)

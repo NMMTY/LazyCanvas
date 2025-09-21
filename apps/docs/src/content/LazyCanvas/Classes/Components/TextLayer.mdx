@@ -1,0 +1,387 @@
+---
+title: "TextLayer"
+summary: "Class representing a Text Layer, extending the BaseLayer class."
+updatedAt: "2025-09-21T00:58:12.199Z"
+navIcon: "class"
+---
+
+
+extends BaseLayer\<ITextLayerProps\>
+
+Class representing a Text Layer, extending the BaseLayer class.
+
+
+
+```typescript
+new TextLayer(props, misc)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)","Yes","The properties of the Text Layer."],["misc","[IBaseLayerMisc](/LazyCanvas/interfaces/IBaseLayerMisc)","Yes","Miscellaneous options for the layer."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["id","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The unique identifier of the layer."],["props","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The properties of the Text Layer."],["type","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of the layer."],["visible","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The visibility of the layer."],["zIndex","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The z-index of the layer, determining its stacking order."]] }} />
+
+## Methods
+
+### public draw(ctx?, canvas?, manager?, debug?)
+Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) \>
+
+Draws the text layer on the canvas.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."],["canvas","Canvas | SvgCanvas","Yes","The canvas instance."],["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","Yes","The layers manager."],["debug","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether to enable debug logging."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L353)
+
+### private drawText(props?, ctx?, fillStyle?, text?, x?, y?, w?)
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
+
+Draws the text on the canvas.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)","Yes","The properties of the text layer."],["ctx","SKRSContext2D","Yes","The canvas rendering context."],["fillStyle","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | CanvasPattern | CanvasGradient","Yes","The fill style for the text."],["text","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The text content."],["x","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The x-coordinate of the text."],["y","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The y-coordinate of the text."],["w","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The width of the text area."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L430)
+
+### public measureText(ctx?, canvas?)
+Returns \{
+  height:   [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) ;
+   width :   [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) ; 
+}
+
+Measures the dimensions of the text.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."],["canvas","Canvas | SvgCanvas","Yes","The canvas instance."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L333)
+
+### public setAlign(align?)
+Returns this
+
+Sets the alignment of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["align","[AnyTextAlign](/LazyCanvas/types/AnyTextAlign)","Yes","The alignment of the text."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L259)
+
+### public setBaseline(baseline?)
+Returns this
+
+Sets the baseline of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["baseline","[AnyTextBaseline](/LazyCanvas/types/AnyTextBaseline)","Yes","The baseline of the text."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L269)
+
+### public setCentring(centring?)
+Returns this
+
+Sets the centring type of the layer. **Don't affect on Bezier, Line, Quadratic and Text layers**.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["centring","[AnyCentring](/LazyCanvas/types/AnyCentring)","Yes","The centring type."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L298)
+
+### public setColor(color?)
+Returns this
+
+Sets the color of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["color","[ColorType](/LazyCanvas/types/ColorType)","Yes","The color of the text."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L247)
+
+### public setDirection(direction?)
+Returns this
+
+Sets the direction of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["direction","[AnyTextDirection](/LazyCanvas/types/AnyTextDirection)","Yes","The direction of the text."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L279)
+
+### public setFilters(filter?)
+Returns this
+
+Sets the filter effects for the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["filter","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [AnyFilter](/LazyCanvas/types/AnyFilter) \\>","Yes","The filter effects to apply."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L288)
+
+### public setFont(familyOrConfig?, size?, weight?)
+Returns this
+
+Sets the font of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["familyOrConfig","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \\{ \n   family :   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ;\n   size :   [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) ;\n   weight :   [AnyWeight](/LazyCanvas/types/AnyWeight) ; \n}","Yes","The font family or configuration object."],["size","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The font size (required if `familyOrConfig` is a string)."],["weight","[AnyWeight](/LazyCanvas/types/AnyWeight)","Yes","The font weight (required if `familyOrConfig` is a string)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L202)
+
+### public setGlobalCompositeOperation(operation?)
+Returns this
+
+Sets the global composite operation for the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["operation","[AnyGlobalCompositeOperation](/LazyCanvas/types/AnyGlobalCompositeOperation)","Yes","The composite operation."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L328)
+
+### public setID(id?)
+Returns this
+
+Sets the unique identifier of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The unique identifier."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L215)
+
+### public setLetterSpacing(letterSpacing?)
+Returns this
+
+Sets the spacing between letters in the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["letterSpacing","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The spacing between letters."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L322)
+
+### public setMatrix(matrix?)
+Returns this
+
+Sets the transformation matrix of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["matrix","DOMMatrix2DInit","Yes","The transformation matrix."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L246)
+
+### public setMultiline(enabled?, width?, height?, spacing?)
+Returns this
+
+Configures the multiline properties of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["enabled","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether multiline is enabled."],["width","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The width of the multiline text area."],["height","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The height of the multiline text area."],["spacing","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The spacing between lines (optional)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L229)
+
+### public setOpacity(opacity?)
+Returns this
+
+Sets the opacity of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["opacity","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The opacity value, between 0 and 1."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L204)
+
+### public setPosition(x?, y?)
+Returns this
+
+Sets the position of the layer in the 2D plane.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["x","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The x-coordinate of the layer."],["y","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The y-coordinate of the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L193)
+
+### public setRotate(rotate?)
+Returns this
+
+Sets the rotation of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["rotate","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The rotation angle in degrees."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L267)
+
+### public setScale(x?, y?)
+Returns this
+
+Sets the scale of the layer in the x and y directions.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["x","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The scale factor in the x direction."],["y","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The scale factor in the y direction."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L257)
+
+### public setShadow(color?, blur?, offsetX?, offsetY?)
+Returns this
+
+Sets the shadow properties of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["color","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The color of the shadow."],["blur","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The blur radius of the shadow."],["offsetX","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The horizontal offset of the shadow."],["offsetY","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The vertical offset of the shadow."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L229)
+
+### public setStroke(width?, cap?, join?, dash?, dashOffset?, miterLimit?)
+Returns this
+
+Configures the stroke properties of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["width","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The width of the stroke."],["cap","[LineCap](/LazyCanvas/enums/LineCap)","Yes","The cap style of the stroke."],["join","[LineJoin](/LazyCanvas/enums/LineJoin)","Yes","The join style of the stroke."],["dash","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number) \\>","Yes","The dash pattern of the stroke."],["dashOffset","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The dash offset of the stroke."],["miterLimit","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The miter limit of the stroke."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L294)
+
+### public setText(text?)
+Returns this
+
+Sets the text of the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["text","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The text content of the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L189)
+
+### public setTranslate(x?, y?)
+Returns this
+
+Sets the translation of the layer in the x and y directions.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["x","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The translation in the x direction."],["y","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The translation in the y direction."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L278)
+
+### public setVisible(visible?)
+Returns this
+
+Sets the visibility of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["visible","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","The visibility state."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L308)
+
+### public setWordSpacing(wordSpacing?)
+Returns this
+
+Sets the spacing between words in the text layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["wordSpacing","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The spacing between words."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L312)
+
+### public setZIndex(zIndex?)
+Returns this
+
+Sets the z-index of the layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["zIndex","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The z-index value."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/BaseLayer.ts#L318)
+
+### public toJSON()
+Returns [ITextLayer](/LazyCanvas/interfaces/ITextLayer)
+
+Converts the Text Layer to a JSON representation.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L450)
+
+### public validateProps(props?)
+Returns [ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)
+
+Validates the properties of the Text Layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)","Yes","The properties to validate."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/components/TextLayer.ts#L468)

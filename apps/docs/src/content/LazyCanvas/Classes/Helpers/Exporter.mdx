@@ -1,0 +1,76 @@
+---
+title: "Exporter"
+summary: "Class responsible for exporting a LazyCanvas instance to various formats."
+updatedAt: "2025-09-21T00:58:12.187Z"
+navIcon: "class"
+---
+
+
+
+
+Class responsible for exporting a LazyCanvas instance to various formats.
+
+
+
+```typescript
+new Exporter(canvas)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["canvas","[LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)","No","{LazyCanvas} - The LazyCanvas instance to be exported."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["canvas","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The LazyCanvas instance to be exported."]] }} />
+
+## Methods
+
+### public export(exportType?, opts?)
+Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | SKRSContext2D | Canvas | SvgCanvas | [Buffer](https://nodejs.org/dist/latest/docs/api/buffer.html#buffer_class_buffer) \< ArrayBufferLike \> \>
+
+Exports the canvas to the specified format.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["exportType","[AnyExport](/LazyCanvas/types/AnyExport)","Yes","The type of export (e.g., \"png\", \"json\")."],["opts","\\{\n  name:   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ;\n   saveAsFile :   [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) ; \n}","Yes","Optional settings."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Exporter.ts#L63)
+
+### private exportLayers(manager?)
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \>
+
+Exports all layers from the LayersManager as an array of JSON objects.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","Yes","The LayersManager instance."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Exporter.ts#L46)
+
+### private saveFile(buffer?, extension?, name?)
+Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) \>
+
+Saves a file to the filesystem.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["buffer","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","Yes","The data to be saved."],["extension","[Extensions](/LazyCanvas/types/Extensions)","Yes","The file extension."],["name","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The name of the file (optional)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Exporter.ts#L34)
+
+### public syncExport(exportType?)
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) | [IOLazyCanvas](/LazyCanvas/interfaces/IOLazyCanvas)
+
+Synchronously exports the canvas to the specified format.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["exportType","[AnyExport](/LazyCanvas/types/AnyExport)","Yes","The type of export (e.g., \"json\")."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Exporter.ts#L145)

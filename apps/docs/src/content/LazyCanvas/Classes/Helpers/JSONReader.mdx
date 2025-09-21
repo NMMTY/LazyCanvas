@@ -1,0 +1,87 @@
+---
+title: "JSONReader"
+summary: "Class responsible for reading and parsing JSON data into a LazyCanvas instance."
+updatedAt: "2025-09-21T00:58:12.191Z"
+navIcon: "class"
+---
+
+
+
+
+Class responsible for reading and parsing JSON data into a LazyCanvas instance.
+
+
+
+```typescript
+new JSONReader()
+```
+
+
+
+
+## Methods
+
+### private static fillParse(layer?)
+Returns [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | [Gradient](/LazyCanvas/Classes/Helpers/Gradient) | [Pattern](/LazyCanvas/Classes/Helpers/Pattern)
+
+Parses the fill style of a layer.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["layer","[JSONLayer](/LazyCanvas/types/JSONLayer)","Yes","The layer whose fill style is to be parsed."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/readers/JSONReader.ts#L151)
+
+### private static layerParse(layer?, misc?)
+Returns [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group)
+
+Parses a single JSON layer into an AnyLayer or Group instance.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["layer","[IGroup](/LazyCanvas/interfaces/IGroup) | [Group](/LazyCanvas/Classes/Components/Group) | [JSONLayer](/LazyCanvas/types/JSONLayer)","Yes","The JSON layer to parse."],["misc","[IBaseLayerMisc](/LazyCanvas/interfaces/IBaseLayerMisc)","Yes","Miscellaneous options for the layer."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/readers/JSONReader.ts#L116)
+
+### private static layersParse(data?, opts?)
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group) \>
+
+Parses an array of JSON layers into an array of AnyLayer or Group instances.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["data","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [Group](/LazyCanvas/Classes/Components/Group) | [JSONLayer](/LazyCanvas/types/JSONLayer) \\>","Yes","The array of JSON layers to parse."],["opts","\\{\n  debug:   [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) ; \n}","Yes","Optional settings."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/readers/JSONReader.ts#L94)
+
+### public static read(data?, opts?)
+Returns [LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)
+
+Reads JSON data and converts it into a LazyCanvas instance.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["data","[IOLazyCanvas](/LazyCanvas/interfaces/IOLazyCanvas)","Yes","The JSON data to read."],["opts","\\{\n  debug:   [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) ; \n}","Yes","Optional settings."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/readers/JSONReader.ts#L40)
+
+### public static readFile(file?, opts?)
+Returns [LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)
+
+Reads a JSON file and converts it into a LazyCanvas instance.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["file","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The path to the JSON file."],["opts","\\{\n  debug:   [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) ; \n}","Yes","Optional settings."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/readers/JSONReader.ts#L76)

@@ -1,0 +1,72 @@
+---
+title: "Link"
+summary: "Class representing a link between layers with properties and methods to manipulate it."
+updatedAt: "2025-09-21T00:58:12.195Z"
+navIcon: "class"
+---
+
+
+
+
+Class representing a link between layers with properties and methods to manipulate it.
+
+
+
+```typescript
+new Link(opts)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["opts","\\{\n  props: ILink\n}","Yes","Optional properties for the link."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["additionalSpacing","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The additional spacing applied to the link."],["source","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The source layers ID."],["type","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of the link (e.g., width, height, etc.)."]] }} />
+
+## Methods
+
+### public setSource(source?)
+Returns this
+
+Sets the source of the link.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["source","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The ID of the layer to link."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Link.ts#L58)
+
+### public setSpacing(additionalSpacing?)
+Returns this
+
+Sets the additional spacing of the link.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["additionalSpacing","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The additional spacing of the link."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Link.ts#L78)
+
+### public setType(type?)
+Returns this
+
+Sets the type of the link.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["type","[AnyLinkType](/LazyCanvas/types/AnyLinkType)","Yes","The type of the link."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Link.ts#L68)
+
+### public toJSON()
+Returns [ILink](/LazyCanvas/interfaces/ILink)
+
+Converts the Link instance to a JSON representation.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Link.ts#L87)

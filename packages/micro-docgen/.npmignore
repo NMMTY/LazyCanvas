@@ -1,0 +1,15 @@
+.idea
+node_modules
+.vscode
+docs
+examples
+scripts
+src
+
+.editorconfig
+.gitignore
+.yarnrc.yml
+package-lock.json
+tsconfig.json
+yarn.lock
+pnpm-lock.yaml

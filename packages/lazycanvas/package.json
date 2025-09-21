@@ -1,0 +1,60 @@
+{
+  "name": "@nmmty/lazycanvas",
+  "version": "0.6.0",
+  "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "tsc ./test/test.ts && node ./test/test.js",
+    "centring": "tsc ./test/centring.ts && node ./test/centring.js",
+    "logo": "tsc ./test/logo.ts && node ./test/logo.js",
+    "text": "tsc ./test/text.ts && node ./test/text.js",
+    "animation": "tsc ./test/animation.ts && node ./test/animation.js",
+    "iotest": "tsc ./test/iotest.ts && node ./test/iotest.js",
+    "gradient": "tsc ./test/gradient.ts && node ./test/gradient.js",
+    "docgen": "tsx docgen.ts && tsx ./scripts/post-docgen.ts",
+    "lint": "eslint ./src --ext .ts",
+    "lint:fix": "eslint ./src --ext .ts --fix",
+    "font": "tsx ./scripts/font-gen.ts",
+    "build": "tsc && tsx ./scripts/post-build.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git"
+  },
+  "keywords": [
+    "canvas",
+    "@napi-rs/canvas",
+    "node-canvas",
+    "easy",
+    "simple"
+  ],
+  "author": "NMMTY",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  },
+  "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.72",
+    "@nmmty/lazycanvas": "link:",
+    "gifenc": "^1.0.3",
+    "js-yaml": "^4.1.0",
+    "path": "^0.12.7",
+    "svgson": "^5.3.1"
+  },
+  "devDependencies": {
+    "@hitomihiumi/colors.ts": "^1.0.3",
+    "@hitomihiumi/micro-docgen": "workspace:*",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/utils": "^8.39.1",
+    "ava": "^6.2.0",
+    "eslint": "^9.23.0",
+    "eslint-config-neon": "^0.2.7",
+    "lodash.merge": "^4.6.2",
+    "tslib": "^2.8.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.4.5"
+  }
+}

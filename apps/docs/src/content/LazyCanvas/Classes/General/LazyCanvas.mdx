@@ -1,0 +1,147 @@
+---
+title: "LazyCanvas"
+summary: "Class representing a LazyCanvas, which provides a structured way to manage canvas rendering."
+updatedAt: "2025-09-21T00:58:12.192Z"
+navIcon: "class"
+---
+
+
+implements [ILazyCanvas](/LazyCanvas/interfaces/ILazyCanvas)
+
+Class representing a LazyCanvas, which provides a structured way to manage canvas rendering.
+
+
+
+```typescript
+new LazyCanvas(opts)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["opts","\\{\n  debug: boolean,\n  settings: IOLazyCanvas\n}","Yes","Optional settings for the LazyCanvas instance."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["canvas","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The canvas instance, which can be either a Canvas or SvgCanvas."],["ctx","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The 2D rendering context of the canvas."],["manager","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The manager object containing various managers for layers, rendering, fonts, and animation.\r\nThe manager object containing various managers for layers, rendering, fonts, animation, and plugins."],["options","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The options for configuring the LazyCanvas instance."]] }} />
+
+## Methods
+
+### public animated()
+Returns this
+
+Enables animation for the canvas.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L188)
+
+### public create(width?, height?)
+Returns this
+
+Creates a new canvas with the specified dimensions.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["width","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The width of the canvas."],["height","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The height of the canvas."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L225)
+
+### public getPlugin(pluginName?)
+Returns [undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) | [ILazyCanvasPlugin](/LazyCanvas/interfaces/ILazyCanvasPlugin)
+
+Gets a plugin by name.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["pluginName","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The name of the plugin."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L267)
+
+### public getPluginsInfo()
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< \{ 
+   dependencies :   Array\<string\> ;
+   description :   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ;
+   name :   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ;
+   version :   [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) ; 
+} \>
+
+Gets information about all installed plugins.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L283)
+
+### public listPlugins()
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \>
+
+Lists all installed plugins.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L275)
+
+### public removePlugin(pluginName?)
+Returns this
+
+Removes a plugin from the canvas.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["pluginName","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The name of the plugin to remove."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L257)
+
+### public resize(ratio?)
+Returns this
+
+Resizes the canvas to the specified dimensions.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ratio","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The ratio to resize the canvas."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L198)
+
+### public setExportType(type?)
+Returns this
+
+Sets the export type for the canvas.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["type","[AnyExport](/LazyCanvas/types/AnyExport)","Yes","The export type (e.g., buffer, SVG, etc.)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L153)
+
+### public setSvgExportFlag(flag?)
+Returns this
+
+Sets the SVG export flag. This method should be called after `setExportType`.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["flag","SvgExportFlag","Yes","The SVG export flag."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L175)
+
+### public use(plugin?)
+Returns this
+
+Installs a plugin to the canvas.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["plugin","[ILazyCanvasPlugin](/LazyCanvas/interfaces/ILazyCanvasPlugin)","Yes","The plugin to install."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/LazyCanvas.ts#L247)
