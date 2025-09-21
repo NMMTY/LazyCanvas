@@ -1,7 +1,7 @@
 ---
 title: "RenderManager"
 summary: "Class responsible for managing rendering operations, including static and animated exports."
-updatedAt: "2025-09-21T00:58:12.198Z"
+updatedAt: "2025-09-21T23:22:36.537Z"
 navIcon: "class"
 ---
 
@@ -34,7 +34,7 @@ Merges multiple ImageData objects into a single ImageData object.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/RenderManager.ts#L57)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/managers/RenderManager.ts#L57)
 
 ### public render(format?)
 Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | SKRSContext2D | Canvas | SvgCanvas | [Buffer](https://nodejs.org/dist/latest/docs/api/buffer.html#buffer_class_buffer) \< ArrayBufferLike \> \>
@@ -47,7 +47,7 @@ Renders all layers and exports the result in the specified format.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/RenderManager.ts#L184)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/managers/RenderManager.ts#L184)
 
 ### private renderAnimation()
 Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [Buffer](https://nodejs.org/dist/latest/docs/api/buffer.html#buffer_class_buffer) \< ArrayBufferLike \> \>
@@ -56,7 +56,7 @@ Renders an animated sequence of layers and exports it as a GIF.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/RenderManager.ts#L138)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/managers/RenderManager.ts#L138)
 
 ### private renderLayer(layer?)
 Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< SKRSContext2D \>
@@ -69,7 +69,7 @@ Renders a single layer or group of layers.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/RenderManager.ts#L90)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/managers/RenderManager.ts#L90)
 
 ### private renderStatic(exportType?)
 Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | SKRSContext2D | [Buffer](https://nodejs.org/dist/latest/docs/api/buffer.html#buffer_class_buffer) \< ArrayBufferLike \> \>
@@ -82,4 +82,4 @@ Renders all layers statically and exports the result in the specified format.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/RenderManager.ts#L107)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/managers/RenderManager.ts#L107)
