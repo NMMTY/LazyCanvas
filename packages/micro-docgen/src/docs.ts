@@ -695,7 +695,7 @@ export async function createDocumentation(options: MicroDocgenInit): Promise<Doc
                     if (shouldLog) console.log('Creating remaining unused files in standard structure...');
 
                     const createRemainingFiles = async () => {
-                        const standardCategories = ['classes', 'types', 'enums', 'variables', 'functions', 'interfaces'];
+                        const standardCategories = ['classes', 'enums', 'functions', 'interfaces', 'types', 'variables'];
                         const remainingPages: Record<string, number> = {};
                         let remainingPageOrder = Object.keys(rootPages).length + 1;
 
@@ -979,11 +979,11 @@ export async function createDocumentation(options: MicroDocgenInit): Promise<Doc
                             if (idX === 0) {
                                 const pages: Record<string, number> = {};
                                 if (module.classes.length > 0) pages['Classes'] = 1;
-                                if (module.types.length > 0) pages['Types'] = 2;
-                                if (module.enums.length > 0) pages['Enums'] = 3;
-                                if (module.variables.length > 0) pages['Variables'] = 4;
-                                if (module.functions.length > 0) pages['Functions'] = 5;
-                                if (module.interfaces.length > 0) pages['Interfaces'] = 6;
+                                if (module.enums.length > 0) pages['Enums'] = 2;
+                                if (module.functions.length > 0) pages['Functions'] = 3;
+                                if (module.interfaces.length > 0) pages['Interfaces'] = 4;
+                                if (module.types.length > 0) pages['Types'] = 5;
+                                if (module.variables.length > 0) pages['Variables'] = 6;
 
 
                                 await writeFile(
