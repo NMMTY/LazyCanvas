@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hitomihiumi/micro-docgen.git"
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git"
   },
   "keywords": [
     "docgen",
@@ -37,9 +37,9 @@
   "author": "hitomihiumi, twlite <hello@twlite.dev>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hitomihiumi/micro-docgen/issues"
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
   },
-  "homepage": "https://github.com/hitomihiumi/micro-docgen#readme",
+  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/micro-docgen#readme",
   "dependencies": {
     "@hitomihiumi/micro-docgen": "link:",
     "commander": "^12.1.0",
