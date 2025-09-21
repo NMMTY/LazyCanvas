@@ -16,7 +16,6 @@ const nextConfig = {
   },
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   transpilePackages: ["next-mdx-remote"],
-  output: 'standalone',
   experimental: {
     serverMinification: true,
     serverActions: {

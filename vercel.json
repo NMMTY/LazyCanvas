@@ -1,19 +1,7 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "apps/docs/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "rootDirectory": "apps/docs"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "apps/docs/$1"
-    }
-  ]
+  "buildCommand": "cd apps/docs && pnpm build",
+  "devCommand": "cd apps/docs && pnpm dev",
+  "installCommand": "pnpm install",
+  "outputDirectory": "apps/docs/.next",
+  "framework": "nextjs"
 }
-
