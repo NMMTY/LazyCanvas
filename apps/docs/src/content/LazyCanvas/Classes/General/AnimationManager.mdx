@@ -1,0 +1,102 @@
+---
+title: "AnimationManager"
+summary: "Class representing the animation manager, which handles animation settings and options."
+updatedAt: "2025-09-21T00:58:12.182Z"
+navIcon: "class"
+---
+
+
+implements [IAnimationManager](/LazyCanvas/interfaces/IAnimationManager)
+
+Class representing the animation manager, which handles animation settings and options.
+
+
+
+```typescript
+new AnimationManager(opts)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["opts","\\{\n  debug: boolean,\n  settings: \\{\n  options: IAnimationOptions\n}\n}","Yes","Optional settings for the animation manager."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["debug","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","Whether debugging is enabled."],["options","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The options for the animation manager."]] }} />
+
+## Methods
+
+### public setClear(clear?, bufferSize?)
+Returns this
+
+Sets whether the content of previous frames will be cleared.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["clear","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether to clear the content of previous frames (default is true)."],["bufferSize","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The size of the frame buffer (default is 0)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/AnimationManager.ts#L162)
+
+### public setFrameRate(frameRate?)
+Returns this
+
+Sets the frame rate of the animation.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["frameRate","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The frame rate of the animation (default is 30)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/AnimationManager.ts#L111)
+
+### public setLoop(loop?)
+Returns this
+
+Sets whether the animation should loop.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["loop","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether the animation should loop (default is true)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/AnimationManager.ts#L121)
+
+### public setMaxColors(maxColors?)
+Returns this
+
+Sets the maximum number of colors in the animation.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["maxColors","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The maximum number of colors (default is 256)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/AnimationManager.ts#L151)
+
+### public setRGBFormat(rgb?)
+Returns this
+
+Sets the RGB format of the animation.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["rgb","[AnyColorSpace](/LazyCanvas/types/AnyColorSpace)","Yes","The RGB format of the animation (default is RGB565)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/AnimationManager.ts#L141)
+
+### public setTransparent(transparency?)
+Returns this
+
+Sets whether the animation should have transparency.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["transparency","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether the animation should have transparency (default is true)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/AnimationManager.ts#L131)

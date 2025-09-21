@@ -1,0 +1,72 @@
+---
+title: "Pattern"
+summary: "Class representing a pattern with properties and methods to manipulate it."
+updatedAt: "2025-09-21T00:58:12.197Z"
+navIcon: "class"
+---
+
+
+implements [IPattern](/LazyCanvas/interfaces/IPattern)
+
+Class representing a pattern with properties and methods to manipulate it.
+
+
+
+```typescript
+new Pattern(opts)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["opts","\\{\n  props: IPattern\n}","Yes","Optional properties for the pattern."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["fillType","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of fill, which is always `Pattern`."],["src","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The source of the pattern, which can be a string (URL or path) or a LazyCanvas instance."],["type","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of the pattern (e.g., repeat, no-repeat, etc.)."]] }} />
+
+## Methods
+
+### public draw(ctx?)
+Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< CanvasPattern \>
+
+Draws the pattern on a canvas context.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Pattern.ts#L81)
+
+### public setSrc(src?)
+Returns this
+
+Sets the source of the pattern.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["src","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | [LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)","Yes","The source of the pattern, which can be a string (URL or path) or a LazyCanvas instance."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Pattern.ts#L71)
+
+### public setType(type?)
+Returns this
+
+Sets the type of the pattern.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["type","[AnyPatternType](/LazyCanvas/types/AnyPatternType)","Yes","The type of the pattern (e.g., repeat, no-repeat)."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Pattern.ts#L61)
+
+### public toJSON()
+Returns [IPattern](/LazyCanvas/interfaces/IPattern)
+
+Converts the Pattern instance to a JSON representation.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/Pattern.ts#L94)

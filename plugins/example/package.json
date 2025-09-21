@@ -1,0 +1,39 @@
+{
+  "name": "@lazycanvas/example-plugin",
+  "version": "1.0.0",
+  "description": "Simple example plugin demonstrating LazyCanvas hook usage",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node dist/test/index.js",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "lazycanvas",
+    "plugin",
+    "canvas",
+    "hooks",
+    "example"
+  ],
+  "author": "LazyCanvas Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "@nmmty/lazycanvas": "^1.0.0"
+  },
+  "devDependencies": {
+    "@nmmty/lazycanvas": "workspace:*",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "ReadMe.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lazycanvas/lazycanvas.git",
+    "directory": "plugins/example"
+  }
+}
+

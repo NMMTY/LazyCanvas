@@ -1,0 +1,184 @@
+---
+title: "Basic Usage"
+summary: "Get started with LazyCanvas in just a few steps."
+updatedAt: "2025-09-21T22:19:13.394Z"
+navIcon: "learn"
+---
+
+LazyCanvas is a powerful canvas library for creating graphics programmatically. Here's how to get started with the most common use cases.
+
+## Creating a Canvas
+
+First, create a LazyCanvas instance and set its dimensions:
+
+```typescript
+import { LazyCanvas, Exporter } from '@nmmty/lazycanvas';
+
+const canvas = new LazyCanvas({ debug: true })
+    .create(800, 600);
+```
+
+## Adding Text
+
+Use `TextLayer` to add text to your canvas:
+
+```typescript
+import { TextLayer, FontsList, TextAlign } from '@nmmty/lazycanvas';
+
+canvas.manager.layers.add(
+    new TextLayer()
+        .setText("Hello, LazyCanvas!")
+        .setPosition(150, 85)
+        .setColor("#ff8a8a")
+        .setFont(FontsList.GeistMono_Black(50))
+        .setAlign(TextAlign.Center)
+);
+```
+
+## Adding Shapes
+
+Create shapes using `MorphLayer`:
+
+```typescript
+import { MorphLayer } from '@nmmty/lazycanvas';
+
+canvas.manager.layers.add(
+    new MorphLayer()
+        .setPosition(400, 300)
+        .setColor("rgb(255, 100, 100)")
+        .setSize(200, 200, { all: 50 }) // width, height, border radius
+        .setCentring('center')
+);
+```
+
+## Working with Images
+
+Load and display images using `ImageLayer`:
+
+```typescript
+import { ImageLayer } from '@nmmty/lazycanvas';
+
+canvas.manager.layers.add(
+    new ImageLayer()
+        .setSize('vw', 'vh') // viewport width/height
+        .setPosition('50%', '50%')
+        .setSrc("https://example.com/image.jpg")
+);
+```
+
+## Using Gradients
+
+Apply gradients to your shapes:
+
+```typescript
+import { Gradient, GradientType } from '@nmmty/lazycanvas';
+
+const gradient = new Gradient()
+    .setType(GradientType.Linear)
+    .addColorStop(0, "#ff0000")
+    .addColorStop(1, "#0000ff");
+
+canvas.manager.layers.add(
+    new MorphLayer()
+        .setPosition(400, 300)
+        .setColor(gradient)
+        .setSize(200, 200)
+);
+```
+
+## Grouping Elements
+
+Organize layers using `Group`:
+
+```typescript
+import { Group } from '@nmmty/lazycanvas';
+
+canvas.manager.layers.add(
+    new Group()
+        .setID('my-group')
+        .add(
+            new MorphLayer()
+                .setPosition(100, 100)
+                .setColor("#ff0000")
+                .setSize(50, 50),
+            new TextLayer()
+                .setText("Grouped!")
+                .setPosition(100, 75)
+                .setColor("#000000")
+        )
+);
+```
+
+## Creating Animations
+
+For animated content, enable animation mode:
+
+```typescript
+const canvas = new LazyCanvas({ debug: true })
+    .create(400, 400)
+    .animated();
+
+canvas.manager.animation
+    .setFrameRate(60)
+    .setClear(true, 20);
+
+// Add animated elements
+for (let i = 0; i < 100; i++) {
+    canvas.manager.layers.add(
+        new MorphLayer()
+            .setPosition(100 + i * 2, 100 + i * 2)
+            .setColor(`hsl(${Math.ceil(i * 1.5)}, 100%, 50%)`)
+            .setSize(200, 200, { all: 100 - i / 2 })
+    );
+}
+```
+
+## Exporting Your Canvas
+
+Export your canvas to various formats:
+
+```typescript
+import { Exporter, Export } from '@nmmty/lazycanvas';
+
+// Export as PNG
+new Exporter(canvas).export('png', {
+    name: 'my-image',
+    saveAsFile: true
+});
+
+// Export as SVG
+canvas.setExportType(Export.SVG);
+new Exporter(canvas).export('svg', {
+    name: 'my-vector',
+    saveAsFile: true
+});
+
+// Export animated GIF
+new Exporter(canvas).export('gif', {
+    name: 'my-animation',
+    saveAsFile: true
+});
+```
+
+## Loading from YAML
+
+You can also create canvases from YAML configuration files:
+
+```typescript
+import { YAMLReader, Exporter } from '@nmmty/lazycanvas';
+
+const canvas = YAMLReader.readFile('./canvas-config.yaml', { debug: false });
+new Exporter(canvas).export('png', { name: 'from-yaml', saveAsFile: true });
+```
+
+## Key Features
+
+- **Positioning**: Use absolute coordinates, percentages (`'50%'`), or viewport units (`'vw'`, `'vh'`)
+- **Colors**: Support for hex, rgb, rgba, hsl, and gradient colors
+- **Fonts**: Built-in font collection via `FontsList`
+- **Shapes**: Rounded rectangles, circles, and custom paths
+- **Animations**: Frame-based animation system
+- **Export Formats**: PNG, SVG, GIF, and more
+- **Configuration**: YAML-based canvas configuration
+
+This covers the fundamental usage patterns. Explore the API documentation for more advanced features like filters, patterns, and complex animations.

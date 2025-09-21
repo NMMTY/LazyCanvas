@@ -1,0 +1,45 @@
+---
+title: "YAMLReader"
+summary: "No description provided"
+updatedAt: "2025-09-21T00:58:12.199Z"
+navIcon: "class"
+---
+
+
+
+
+
+```typescript
+new YAMLReader()
+```
+
+
+
+
+## Methods
+
+### public static read(data?, opts?)
+Returns [LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)
+
+Reads a YAML string and converts it to a LazyCanvas object.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["data","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The YAML string to read."],["opts","\\{\n  debug:   [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) ; \n}","Yes","Optional parameters for debugging."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/readers/YAMLReader.ts#L16)
+
+### public static readFile(filePath?, opts?)
+Returns [LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)
+
+Reads a YAML file and converts it to a LazyCanvas object.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["filePath","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The path to the YAML file."],["opts","\\{\n  debug:   [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) ; \n}","Yes","Optional parameters for debugging."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/helpers/readers/YAMLReader.ts#L35)

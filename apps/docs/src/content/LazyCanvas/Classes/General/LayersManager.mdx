@@ -1,0 +1,200 @@
+---
+title: "LayersManager"
+summary: "Class representing a manager for handling layers and groups."
+updatedAt: "2025-09-21T00:58:12.192Z"
+navIcon: "class"
+---
+
+
+implements [ILayersManager](/LazyCanvas/interfaces/ILayersManager)
+
+Class representing a manager for handling layers and groups.
+
+
+
+```typescript
+new LayersManager(lazyCanvas, opts)
+```
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["lazyCanvas","[LazyCanvas](/LazyCanvas/Classes/General/LazyCanvas)","Yes","The LazyCanvas instance to associate with this manager."],["opts","\\{\n  debug: boolean\n}","Yes","Optional settings for the LayersManager."]] }} />
+
+
+## Properties
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["debug","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","Whether debugging is enabled."],["lazyCanvas","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The LazyCanvas instance associated with this manager."],["map","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","A map storing layers or groups with their IDs as keys."]] }} />
+
+## Methods
+
+### public add(layers?)
+Returns this
+
+Adds layers or groups to the map.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["layers","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group) \\>","Yes","The layers or groups to add to the map."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L64)
+
+### public clear()
+Returns this
+
+Clears all layers and groups from the map.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L102)
+
+### private crossSearch(id?)
+Returns [undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) | [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group)
+
+Searches for a layer or group by its ID, including within groups.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The ID of the layer or group to search for."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L218)
+
+### public entries()
+Returns IterableIterator\< \[ [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group) ] [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) | [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \>
+
+Retrieves the entries (key-value pairs) from the map.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L155)
+
+### public forEach(callbackfn?)
+Returns this
+
+Executes a callback function for each layer or group in the map.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["callbackfn","(\n  value: AnyLayer,Group | key: string | map: Map,\\<,string,AnyLayer,Group,\\> \n) =\\>  [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)","Yes","The callback function to execute."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L164)
+
+### public fromArray(array?)
+Returns this
+
+Populates the map from an array of layers and groups.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["array","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group) \\>","Yes","The array of layers and groups to populate the map from."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L200)
+
+### public fromJSON(json?)
+Returns this
+
+Populates the map from a JSON object.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["json","[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","Yes","The JSON object to populate the map from."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L182)
+
+### public get(id?, cross?)
+Returns [undefined](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) | [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group)
+
+Retrieves a layer or group from the map by its ID.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The ID of the layer or group to retrieve."],["cross","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether to search within groups for the ID."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L113)
+
+### public has(id?)
+Returns [boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+Checks if a layer or group exists in the map by its ID.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["id","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The ID of the layer or group to check."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L123)
+
+### public keys()
+Returns IterableIterator\< [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) | [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \>
+
+Retrieves the keys (IDs) from the map.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L147)
+
+### public remove(ids?)
+Returns this
+
+Removes layers or groups from the map by their IDs.
+
+
+
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ids","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) \\>","Yes","The IDs of the layers or groups to remove."]] }} />
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L86)
+
+### public size()
+Returns [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+Retrieves the number of layers and groups in the map.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L131)
+
+### public sort()
+Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
+
+Sorts the layers and groups in the map by their zIndex property.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L209)
+
+### public toArray()
+Returns [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \< [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group) \>
+
+Converts the map to an array of layers and groups.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L191)
+
+### public toJSON()
+Returns [object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)
+
+Converts the map to a JSON object.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L173)
+
+### public values()
+Returns IterableIterator\< [AnyLayer](/LazyCanvas/types/AnyLayer) | [Group](/LazyCanvas/Classes/Components/Group) | [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) | [any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \>
+
+Retrieves the values (layers and groups) from the map.
+
+
+
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/1d5786684b8ca8d543a4533b2b64f8d093b1e426/packages/lazycanvas/src/structures/managers/LayersManager.ts#L139)
