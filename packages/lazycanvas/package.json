@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -37,7 +37,6 @@
   "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.72",
-    "@nmmty/lazycanvas": "link:",
     "gifenc": "^1.0.3",
     "js-yaml": "^4.1.0",
     "path": "^0.12.7",

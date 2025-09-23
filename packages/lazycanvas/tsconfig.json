@@ -21,6 +21,9 @@
   "exclude": [
     "node_modules",
     "dist",
-    "test"
+    "test",
+    "scripts",
+    "resources",
+    "public"
   ],
 }

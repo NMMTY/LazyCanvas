@@ -1,6 +1,6 @@
 {
   "name": "@hitomihiumi/micro-docgen",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Quick and easy documentation for typescript projects.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -41,7 +41,6 @@
   },
   "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/micro-docgen#readme",
   "dependencies": {
-    "@hitomihiumi/micro-docgen": "link:",
     "commander": "^12.1.0",
     "common-tags": "^1.8.2",
     "tmp": "^0.2.1",
