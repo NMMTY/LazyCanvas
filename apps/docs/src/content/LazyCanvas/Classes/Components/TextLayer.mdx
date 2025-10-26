@@ -1,7 +1,7 @@
 ---
 title: "TextLayer"
 summary: "Class representing a Text Layer, extending the BaseLayer class."
-updatedAt: "2025-09-21T23:22:36.538Z"
+updatedAt: "2025-10-26T20:08:13.676Z"
 navIcon: "class"
 ---
 
@@ -34,20 +34,20 @@ Draws the text layer on the canvas.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L353)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L372)
 
-### private drawText(props?, ctx?, fillStyle?, text?, x?, y?, w?)
+### private drawText(props?, ctx?, fillStyle?, text?, x?, y?, w?, textOffset?)
 Returns [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined)
 
 Draws the text on the canvas.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)","Yes","The properties of the text layer."],["ctx","SKRSContext2D","Yes","The canvas rendering context."],["fillStyle","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | CanvasPattern | CanvasGradient","Yes","The fill style for the text."],["text","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The text content."],["x","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The x-coordinate of the text."],["y","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The y-coordinate of the text."],["w","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The width of the text area."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)","Yes","The properties of the text layer."],["ctx","SKRSContext2D","Yes","The canvas rendering context."],["fillStyle","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) | CanvasGradient | CanvasPattern","Yes","The fill style for the text."],["text","[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)","Yes","The text content."],["x","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The x-coordinate of the text."],["y","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The y-coordinate of the text."],["w","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The width of the text area."],["textOffset","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The offset of this text segment in the original full text (for multiline support)."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L430)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L452)
 
 ### public measureText(ctx?, canvas?)
 Returns \{
@@ -63,7 +63,7 @@ Measures the dimensions of the text.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L333)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L352)
 
 ### public setAlign(align?)
 Returns this
@@ -76,7 +76,7 @@ Sets the alignment of the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L259)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L278)
 
 ### public setBaseline(baseline?)
 Returns this
@@ -89,7 +89,7 @@ Sets the baseline of the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L269)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L288)
 
 ### public setCentring(centring?)
 Returns this
@@ -102,20 +102,20 @@ Sets the centring type of the layer. **Don't affect on Bezier, Line, Quadratic a
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L298)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L288)
 
-### public setColor(color?)
+### public setColor(color?, sub?)
 Returns this
 
 Sets the color of the text layer.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["color","[ColorType](/LazyCanvas/types/ColorType)","Yes","The color of the text."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["color","[ColorType](/LazyCanvas/types/ColorType)","Yes","The base color of the text."],["sub","[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array) \\< [SubStringColor](/LazyCanvas/types/SubStringColor) \\>","Yes","Optional substring colors for partial text coloring."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L247)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L263)
 
 ### public setDirection(direction?)
 Returns this
@@ -128,7 +128,7 @@ Sets the direction of the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L279)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L298)
 
 ### public setFilters(filter?)
 Returns this
@@ -141,7 +141,7 @@ Sets the filter effects for the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L288)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L278)
 
 ### public setFont(familyOrConfig?, size?, weight?)
 Returns this
@@ -154,7 +154,7 @@ Sets the font of the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L202)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L218)
 
 ### public setGlobalCompositeOperation(operation?)
 Returns this
@@ -167,7 +167,7 @@ Sets the global composite operation for the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L328)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L318)
 
 ### public setID(id?)
 Returns this
@@ -180,7 +180,7 @@ Sets the unique identifier of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L215)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L205)
 
 ### public setLetterSpacing(letterSpacing?)
 Returns this
@@ -193,7 +193,7 @@ Sets the spacing between letters in the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L322)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L341)
 
 ### public setMatrix(matrix?)
 Returns this
@@ -206,20 +206,20 @@ Sets the transformation matrix of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L246)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L236)
 
-### public setMultiline(enabled?, width?, height?, spacing?)
+### public setMultiline(width?, height?, spacing?)
 Returns this
 
 Configures the multiline properties of the text layer.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["enabled","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether multiline is enabled."],["width","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The width of the multiline text area."],["height","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The height of the multiline text area."],["spacing","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The spacing between lines (optional)."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["width","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The width of the multiline text area."],["height","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The height of the multiline text area."],["spacing","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The spacing between lines (optional)."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L229)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L244)
 
 ### public setOpacity(opacity?)
 Returns this
@@ -232,7 +232,7 @@ Sets the opacity of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L204)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L194)
 
 ### public setPosition(x?, y?)
 Returns this
@@ -245,7 +245,7 @@ Sets the position of the layer in the 2D plane.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L193)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L183)
 
 ### public setRotate(rotate?)
 Returns this
@@ -258,7 +258,7 @@ Sets the rotation of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L267)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L257)
 
 ### public setScale(x?, y?)
 Returns this
@@ -271,7 +271,7 @@ Sets the scale of the layer in the x and y directions.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L257)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L247)
 
 ### public setShadow(color?, blur?, offsetX?, offsetY?)
 Returns this
@@ -284,7 +284,7 @@ Sets the shadow properties of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L229)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L219)
 
 ### public setStroke(width?, cap?, join?, dash?, dashOffset?, miterLimit?)
 Returns this
@@ -297,7 +297,7 @@ Configures the stroke properties of the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L294)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L313)
 
 ### public setText(text?)
 Returns this
@@ -310,7 +310,7 @@ Sets the text of the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L189)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L205)
 
 ### public setTranslate(x?, y?)
 Returns this
@@ -323,7 +323,7 @@ Sets the translation of the layer in the x and y directions.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L278)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L268)
 
 ### public setVisible(visible?)
 Returns this
@@ -336,7 +336,7 @@ Sets the visibility of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L308)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L298)
 
 ### public setWordSpacing(wordSpacing?)
 Returns this
@@ -349,7 +349,7 @@ Sets the spacing between words in the text layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L312)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L331)
 
 ### public setZIndex(zIndex?)
 Returns this
@@ -362,7 +362,7 @@ Sets the z-index of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/BaseLayer.ts#L318)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L308)
 
 ### public toJSON()
 Returns [ITextLayer](/LazyCanvas/interfaces/ITextLayer)
@@ -371,17 +371,17 @@ Converts the Text Layer to a JSON representation.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L450)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L576)
 
-### public validateProps(props?)
+### public validateProps(data?)
 Returns [ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)
 
 Validates the properties of the Text Layer.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)","Yes","The properties to validate."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["data","[ITextLayerProps](/LazyCanvas/interfaces/ITextLayerProps)","Yes","The properties to validate."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba4be40168e49b0348ae523995fc10eec8149d6c/packages/lazycanvas/src/structures/components/TextLayer.ts#L468)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/TextLayer.ts#L594)
