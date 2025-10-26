@@ -1,5 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ScaleType , LayerType, radiusCorner } from "../../types";
+import { ScaleType , LayerType, RadiusCorner } from "../../types";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     centring,
@@ -55,7 +55,7 @@ export interface IImageLayerProps extends IBaseLayerProps {
         /**
          * The radius of the image.
          */
-        radius: { [corner in radiusCorner]?: ScaleType };
+        radius: { [corner in RadiusCorner]?: ScaleType };
     };
 }
 
@@ -98,7 +98,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
      * @param {{ [corner in radiusCorner]?: ScaleType }} [radius] - The radius of the image (optional).
      * @returns {this} The current instance for chaining.
      */
-    setSize(width: ScaleType, height: ScaleType, radius?: { [corner in radiusCorner]?: ScaleType }): this {
+    setSize(width: ScaleType, height: ScaleType, radius?: { [corner in RadiusCorner]?: ScaleType }): this {
         this.props.size = {
             width: width,
             height: height,
@@ -126,7 +126,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
         let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
 
-        const rad: { [corner in radiusCorner]?: number } = {};
+        const rad: { [corner in RadiusCorner]?: number } = {};
         if (typeof this.props.size.radius === 'object' && this.props.size.radius !== Link) {
             for (const corner in this.props.size.radius) {
                 // @ts-ignore

@@ -44,6 +44,16 @@ export interface IQuadraticLayerProps extends IBaseLayerProps {
     endPoint: Point;
 
     /**
+     * Whether the layer is filled.
+     */
+    filled: boolean;
+
+    /**
+     * The fill style (color or pattern) of the layer.
+     */
+    fillStyle: ColorType;
+
+    /**
      * The stroke properties of the quadratic curve.
      */
     stroke: {
@@ -251,6 +261,8 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     protected validateProps(data: IQuadraticLayerProps): IQuadraticLayerProps {
         return {
             ...super.validateProps(data),
+            filled: data.filled || false,
+            fillStyle: data.fillStyle || '#000000',
             centring: data.centring || Centring.None,
             controlPoints: data.controlPoints || [{ x: 0, y: 0 }],
             endPoint: data.endPoint || { x: 0, y: 0 },

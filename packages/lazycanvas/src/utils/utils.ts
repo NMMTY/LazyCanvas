@@ -1,4 +1,13 @@
-import type { AnyCentring, AnyLayer, AnyTextAlign, ColorType, PointNumber, ScaleType, Transform } from "../types";
+import type {
+    AnyCentring,
+    AnyLayer,
+    AnyTextAlign,
+    ColorType,
+    PointNumber,
+    ScaleType,
+    SubStringColor,
+    Transform
+} from "../types";
 import { Centring, LayerType, LinkType, TextAlign } from "../types";
 import { Gradient, Link, Pattern } from "../structures/helpers";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
@@ -21,8 +30,8 @@ let rgbaReg = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(0|0?\.\d+|1(\.0)?)\)$/;
 let hslReg = /^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/;
 let hslaReg = /^hsla\((\d+),\s*(\d+)%,\s*(\d+)%,\s*(0|0?\.\d+|1(\.0)?)\)$/;
 
-export function isColor(v: ColorType) {
-    return typeof (v === 'string' && (hexReg.test(v) || rgbReg.test(v) || rgbaReg.test(v) || hslReg.test(v) || hslaReg.test(v))) || v instanceof Gradient || v instanceof Pattern;
+export function isColor(v: ColorType | SubStringColor) {
+    return typeof (v === 'string' && (hexReg.test(v) || rgbReg.test(v) || rgbaReg.test(v) || hslReg.test(v) || hslaReg.test(v))) || v instanceof Gradient || v instanceof Pattern || (typeof v === 'object' && (v.start && v.end && v.color));
 }
 
 export function parseToNormal(
@@ -151,14 +160,20 @@ export function filters(ctx: SKRSContext2D, filters: string | null | undefined) 
     }
 }
 
-export function parseFillStyle(ctx: SKRSContext2D, color: ColorType, opts: { debug?: boolean, layer?: { width: number, height: number, x: number, y: number, align: AnyCentring }, manager?: LayersManager }) {
+export function parseFillStyle(ctx: SKRSContext2D, color: ColorType | SubStringColor, opts: { debug?: boolean, layer?: { width: number, height: number, x: number, y: number, align: AnyCentring }, manager?: LayersManager }) {
     if (!ctx) throw new LazyError('The context is not defined');
     if (!color) throw new LazyError('The color is not defined');
 
     if (color instanceof Gradient || color instanceof Pattern) {
         return color.draw(ctx, opts);
     }
-    return color;
+
+    if (typeof color === 'object' && color.start && color.end && color.color) {
+        return color.color
+    } else if (typeof color === 'string') {
+        return color;
+    }
+    return '#000000';
 }
 
 export function transform(ctx: SKRSContext2D, transform: Transform, layer: { width: number, height: number, x: number, y: number, type: LayerType } = { width: 0, height: 0, x: 0, y: 0, type: LayerType.Morph }, extra: { text: string, textAlign: AnyTextAlign, fontSize: number, multiline: boolean} = { text: '', textAlign: TextAlign.Left, fontSize: 0, multiline: false }) {

@@ -1,5 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, ScaleType, LayerType, radiusCorner } from "../../types";
+import { ColorType, ScaleType, LayerType, RadiusCorner } from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     drawShadow,
@@ -50,8 +50,18 @@ export interface IMorphLayerProps extends IBaseLayerProps {
         /**
          * The radius of the Morph Layer.
          */
-        radius: { [corner in radiusCorner]?: ScaleType };
+        radius: { [corner in RadiusCorner]?: ScaleType };
     };
+
+    /**
+     * Whether the layer is filled.
+     */
+    filled: boolean;
+
+    /**
+     * The fill style (color or pattern) of the layer.
+     */
+    fillStyle: ColorType;
 
     /**
      * The stroke properties of the morph.
@@ -116,7 +126,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      * @param {{ [corner in radiusCorner]?: ScaleType }} [radius] - The radius of the Morph Layer (optional).
      * @returns {this} The current instance for chaining.
      */
-    setSize(width: ScaleType, height: ScaleType, radius?: { [corner in radiusCorner]?: ScaleType }): this {
+    setSize(width: ScaleType, height: ScaleType, radius?: { [corner in RadiusCorner]?: ScaleType }): this {
         this.props.size = {
             width: width,
             height: height,
@@ -179,7 +189,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
 
         const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
 
-        const rad: { [corner in radiusCorner]?: number } = {};
+        const rad: { [corner in RadiusCorner]?: number } = {};
         if (typeof this.props.size.radius === 'object' && this.props.size.radius !== Link) {
             for (const corner in this.props.size.radius) {
                 // @ts-ignore
@@ -253,6 +263,8 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     protected validateProps(data: IMorphLayerProps): IMorphLayerProps {
         return {
             ...super.validateProps(data),
+            filled: data.filled || true,
+            fillStyle: data.fillStyle || '#000000',
             size: {
                 width: data.size?.width || 100,
                 height: data.size?.height || 100,

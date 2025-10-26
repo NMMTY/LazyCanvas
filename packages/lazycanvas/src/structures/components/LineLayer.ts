@@ -48,6 +48,16 @@ export interface ILineLayerProps extends IBaseLayerProps {
     };
 
     /**
+     * Whether the layer is filled.
+     */
+    filled: boolean;
+
+    /**
+     * The fill style (color or pattern) of the layer.
+     */
+    fillStyle: ColorType;
+
+    /**
      * The stroke properties of the line.
      */
     stroke: {
@@ -242,6 +252,8 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     protected validateProps(data: ILineLayerProps): ILineLayerProps {
         return {
             ...super.validateProps(data),
+            filled: data.filled || false,
+            fillStyle: data.fillStyle || '#000000',
             centring: data.centring || Centring.None,
             endPoint: {
                 x: data.endPoint?.x || 0,

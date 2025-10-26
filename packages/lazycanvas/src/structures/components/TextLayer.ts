@@ -10,7 +10,8 @@ import {
     LineCap,
     LineJoin,
     TextAlign,
-    LayerType
+    LayerType,
+    SubStringColor
 } from "../../types";
 import { LazyError, LazyLog, defaultArg } from "../../utils/LazyUtil";
 import {
@@ -49,6 +50,21 @@ export interface ITextLayerProps extends IBaseLayerProps {
      * The text content of the layer.
      */
     text: string;
+
+    /**
+     * Whether the layer is filled.
+     */
+    filled: boolean;
+
+    /**
+     * The fill style (color or pattern) of the layer.
+     */
+    fillStyle: ColorType;
+
+    /**
+     * Array of substring color configurations for partial text coloring.
+     */
+    subStringColors?: SubStringColor[];
 
     /**
      * The font configuration for the text.
@@ -220,15 +236,14 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     /**
      * Configures the multiline properties of the text layer.
-     * @param {boolean} [enabled] - Whether multiline is enabled.
      * @param {ScaleType} [width] - The width of the multiline text area.
      * @param {ScaleType} [height] - The height of the multiline text area.
      * @param {number} [spacing] - The spacing between lines (optional).
      * @returns {this} The current instance for chaining.
      */
-    setMultiline(enabled: boolean, width: ScaleType, height: ScaleType, spacing?: number): this {
+    setMultiline(width: ScaleType, height: ScaleType, spacing?: number): this {
         this.props.multiline = {
-            enabled: enabled,
+            enabled: true,
             spacing: spacing || 1.1,
         };
         this.props.size = {
@@ -240,14 +255,18 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     /**
      * Sets the color of the text layer.
-     * @param {ColorType} [color] - The color of the text.
+     * @param {ColorType} [color] - The base color of the text.
+     * @param {SubStringColor[]} [sub] - Optional substring colors for partial text coloring.
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If the color is not provided or invalid.
      */
-    setColor(color: ColorType): this {
+    setColor(color: ColorType, ...sub: SubStringColor[]): this {
         if (!color) throw new LazyError('The color of the layer must be provided');
         if (!isColor(color)) throw new LazyError('The color of the layer must be a valid color');
         this.props.fillStyle = color;
+        if (sub && sub.length > 0) {
+            this.props.subStringColors = sub;
+        }
         return this;
     }
 
@@ -380,7 +399,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         if (this.props.multiline.enabled) {
             const words = this.props.text.split(' ');
 
-            let lines = [];
+            let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
 
             for (let fontSize = 1; fontSize <= this.props.font.size; fontSize++) {
                 let lineHeight = fontSize * (this.props.multiline.spacing  || 1.1);
@@ -391,27 +410,29 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
                 let ym = y
                 lines = [];
                 let line = '';
+                let charOffset = 0; // Track position in original text
 
                 for (let word of words) {
                     let linePlus = line + word + ' ';
                     if (ctx.measureText(linePlus).width > w) {
-                        lines.push({ text: line, x: xm, y: ym });
+                        lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
+                        charOffset += line.length;
                         line = word + ' ';
                         ym += lineHeight;
                     } else {
                         line = linePlus;
                     }
                 }
-                lines.push({ text: line, x: xm, y: ym });
+                lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
                 if (ym > ym + h) break;
 
             }
             for (let line of lines) {
-                this.drawText(this.props, ctx, fillStyle, line.text, line.x, line.y, w);
+                this.drawText(this.props, ctx, fillStyle, line.text, line.x, line.y, w, line.startOffset);
             }
         } else {
             ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
-            this.drawText(this.props, ctx, fillStyle, this.props.text, x, y, w);
+            this.drawText(this.props, ctx, fillStyle, this.props.text, x, y, w, 0);
         }
         ctx.closePath();
         ctx.restore();
@@ -426,21 +447,126 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @param {number} [x] - The x-coordinate of the text.
      * @param {number} [y] - The y-coordinate of the text.
      * @param {number} [w] - The width of the text area.
+     * @param {number} [textOffset] - The offset of this text segment in the original full text (for multiline support).
      */
-    private drawText(props: ITextLayerProps, ctx: SKRSContext2D, fillStyle: string | CanvasGradient | CanvasPattern, text: string, x: number, y: number, w: number) {
-        if (props.filled) {
-            ctx.fillStyle = fillStyle;
-            ctx.fillText(text, x, y, w);
-        } else {
-            ctx.strokeStyle = fillStyle;
-            ctx.lineWidth = props.stroke?.width || 1;
-            ctx.lineCap = props.stroke?.cap || 'butt';
-            ctx.lineJoin = props.stroke?.join || 'miter';
-            ctx.miterLimit = props.stroke?.miterLimit || 10;
-            ctx.lineDashOffset = props.stroke?.dashOffset || 0;
-            ctx.setLineDash(props.stroke?.dash || []);
-            ctx.strokeText(text, x, y, w);
+    private drawText(props: ITextLayerProps, ctx: SKRSContext2D, fillStyle: string | CanvasGradient | CanvasPattern, text: string, x: number, y: number, w: number, textOffset: number = 0) {
+        // If no substring colors are defined, draw normally
+        if (!props.subStringColors || props.subStringColors.length === 0) {
+            if (props.filled) {
+                ctx.fillStyle = fillStyle;
+                ctx.fillText(text, x, y, w);
+            } else {
+                ctx.strokeStyle = fillStyle;
+                ctx.lineWidth = props.stroke?.width || 1;
+                ctx.lineCap = props.stroke?.cap || 'butt';
+                ctx.lineJoin = props.stroke?.join || 'miter';
+                ctx.miterLimit = props.stroke?.miterLimit || 10;
+                ctx.lineDashOffset = props.stroke?.dashOffset || 0;
+                ctx.setLineDash(props.stroke?.dash || []);
+                ctx.strokeText(text, x, y, w);
+            }
+            return;
         }
+
+        // Draw text with substring colors
+        const textLength = text.length;
+        let currentX = x;
+
+        // Save original text alignment and set to left for manual positioning
+        const originalAlign = ctx.textAlign;
+        ctx.textAlign = 'left';
+
+        // Adjust starting X based on text alignment
+        const alignValue = props.align as string;
+        if (alignValue === TextAlign.Center || alignValue === 'center') {
+            const totalWidth = ctx.measureText(text).width;
+            currentX = x - totalWidth / 2;
+        } else if (alignValue === TextAlign.Right || alignValue === 'right' || alignValue === TextAlign.End || alignValue === 'end') {
+            const totalWidth = ctx.measureText(text).width;
+            currentX = x - totalWidth;
+        }
+
+        // Create segments based on substring colors
+        const segments: Array<{ text: string; color: string; start: number; end: number }> = [];
+
+        // Sort substring colors by start position
+        const sortedColors = [...props.subStringColors].sort((a, b) => a.start - b.start);
+
+        let currentIndex = 0;
+
+        for (const subColor of sortedColors) {
+                // Adjust positions based on textOffset (for multiline support)
+            const globalStart = subColor.start;
+            const globalEnd = subColor.end;
+            const lineStart = textOffset;
+            const lineEnd = textOffset + textLength;
+
+            // Skip if this color segment doesn't overlap with current line
+            if (globalEnd <= lineStart || globalStart >= lineEnd) {
+                continue;
+            }
+
+            // Calculate local positions within this line
+            const localStart = Math.max(0, globalStart - lineStart);
+            const localEnd = Math.min(textLength, globalEnd - lineStart);
+
+            // Add base color segment before this substring color
+            if (currentIndex < localStart) {
+                segments.push({
+                    text: text.substring(currentIndex, localStart),
+                    color: fillStyle as string,
+                    start: currentIndex,
+                    end: localStart
+                });
+            }
+
+            // Add colored substring
+            if (localStart < localEnd) {
+                segments.push({
+                    text: text.substring(localStart, localEnd),
+                    color: subColor.color,
+                    start: localStart,
+                    end: localEnd
+                });
+                currentIndex = localEnd;
+            }
+        }
+
+        // Add remaining text with base color
+        if (currentIndex < textLength) {
+            segments.push({
+                text: text.substring(currentIndex),
+                color: fillStyle as string,
+                start: currentIndex,
+                end: textLength
+            });
+        }
+
+        // Draw each segment
+        for (const segment of segments) {
+            if (segment.text.length === 0) continue;
+
+            const segmentWidth = ctx.measureText(segment.text).width;
+
+            if (props.filled) {
+                ctx.fillStyle = segment.color;
+                ctx.fillText(segment.text, currentX, y);
+            } else {
+                ctx.strokeStyle = segment.color;
+                ctx.lineWidth = props.stroke?.width || 1;
+                ctx.lineCap = props.stroke?.cap || 'butt';
+                ctx.lineJoin = props.stroke?.join || 'miter';
+                ctx.miterLimit = props.stroke?.miterLimit || 10;
+                ctx.lineDashOffset = props.stroke?.dashOffset || 0;
+                ctx.setLineDash(props.stroke?.dash || []);
+                ctx.strokeText(segment.text, currentX, y);
+            }
+
+            currentX += segmentWidth;
+        }
+
+        // Restore original text alignment
+        ctx.textAlign = originalAlign;
     }
 
     /**
@@ -462,29 +588,29 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     /**
      * Validates the properties of the Text Layer.
-     * @param {ITextLayerProps} [props] - The properties to validate.
+     * @param {ITextLayerProps} [data] - The properties to validate.
      * @returns {ITextLayerProps} The validated properties.
      */
-    protected validateProps(props: ITextLayerProps): ITextLayerProps {
+    protected validateProps(data: ITextLayerProps): ITextLayerProps {
         return {
-            ...super.validateProps(props),
-            text: props.text || "",
+            ...super.validateProps(data),
+            filled: data.filled || true,
+            fillStyle: data.fillStyle || '#000000',
+            text: data.text || "",
             font: {
-                family: props.font?.family || "Arial",
-                size: props.font?.size || 16,
-                weight: props.font?.weight || FontWeight.Regular,
+                family: data.font?.family || "Arial",
+                size: data.font?.size || 16,
+                weight: data.font?.weight || FontWeight.Regular,
             },
             multiline: {
-                enabled: props.multiline?.enabled || false,
-                spacing: props.multiline?.spacing || 1.1,
+                enabled: data.multiline?.enabled || false,
+                spacing: data.multiline?.spacing || 1.1,
             },
             size: {
-                width: props.size?.width || "vw",
-                height: props.size?.height || 0,
+                width: data.size?.width || "vw",
+                height: data.size?.height || 0,
             },
-            align: props.align || TextAlign.Left,
-            fillStyle: props.fillStyle || "#000000",
-            filled: props.filled !== undefined ? props.filled : true,
+            align: data.align || TextAlign.Left,
         };
     }
 }

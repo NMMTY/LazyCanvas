@@ -71,16 +71,6 @@ export interface IBaseLayerProps {
     opacity: number;
 
     /**
-     * Whether the layer is filled.
-     */
-    filled: boolean;
-
-    /**
-     * The fill style (color or pattern) of the layer.
-     */
-    fillStyle: ColorType;
-
-    /**
      * The shadow properties of the layer.
      */
     shadow?: {
@@ -352,8 +342,6 @@ export class BaseLayer<T extends IBaseLayerProps> {
             centring: data.centring || Centring.Center,
             filter: data.filter || '',
             opacity: data.opacity || 1,
-            filled: data.filled || true,
-            fillStyle: data.fillStyle || '#000000',
             transform: data.transform || {},
             globalComposite: data.globalComposite || 'source-over',
         };

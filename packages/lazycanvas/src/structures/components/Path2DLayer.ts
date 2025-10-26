@@ -15,12 +15,32 @@ import { LayersManager } from "../managers";
 import { LazyError } from "../../utils/LazyUtil";
 
 export interface IPath2DLayer extends IBaseLayer {
+    /**
+     * The type of the layer, which is `Path`.
+     */
     type: LayerType.Path;
+
+    /**
+     * The properties specific to the Path2D Layer.
+     */
     props: IPath2DLayerProps;
 }
 
 export interface IPath2DLayerProps extends IBaseLayerProps {
+    /**
+     * The Path2D object representing the shape of the layer.
+     */
     path2D: Path2D;
+
+    /**
+     * Whether the layer is filled.
+     */
+    filled: boolean;
+
+    /**
+     * The fill style (color or pattern) of the layer.
+     */
+    fillStyle: ColorType;
 
     /**
      * The stroke properties of the Path2D.
@@ -268,6 +288,8 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     protected validateProps(data: IPath2DLayerProps): IPath2DLayerProps {
         return {
             ...super.validateProps(data),
+            filled: data.filled || true,
+            fillStyle: data.fillStyle || '#000000',
             path2D: data.path2D || new Path2D(),
             stroke: {
                 width: data.stroke?.width || 1,

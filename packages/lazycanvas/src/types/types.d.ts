@@ -96,4 +96,10 @@ export interface Transform {
     matrix: DOMMatrix2DInit;
 }
 
-export type radiusCorner = 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom' | 'all';
+export type RadiusCorner = 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom' | 'all';
+
+export type SubStringColor = {
+    color: StringColorType;
+    start: number;
+    end: number;
+}
