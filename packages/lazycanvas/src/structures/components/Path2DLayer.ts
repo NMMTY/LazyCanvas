@@ -9,7 +9,7 @@ import {
     SvgCanvas
 } from "@napi-rs/canvas";
 import { AnyFilter, AnyGlobalCompositeOperation, ColorType, LayerType } from "../../types";
-import { generateID, isColor, opacity, parseFillStyle, transform } from "../../utils/utils";
+import {drawShadow, filters, generateID, isColor, opacity, parseFillStyle, transform} from "../../utils/utils";
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { LayersManager } from "../managers";
 import { LazyError } from "../../utils/LazyUtil";
@@ -243,10 +243,16 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
         ctx.beginPath();
         ctx.save();
+
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, manager });
+
         transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
+        drawShadow(ctx, this.props.shadow);
         opacity(ctx, this.props.opacity);
+        filters(ctx, this.props.filter);
+
         ctx.globalCompositeOperation = this.props.globalComposite;
+
         if (this.props.clipPath) {
             ctx.clip(this.props.path2D);
         } else if (this.props.filled) {
@@ -262,6 +268,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
             ctx.setLineDash(this.props.stroke.dash);
             ctx.stroke(this.props.path2D);
         }
+
         ctx.restore();
         ctx.closePath();
     }
