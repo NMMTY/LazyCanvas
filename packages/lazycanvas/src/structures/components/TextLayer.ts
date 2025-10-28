@@ -1,19 +1,20 @@
-import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
+import {BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps} from "./BaseLayer";
 import {
-    ScaleType,
-    ColorType,
-    AnyWeight,
     AnyTextAlign,
     AnyTextBaseline,
     AnyTextDirection,
+    AnyWeight,
+    Centring,
+    ColorType,
     FontWeight,
+    LayerType,
     LineCap,
     LineJoin,
-    TextAlign,
-    LayerType,
-    SubStringColor
+    ScaleType,
+    SubStringColor,
+    TextAlign
 } from "../../types";
-import { LazyError, LazyLog, defaultArg } from "../../utils/LazyUtil";
+import {defaultArg, LazyError, LazyLog} from "../../utils/LazyUtil";
 import {
     drawShadow,
     filters,
@@ -24,8 +25,8 @@ import {
     parseToNormal,
     transform
 } from "../../utils/utils";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { LayersManager } from "../managers";
+import {Canvas, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
+import {LayersManager} from "../managers";
 
 /**
  * Interface representing a Text Layer.
@@ -395,7 +396,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         if (this.props.baseline) ctx.textBaseline = this.props.baseline;
         if (this.props.direction) ctx.direction = this.props.direction;
 
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width: w, height: h, x, y, align: 'none' }, manager });
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width: w, height: h, x, y, align: 'center' }, manager });
         if (this.props.multiline.enabled) {
             const words = this.props.text.split(' ');
 

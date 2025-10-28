@@ -209,16 +209,23 @@ export class Gradient implements IGradient {
         switch (gradientData.type) {
             case GradientType.Linear:
             case "linear":
-                if (gradientData.type === "linear" && (gradientData.angle || gradientData.angle === 0) && opts.layer) {
+                if (gradientData.type === "linear" && (gradientData.angle || gradientData.angle === 0) && opts.layer && gradientData.points.length < 2) {
                     const { width, height, x, y, align } = opts.layer;
 
                     const cx = this.getPosition(x, width, align, 'x');
                     const cy = this.getPosition(y, height, align, 'y');
 
+                    if (opts.debug) LazyLog.log('none', `Center for angle calculation:`, { cx, cy });
+
                     const [p1, p2] = this.getLinearGradientPoints(cx, cy, width, height, gradientData.angle);
+
+                    if (opts.debug) LazyLog.log('none', `Linear Gradient Points from angle:`, { p1, p2 });
 
                     gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
                 } else {
+
+                    if (opts.debug) LazyLog.log('none', `Linear Gradient created from points.`);
+
                     gradient = ctx.createLinearGradient(
                         x0,
                         y0,
