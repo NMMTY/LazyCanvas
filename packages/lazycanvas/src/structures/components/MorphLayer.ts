@@ -175,7 +175,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
      * Draws the Morph Layer on the canvas.
      * @param {SKRSContext2D} [ctx] - The canvas rendering context.
      * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
-     * @param {LayersManager} [manager] - The layers manager.
+     * @param {LayersManager} [manager] - The layer's manager.
      * @param {boolean} [debug] - Whether to enable debug logging.
      */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {

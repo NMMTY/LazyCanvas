@@ -11,11 +11,11 @@ import {
     ILineLayerProps,
     ImageLayer,
     IMorphLayerProps,
-    IPath2DLayerProps,
+    IPath2DLayerProps, IPolygonLayerProps,
     IQuadraticLayerProps,
     ITextLayerProps,
     LineLayer,
-    MorphLayer, Path2DLayer,
+    MorphLayer, Path2DLayer, PolygonLayer,
     QuadraticLayer,
     TextLayer
 } from "../../components";
@@ -134,6 +134,8 @@ export class JSONReader {
                     return new ClearLayer(layer.props as IClearLayerProps, misc);
                 case LayerType.Path:
                     return new Path2DLayer(layer.props as IPath2DLayerProps, misc).setColor(this.fillParse(layer));
+                case LayerType.Polygon:
+                    return new PolygonLayer(layer.props as IPolygonLayerProps, misc).setColor(this.fillParse(layer));
                 case LayerType.Group:
                     return new Group(misc)
                         .add(...((layer as unknown as IGroup).layers.map((l: any) => this.layerParse(l)) as AnyLayer[]));

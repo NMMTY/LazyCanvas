@@ -12,7 +12,7 @@ import {
     BezierLayer,
     QuadraticLayer,
     Link,
-    Path2DLayer, FontsList, Group, Utils
+    Path2DLayer, FontsList, Group, Utils, PolygonLayer
 } from "../src";
 
 const canvas = new LazyCanvas({ debug: true })
@@ -140,7 +140,42 @@ canvas.manager.layers.add(
                 ]
             }),
         ),
-    Utils.grid({ x: 800, y: 800 }, { lineWidth: 0.5, cellWith: 40, cellHeight: 40 })
+    new Group()
+        .add(
+            ...[3, 4, 5, 6, 7, 8, 9, 10].flatMap((count) => {
+                return [
+                    new PolygonLayer()
+                        .setPosition(50 + (count - 3) * 70, 500)
+                        .setSize(60, 60, count)
+                        .setCentring('center')
+                        .setColor(
+                            new Gradient()
+                                .setType(GradientType.Linear)
+                                .addStops({ offset: 0, color: "#ff8a8a" }, { offset: 1, color: "#8aff8a" })
+                                .setAngle(45)
+                        )
+                        .setID(`polygon${count}sides`),
+                    new PolygonLayer()
+                        .setPosition(`link-x-polygon${count}sides-0`, `link-y-polygon${count}sides-70`)
+                        .setSize(60, 60, count, 10)
+                        .setCentring('center')
+                        .setColor(
+                            new Gradient()
+                                .setType(GradientType.Radial)
+                                .addStops({ offset: 0, color: "#8abfff" }, { offset: 1, color: "#8affe0" })
+                                .setPoints({ x: `link-x-polygon${count}sides-0`, y: `link-y-polygon${count}sides-70`, r: 5 },
+                                    { x: `link-x-polygon${count}sides-0`, y: `link-y-polygon${count}sides-70`, r: 60 })
+                        ),
+                    new TextLayer()
+                        .setText(`${count}`)
+                        .setPosition(`link-x-polygon${count}sides-0`, `link-y-polygon${count}sides-130`)
+                        .setColor("#000")
+                        .setBaseline('middle')
+                        .setFont(FontsList.GeistMono_Regular(25))
+                        .setAlign('center')
+                ]
+            })
+        )
 )
 
 new Exporter(canvas).export('png', { name: 'test', saveAsFile: true })

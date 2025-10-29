@@ -12,6 +12,8 @@ export enum LayerType {
     Text = 'text',
     Group = 'group',
     Clear = 'clear',
+    Polygon = 'polygon',
+    Custom = 'custom',
 }
 
 export enum LayerScaleType {

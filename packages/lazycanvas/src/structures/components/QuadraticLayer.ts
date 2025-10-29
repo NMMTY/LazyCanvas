@@ -15,7 +15,7 @@ import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { LayersManager } from "../managers";
 
 /**
- * Interface representing a Quadratic Layer.
+ * Interface representing a Quadratic layer.
  */
 export interface IQuadraticLayer extends IBaseLayer {
     /**
@@ -24,13 +24,13 @@ export interface IQuadraticLayer extends IBaseLayer {
     type: LayerType.QuadraticCurve;
 
     /**
-     * The properties specific to the Quadratic Layer.
+     * The properties specific to the Quadratic layer.
      */
     props: IQuadraticLayerProps;
 }
 
 /**
- * Interface representing the properties of a Quadratic Layer.
+ * Interface representing the properties of a Quadratic layer.
  */
 export interface IQuadraticLayerProps extends IBaseLayerProps {
     /**
@@ -90,17 +90,17 @@ export interface IQuadraticLayerProps extends IBaseLayerProps {
 }
 
 /**
- * Class representing a Quadratic Layer, extending the BaseLayer class.
+ * Class representing a Quadratic layer, extending the BaseLayer class.
  */
 export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     /**
-     * The properties of the Quadratic Layer.
+     * The properties of the Quadratic layer.
      */
     props: IQuadraticLayerProps;
 
     /**
      * Constructs a new QuadraticLayer instance.
-     * @param {IQuadraticLayerProps} [props] - The properties of the Quadratic Layer.
+     * @param {IQuadraticLayerProps} [props] - The properties of the Quadratic layer.
      * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
      */
     constructor(props?: IQuadraticLayerProps, misc?: IBaseLayerMisc) {
@@ -170,7 +170,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
      * Calculates the bounding box of the quadratic curve.
      * @param {SKRSContext2D} [ctx] - The canvas rendering context.
      * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
-     * @param {LayersManager} [manager] - The layers manager.
+     * @param {LayersManager} [manager] - The layer's manager.
      * @returns {Object} The bounding box details including max, min, center, width, and height.
      */
     getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
@@ -193,7 +193,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
      * Draws the quadratic curve on the canvas.
      * @param {SKRSContext2D} [ctx] - The canvas rendering context.
      * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
-     * @param {LayersManager} [manager] - The layers manager.
+     * @param {LayersManager} [manager] - The layer's manager.
      * @param {boolean} [debug] - Whether to enable debug logging.
      */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {
@@ -237,8 +237,8 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     }
 
     /**
-     * Converts the Quadratic Layer to a JSON representation.
-     * @returns {IQuadraticLayer} The JSON representation of the Quadratic Layer.
+     * Converts the Quadratic layer to a JSON representation.
+     * @returns {IQuadraticLayer} The JSON representation of the Quadratic layer.
      */
     public toJSON(): IQuadraticLayer {
         let data = super.toJSON();
@@ -254,7 +254,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     }
 
     /**
-     * Validates the properties of the Quadratic Layer.
+     * Validates the properties of the Quadratic layer.
      * @param {IQuadraticLayerProps} [data] - The properties to validate.
      * @returns {IQuadraticLayerProps} The validated properties.
      */

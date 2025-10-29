@@ -171,7 +171,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * Calculates the bounding box of the Bezier layer.
      * @param {SKRSContext2D} [ctx] - The canvas rendering context.
      * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
-     * @param {LayersManager} [manager] - The layers manager.
+     * @param {LayersManager} [manager] - The layer's manager.
      * @returns {Object} The bounding box details including max, min, center, width, and height.
      */
     getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager): { max: Point, min: Point, center: Point, width: number, height: number } {
@@ -196,7 +196,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
      * Draws the Bezier layer on the canvas.
      * @param {SKRSContext2D} [ctx] - The canvas rendering context.
      * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
-     * @param {LayersManager} [manager] - The layers manager.
+     * @param {LayersManager} [manager] - The layer's manager.
      * @param {boolean} [debug] - Whether to enable debug logging.
      */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void> {

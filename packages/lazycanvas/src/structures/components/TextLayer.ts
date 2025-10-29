@@ -29,7 +29,7 @@ import {Canvas, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
 import {LayersManager} from "../managers";
 
 /**
- * Interface representing a Text Layer.
+ * Interface representing a Text layer.
  */
 export interface ITextLayer extends IBaseLayer {
     /**
@@ -38,13 +38,13 @@ export interface ITextLayer extends IBaseLayer {
     type: LayerType.Text;
 
     /**
-     * The properties specific to the Text Layer.
+     * The properties specific to the Text layer.
      */
     props: ITextLayerProps;
 }
 
 /**
- * Interface representing the properties of a Text Layer.
+ * Interface representing the properties of a Text layer.
  */
 export interface ITextLayerProps extends IBaseLayerProps {
     /**
@@ -103,16 +103,16 @@ export interface ITextLayerProps extends IBaseLayerProps {
     };
 
     /**
-     * The size of the text layer, including width and height.
+     * The size of the Text layer, including width and height.
      */
     size: {
         /**
-         * The width of the text layer.
+         * The width of the Text layer.
          */
         width: ScaleType;
 
         /**
-         * The height of the text layer.
+         * The height of the Text layer.
          */
         height: ScaleType;
     };
@@ -179,7 +179,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
 }
 
 /**
- * Class representing a Text Layer, extending the BaseLayer class.
+ * Class representing a Text layer, extending the BaseLayer class.
  */
 export class TextLayer extends BaseLayer<ITextLayerProps> {
     /**
@@ -189,7 +189,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     /**
      * Constructs a new TextLayer instance.
-     * @param {ITextLayerProps} [props] - The properties of the Text Layer.
+     * @param {ITextLayerProps} [props] - The properties of the Text layer.
      * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
      */
     constructor(props?: ITextLayerProps, misc?: IBaseLayerMisc) {
@@ -367,7 +367,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * Draws the text layer on the canvas.
      * @param {SKRSContext2D} [ctx] - The canvas rendering context.
      * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
-     * @param {LayersManager} [manager] - The layers manager.
+     * @param {LayersManager} [manager] - The layer's manager.
      * @param {boolean} [debug] - Whether to enable debug logging.
      */
     async draw(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager, debug: boolean): Promise<void>  {
@@ -571,8 +571,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * Converts the Text Layer to a JSON representation.
-     * @returns {ITextLayer} The JSON representation of the Text Layer.
+     * Converts the Text layer to a JSON representation.
+     * @returns {ITextLayer} The JSON representation of the Text layer.
      */
     public toJSON(): ITextLayer {
         let data = super.toJSON();
@@ -588,7 +588,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     }
 
     /**
-     * Validates the properties of the Text Layer.
+     * Validates the properties of the Text layer.
      * @param {ITextLayerProps} [data] - The properties to validate.
      * @returns {ITextLayerProps} The validated properties.
      */

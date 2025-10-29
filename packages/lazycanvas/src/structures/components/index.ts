@@ -8,3 +8,4 @@ export * from './Group';
 export * from './LineLayer';
 export * from './QuadraticLayer';
 export * from './Path2DLayer'
+export * from './PolygonLayer';

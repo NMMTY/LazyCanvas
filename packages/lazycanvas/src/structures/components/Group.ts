@@ -5,7 +5,7 @@ import {LayersManager} from "../managers";
 import {LazyLog} from "../../utils/LazyUtil";
 
 /**
- * Interface representing a group of layers.
+ * Interface representing a group of layer's.
  */
 export interface IGroup {
     /**
@@ -29,7 +29,7 @@ export interface IGroup {
     zIndex: number;
 
     /**
-     * The layers contained within the group.
+     * The layer's contained within the group.
      */
     layers: Array<AnyLayer>;
 
@@ -47,7 +47,7 @@ export interface IGroupProps {
 }
 
 /**
- * Class representing a group of layers.
+ * Class representing a group of layer's.
  */
 export class Group implements IGroup {
     /**
@@ -71,7 +71,7 @@ export class Group implements IGroup {
     zIndex: number;
 
     /**
-     * The layers contained within the group.
+     * The layer's contained within the group.
      */
     layers: Array<any>;
 

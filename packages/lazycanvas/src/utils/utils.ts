@@ -1,19 +1,22 @@
-import type {
+import {
     AnyCentring,
     AnyLayer,
     AnyTextAlign,
+    Centring,
     ColorType,
+    LayerType,
+    LinkType,
     PointNumber,
     ScaleType,
     SubStringColor,
+    TextAlign,
     Transform
 } from "../types";
-import { Centring, LayerType, LinkType, TextAlign } from "../types";
-import { Gradient, Link, Pattern } from "../structures/helpers";
-import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { defaultArg, LazyError } from "./LazyUtil";
-import { LayersManager } from "../structures/managers";
-import { BezierLayer, Group, LineLayer, Path2DLayer, QuadraticLayer, TextLayer } from "../structures/components";
+import {Gradient, Link, Pattern} from "../structures/helpers";
+import {Canvas, loadImage, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
+import {defaultArg, LazyError} from "./LazyUtil";
+import {LayersManager} from "../structures/managers";
+import {BezierLayer, Group, LineLayer, Path2DLayer, QuadraticLayer, TextLayer} from "../structures/components";
 
 export function generateID(type: string) {
     return `${type}-${Math.random().toString(36).substr(2, 9)}`;
@@ -188,6 +191,7 @@ export function transform(ctx: SKRSContext2D, transform: Transform, layer: { wid
                 case LayerType.BezierCurve:
                 case LayerType.QuadraticCurve:
                 case LayerType.Line:
+                case LayerType.Polygon:
                     ctx.translate(layer.x + (layer.width / 2), layer.y + (layer.height / 2));
                     ctx.rotate((Math.PI / 180) * transform.rotate);
                     ctx.translate(-(layer.x + (layer.width / 2)), -(layer.y + (layer.height / 2)));
@@ -246,6 +250,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     x -= width / 2;
                     y -= height / 2;
                     break;
@@ -257,6 +262,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     x -= width / 2;
                     y -= height;
                     break;
@@ -268,6 +274,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     x -= width / 2;
                     y -= height;
                     break;
@@ -279,6 +286,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     y -= height / 2;
                     break;
             }
@@ -289,6 +297,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     y -= height;
                     break;
             }
@@ -302,6 +311,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     x -= width;
                     y -= height / 2;
                     break;
@@ -313,6 +323,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     x -= width;
                     y -= height;
                     break;
@@ -324,6 +335,7 @@ export function centring(centring: AnyCentring, type: LayerType, width: number, 
                 case LayerType.Image:
                 case LayerType.Morph:
                 case LayerType.Clear:
+                case LayerType.Polygon:
                     x -= width;
                     break;
             }
@@ -398,9 +410,13 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
                     layer.props.size.width = resize(layer.props.size.width, ratio) as ScaleType;
                     layer.props.size.height = resize(layer.props.size.height, ratio) as ScaleType;
                     if ('radius' in layer.props.size) {
-                        for (const corner in layer.props.size.radius) {
-                            // @ts-ignore
-                            layer.props.size.radius[corner] = resize(layer.props.size.radius[corner], ratio) as ScaleType;
+                        if (typeof layer.props.size.radius === 'number') {
+                            layer.props.size.radius = resize(layer.props.size.radius, ratio) as number;
+                        } else if (typeof layer.props.size.radius === 'object') {
+                            for (const corner in layer.props.size.radius) {
+                                // @ts-ignore
+                                layer.props.size.radius[corner] = resize(layer.props.size.radius[corner], ratio) as ScaleType;
+                            }
                         }
                     }
                 }

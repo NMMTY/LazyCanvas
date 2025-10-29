@@ -15,7 +15,9 @@ import {
     ITextLayer,
     IQuadraticLayer,
     ILineLayer,
-    IPath2DLayer
+    IPath2DLayer,
+    IPolygonLayer,
+    PolygonLayer
 } from "../structures/components";
 import {
     FontWeight,
@@ -39,9 +41,9 @@ export type StringColorType = `rgba(${number}, ${number}, ${number}, ${number})`
 
 export type ColorType = Gradient | Pattern | StringColorType;
 
-export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IClearLayer | IPath2DLayer;
+export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IClearLayer | IPath2DLayer | IPolygonLayer;
 
-export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | ClearLayer | Path2DLayer;
+export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | ClearLayer | Path2DLayer | PolygonLayer;
 
 export type AnyWeight = FontWeight | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 
