@@ -1,7 +1,7 @@
 ---
 title: "BezierLayer"
 summary: "Class representing a Bezier layer, extending the BaseLayer class."
-updatedAt: "2025-10-26T20:08:13.657Z"
+updatedAt: "2025-10-29T11:03:48.752Z"
 navIcon: "class"
 ---
 
@@ -30,11 +30,11 @@ Draws the Bezier layer on the canvas.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."],["canvas","Canvas | SvgCanvas","Yes","The canvas instance."],["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","Yes","The layers manager."],["debug","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether to enable debug logging."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."],["canvas","Canvas | SvgCanvas","Yes","The canvas instance."],["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","Yes","The layer's manager."],["debug","[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)","Yes","Whether to enable debug logging."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L202)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L202)
 
 ### public getBoundingBox(ctx?, canvas?, manager?)
 Returns \{
@@ -49,11 +49,11 @@ Calculates the bounding box of the Bezier layer.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."],["canvas","Canvas | SvgCanvas","Yes","The canvas instance."],["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","Yes","The layers manager."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["ctx","SKRSContext2D","Yes","The canvas rendering context."],["canvas","Canvas | SvgCanvas","Yes","The canvas instance."],["manager","[LayersManager](/LazyCanvas/Classes/General/LayersManager)","Yes","The layer's manager."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L177)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L177)
 
 ### public setCentring(centring?)
 Returns this
@@ -66,7 +66,7 @@ Sets the centring type of the layer. **Don't affect on Bezier, Line, Quadratic a
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L288)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L288)
 
 ### public setColor(color?)
 Returns this
@@ -79,7 +79,7 @@ Sets the color of the Bezier layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L141)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L141)
 
 ### public setControlPoints(controlPoints?)
 Returns this
@@ -92,7 +92,7 @@ Sets the control points of the Bezier layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L118)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L118)
 
 ### public setEndPosition(x?, y?)
 Returns this
@@ -105,7 +105,7 @@ Sets the end position of the Bezier layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L130)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L130)
 
 ### public setFilters(filter?)
 Returns this
@@ -118,7 +118,7 @@ Sets the filter effects for the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L278)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L278)
 
 ### public setGlobalCompositeOperation(operation?)
 Returns this
@@ -131,7 +131,7 @@ Sets the global composite operation for the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L318)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L318)
 
 ### public setID(id?)
 Returns this
@@ -144,7 +144,7 @@ Sets the unique identifier of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L205)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L205)
 
 ### public setMatrix(matrix?)
 Returns this
@@ -157,7 +157,7 @@ Sets the transformation matrix of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L236)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L236)
 
 ### public setOpacity(opacity?)
 Returns this
@@ -170,7 +170,7 @@ Sets the opacity of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L194)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L194)
 
 ### public setPosition(x?, y?)
 Returns this
@@ -183,7 +183,7 @@ Sets the position of the layer in the 2D plane.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L183)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L183)
 
 ### public setRotate(rotate?)
 Returns this
@@ -196,7 +196,7 @@ Sets the rotation of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L257)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L257)
 
 ### public setScale(x?, y?)
 Returns this
@@ -209,7 +209,7 @@ Sets the scale of the layer in the x and y directions.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L247)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L247)
 
 ### public setShadow(color?, blur?, offsetX?, offsetY?)
 Returns this
@@ -222,7 +222,7 @@ Sets the shadow properties of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L219)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L219)
 
 ### public setStroke(width?, cap?, join?, dash?, dashOffset?, miterLimit?)
 Returns this
@@ -235,7 +235,7 @@ Sets the stroke properties of the Bezier layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L158)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L158)
 
 ### public setTranslate(x?, y?)
 Returns this
@@ -248,7 +248,7 @@ Sets the translation of the layer in the x and y directions.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L268)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L268)
 
 ### public setVisible(visible?)
 Returns this
@@ -261,7 +261,7 @@ Sets the visibility of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L298)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L298)
 
 ### public setZIndex(zIndex?)
 Returns this
@@ -274,7 +274,7 @@ Sets the z-index of the layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BaseLayer.ts#L308)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L308)
 
 ### public toJSON()
 Returns [IBezierLayer](/LazyCanvas/interfaces/IBezierLayer)
@@ -283,7 +283,7 @@ Converts the Bezier layer to a JSON representation.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L248)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L248)
 
 ### public validateProps(data?)
 Returns [IBezierLayerProps](/LazyCanvas/interfaces/IBezierLayerProps)
@@ -296,4 +296,4 @@ Validates the properties of the Bezier layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/ba3e53b2fefc78794f94d50b21443818f2774649/packages/lazycanvas/src/structures/components/BezierLayer.ts#L280)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BezierLayer.ts#L280)

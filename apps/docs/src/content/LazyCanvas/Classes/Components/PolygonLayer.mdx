@@ -1,32 +1,33 @@
 ---
-title: "MorphLayer"
-summary: "Class representing a Morph Layer, extending the BaseLayer class."
-updatedAt: "2025-10-29T11:03:48.778Z"
+title: "PolygonLayer"
+summary: "Represents a base layer with generic properties and methods for managing  its position, visibility, transformations, and other attributes."
+updatedAt: "2025-10-29T11:03:48.788Z"
 navIcon: "class"
 ---
 
 
-extends BaseLayer\<IMorphLayerProps\>
+extends BaseLayer\<IPolygonLayerProps\>
 
-Class representing a Morph Layer, extending the BaseLayer class.
+Represents a base layer with generic properties and methods for managing
+its position, visibility, transformations, and other attributes.
 
 
 
 ```typescript
-new MorphLayer(props, misc)
+new PolygonLayer(props, misc)
 ```
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[IMorphLayerProps](/LazyCanvas/interfaces/IMorphLayerProps)","Yes","The properties of the Morph Layer."],["misc","[IBaseLayerMisc](/LazyCanvas/interfaces/IBaseLayerMisc)","Yes","Miscellaneous options for the layer."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["props","[IPolygonLayerProps](/LazyCanvas/interfaces/IPolygonLayerProps)","Yes","-"],["misc","[IBaseLayerMisc](/LazyCanvas/interfaces/IBaseLayerMisc)","Yes","-"]] }} />
 
 
 ## Properties
-<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["id","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The unique identifier of the layer."],["props","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The properties of the Morph Layer."],["type","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of the layer."],["visible","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The visibility of the layer."],["zIndex","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The z-index of the layer, determining its stacking order."]] }} />
+<Table data={{ headers: [{"content":"Name","key":"name","sortable":true},{"content":"Access Modifier","key":"access","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Description","key":"desc"}], rows: [["id","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The unique identifier of the layer."],["props","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The properties of the layer, defined by the generic type `T`."],["type","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The type of the layer."],["visible","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The visibility of the layer."],["zIndex","public ","[any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)","The z-index of the layer, determining its stacking order."]] }} />
 
 ## Methods
 
 ### public draw(ctx?, canvas?, manager?, debug?)
 Returns [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) \< [void](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined) \>
 
-Draws the Morph Layer on the canvas.
+Draws the Polygon layer on the given canvas context.
 
 
 
@@ -34,7 +35,7 @@ Draws the Morph Layer on the canvas.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/MorphLayer.ts#L181)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/PolygonLayer.ts#L164)
 
 ### public setCentring(centring?)
 Returns this
@@ -52,7 +53,7 @@ Sets the centring type of the layer. **Don't affect on Bezier, Line, Quadratic a
 ### public setColor(color?)
 Returns this
 
-Sets the color of the Morph Layer.
+Sets the color of the Polygon layer.
 
 
 
@@ -60,7 +61,7 @@ Sets the color of the Morph Layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/MorphLayer.ts#L144)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/PolygonLayer.ts#L127)
 
 ### public setFilters(filter?)
 Returns this
@@ -179,23 +180,23 @@ Sets the shadow properties of the layer.
 
 - [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L219)
 
-### public setSize(width?, height?, radius?)
+### public setSize(width?, height?, count?, radius?)
 Returns this
 
-Sets the size of the Morph Layer.
+Sets the size of the Polygon layer.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["width","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The width of the Morph Layer."],["height","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The height of the Morph Layer."],["radius","\\{\n  all:  undefined \\| ScaleType;\n  leftBottom:  undefined \\| ScaleType;\n  leftTop:  undefined \\| ScaleType;\n  rightBottom:  undefined \\| ScaleType;\n  rightTop:  undefined \\| ScaleType; \n}","Yes","The radius of the Morph Layer (optional)."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["width","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The width of the Polygon layer."],["height","[ScaleType](/LazyCanvas/types/ScaleType)","Yes","The height of the Polygon layer."],["count","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The number of sides of the polygon."],["radius","[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)","Yes","The radius of the Polygon Layer (optional)."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/MorphLayer.ts#L129)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/PolygonLayer.ts#L111)
 
 ### public setStroke(width?, cap?, join?, dash?, dashOffset?, miterLimit?)
 Returns this
 
-Sets the stroke properties of the Morph Layer.
+Sets the stroke properties of the Polygon Layer.
 
 
 
@@ -203,7 +204,7 @@ Sets the stroke properties of the Morph Layer.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/MorphLayer.ts#L161)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/PolygonLayer.ts#L144)
 
 ### public setTranslate(x?, y?)
 Returns this
@@ -245,23 +246,23 @@ Sets the z-index of the layer.
 - [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/BaseLayer.ts#L308)
 
 ### public toJSON()
-Returns [IMorphLayer](/LazyCanvas/interfaces/IMorphLayer)
+Returns [IPolygonLayer](/LazyCanvas/interfaces/IPolygonLayer)
 
-Converts the Morph Layer to a JSON representation.
+Converts the Polygon layer to a JSON representation.
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/MorphLayer.ts#L245)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/PolygonLayer.ts#L275)
 
 ### public validateProps(data?)
-Returns [IMorphLayerProps](/LazyCanvas/interfaces/IMorphLayerProps)
+Returns [IPolygonLayerProps](/LazyCanvas/interfaces/IPolygonLayerProps)
 
 Validates the properties of the Morph Layer.
 
 
 
-<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["data","[IMorphLayerProps](/LazyCanvas/interfaces/IMorphLayerProps)","Yes","The properties to validate."]] }} />
+<Table data={{ headers: [{"content":"Parameter","key":"parameter","sortable":true},{"content":"Type","key":"type","sortable":true},{"content":"Optional","key":"optional","sortable":true},{"content":"Description","key":"description"}], rows: [["data","[IPolygonLayerProps](/LazyCanvas/interfaces/IPolygonLayerProps)","Yes","The properties to validate."]] }} />
 
 
 
-- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/MorphLayer.ts#L263)
+- [Source](https://github.com/NMMTY/LazyCanvas/blob/e5b83021346e886d435469de8abb93654e0fb45d/packages/lazycanvas/src/structures/components/PolygonLayer.ts#L293)

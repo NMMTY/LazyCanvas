@@ -43,6 +43,7 @@ async function main() {
                     'TextLayer',
                     'LineLayer',
                     'MorphLayer',
+                    'PolygonLayer',
                     'Path2DLayer',
                     'QuadraticLayer',
                     'BezierLayer',
