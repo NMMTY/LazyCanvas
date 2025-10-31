@@ -147,7 +147,7 @@ new Exporter(canvas).export('png', {
 });
 
 // Export as SVG
-canvas.setExportType(Export.SVG);
+canvas.setExportType(Export.SVG); // IMPORTANT: Set export type before adding any layers
 new Exporter(canvas).export('svg', {
     name: 'my-vector',
     saveAsFile: true
