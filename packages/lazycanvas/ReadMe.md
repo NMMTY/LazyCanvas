@@ -1,4 +1,4 @@
-![Logo](./resources/logo.svg)
+![Logo](https://raw.githubusercontent.com/NMMTY/LazyCanvas/refs/heads/main/packages/lazycanvas/resources/logo.svg)
 
 [![npm version](https://badge.fury.io/js/%40nmmty%2Flazycanvas.svg)](https://www.npmjs.com/package/@nmmty/lazycanvas)
 [![downloads](https://img.shields.io/npm/dm/%40nmmty%2Flazycanvas.svg)](https://www.npmjs.com/package/@nmmty/lazycanvas)

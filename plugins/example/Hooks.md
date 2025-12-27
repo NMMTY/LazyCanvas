@@ -163,7 +163,7 @@ onResize: (canvas: LazyCanvas, ratio: number) => {
 
 #### onLayerAdded
 - **Purpose**: React to new layers being added
-- **Parameters**: `canvas: LazyCanvas, layer: AnyLayer | Group`
+- **Parameters**: `canvas: LazyCanvas, layer: AnyLayer | Div`
 - **Use Cases**:
   - Layer validation
   - Automatic adjustments
@@ -210,7 +210,7 @@ onLayerRemoved: (canvas: LazyCanvas, layerId: string) => {
 
 #### onLayerModified
 - **Purpose**: React to layer property changes
-- **Parameters**: `canvas: LazyCanvas, layer: AnyLayer | Group`
+- **Parameters**: `canvas: LazyCanvas, layer: AnyLayer | Div`
 - **Use Cases**:
   - Change tracking
   - Automatic updates

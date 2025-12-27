@@ -1,18 +1,16 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ScaleType , LayerType, RadiusCorner } from "../../types";
+import {ScaleType, LayerType, RadiusCorner, AnyCentring} from "../../types";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
     centring,
-    drawShadow,
-    filters,
     isImageUrlValid,
-    opacity,
     parser,
     transform
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { LayersManager } from "../managers";
 import { Link } from "../helpers";
+import {DrawUtils} from "../../utils/DrawUtils";
 
 /**
  * Interface representing an Image Layer.
@@ -55,7 +53,7 @@ export interface IImageLayerProps extends IBaseLayerProps {
         /**
          * The radius of the image.
          */
-        radius: { [corner in RadiusCorner]?: ScaleType };
+        radius?: { [corner in RadiusCorner]?: ScaleType };
     };
 }
 
@@ -124,7 +122,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         });
 
         const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
-        let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
+        let { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
 
         const rad: { [corner in RadiusCorner]?: number } = {};
         if (typeof this.props.size.radius === 'object' && this.props.size.radius !== Link) {
@@ -142,10 +140,12 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
         image.height = h;
         if (!image) throw new LazyError('The image could not be loaded');
 
-        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
-        drawShadow(ctx, this.props.shadow);
-        opacity(ctx, this.props.opacity);
-        filters(ctx, this.props.filter);
+        if (this.props.transform) {
+            transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
+        }
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
 
         if (Object.keys(rad).length > 0) {
             ctx.beginPath();

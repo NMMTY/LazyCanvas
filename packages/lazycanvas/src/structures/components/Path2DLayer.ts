@@ -5,14 +5,16 @@ import {
     Path2D,
     PathOp,
     SKRSContext2D,
-    StrokeOptions,
-    SvgCanvas
+    SvgCanvas,
+    StrokeOptions as SKRSStrokeOptions
 } from "@napi-rs/canvas";
-import { AnyFilter, AnyGlobalCompositeOperation, ColorType, LayerType } from "../../types";
-import {drawShadow, filters, generateID, isColor, opacity, parseFillStyle, transform} from "../../utils/utils";
+import { ColorType, LayerType } from "../../types";
+import { generateID, isColor, parseFillStyle, transform } from "../../utils/utils";
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { LayersManager } from "../managers";
 import { LazyError } from "../../utils/LazyUtil";
+import { StrokeOptions } from "../../types";
+import { DrawUtils } from "../../utils/DrawUtils";
 
 export interface IPath2DLayer extends IBaseLayer {
     /**
@@ -33,11 +35,6 @@ export interface IPath2DLayerProps extends IBaseLayerProps {
     path2D: Path2D;
 
     /**
-     * Whether the layer is filled.
-     */
-    filled: boolean;
-
-    /**
      * The fill style (color or pattern) of the layer.
      */
     fillStyle: ColorType;
@@ -45,37 +42,7 @@ export interface IPath2DLayerProps extends IBaseLayerProps {
     /**
      * The stroke properties of the Path2D.
      */
-    stroke: {
-        /**
-         * The width of the stroke.
-         */
-        width: number;
-
-        /**
-         * The cap style of the stroke.
-         */
-        cap: CanvasLineCap;
-
-        /**
-         * The join style of the stroke.
-         */
-        join: CanvasLineJoin;
-
-        /**
-         * The dash offset of the stroke.
-         */
-        dashOffset: number;
-
-        /**
-         * The dash pattern of the stroke.
-         */
-        dash: number[];
-
-        /**
-         * The miter limit of the stroke.
-         */
-        miterLimit: number;
-    };
+    stroke: StrokeOptions;
 
     loadFromSVG: boolean;
     clipPath: boolean;
@@ -180,7 +147,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
         return this;
     }
 
-    stroke(stroke?: StrokeOptions): this {
+    stroke(stroke?: SKRSStrokeOptions): this {
         this.props.path2D.stroke(stroke);
         return this;
     }
@@ -244,29 +211,30 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
         ctx.beginPath();
         ctx.save();
 
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, manager });
+        if (this.props.transform) {
+            transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
+        }
 
-        transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
-        drawShadow(ctx, this.props.shadow);
-        opacity(ctx, this.props.opacity);
-        filters(ctx, this.props.filter);
-
-        ctx.globalCompositeOperation = this.props.globalComposite;
+        DrawUtils.opacity(ctx, this.props.opacity);
 
         if (this.props.clipPath) {
             ctx.clip(this.props.path2D);
-        } else if (this.props.filled) {
-            ctx.fillStyle = fillStyle;
-            ctx.fill(this.props.path2D);
-        } else {
-            ctx.strokeStyle = fillStyle;
-            ctx.lineWidth = this.props.stroke.width;
-            ctx.lineCap = this.props.stroke.cap;
-            ctx.lineJoin = this.props.stroke.join;
-            ctx.miterLimit = this.props.stroke.miterLimit;
-            ctx.lineDashOffset = this.props.stroke.dashOffset;
-            ctx.setLineDash(this.props.stroke.dash);
-            ctx.stroke(this.props.path2D);
+        } else if (this.props.fillStyle) {
+            let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, manager });
+
+            if (this.props.globalComposite) {
+                ctx.globalCompositeOperation = this.props.globalComposite;
+            }
+
+            DrawUtils.drawShadow(ctx, this.props.shadow);
+            DrawUtils.filters(ctx, this.props.filter);
+            DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+
+            if (this.props.stroke) {
+                ctx.stroke(this.props.path2D);
+            } else {
+                ctx.fill(this.props.path2D);
+            }
         }
 
         ctx.restore();
@@ -295,7 +263,6 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     protected validateProps(data: IPath2DLayerProps): IPath2DLayerProps {
         return {
             ...super.validateProps(data),
-            filled: data.filled || true,
             fillStyle: data.fillStyle || '#000000',
             path2D: data.path2D || new Path2D(),
             stroke: {

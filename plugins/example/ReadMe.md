@@ -58,7 +58,7 @@ The plugin system provides the following lifecycle hooks that are actually imple
 
 | Hook | Description | Parameters | When Called |
 |------|-------------|------------|-------------|
-| `onLayerAdded` | Called when a layer is added | `canvas: LazyCanvas, layer: AnyLayer \| Group` | When layers are added via LayersManager.add() |
+| `onLayerAdded` | Called when a layer is added | `canvas: LazyCanvas, layer: AnyLayer \| Div` | When layers are added via LayersManager.add() |
 | `onLayerRemoved` | Called when a layer is removed | `canvas: LazyCanvas, layerId: string` | When layers are removed via LayersManager.remove() |
 
 ### Animation Hooks

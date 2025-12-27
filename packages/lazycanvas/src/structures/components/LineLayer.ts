@@ -1,17 +1,15 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, ScaleType, Centring, LayerType } from "../../types";
+import {ColorType, ScaleType, Centring, LayerType, StrokeOptions} from "../../types";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import {
-    drawShadow,
-    filters,
     isColor,
-    opacity,
     parseFillStyle,
     parser,
     transform
 } from "../../utils/utils";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
+import {DrawUtils} from "../../utils/DrawUtils";
 
 /**
  * Interface representing a Line Layer.
@@ -60,37 +58,7 @@ export interface ILineLayerProps extends IBaseLayerProps {
     /**
      * The stroke properties of the line.
      */
-    stroke: {
-        /**
-         * The width of the stroke.
-         */
-        width: number;
-
-        /**
-         * The cap style of the stroke.
-         */
-        cap: CanvasLineCap;
-
-        /**
-         * The join style of the stroke.
-         */
-        join: CanvasLineJoin;
-
-        /**
-         * The dash offset of the stroke.
-         */
-        dashOffset: number;
-
-        /**
-         * The dash pattern of the stroke.
-         */
-        dash: number[];
-
-        /**
-         * The miter limit of the stroke.
-         */
-        miterLimit: number;
-    };
+    stroke: StrokeOptions;
 }
 
 /**
@@ -206,20 +174,16 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
 
         ctx.save();
 
-        transform(ctx, this.props.transform, { x: xs, y: ys, width, height, type: this.type });
-        drawShadow(ctx, this.props.shadow);
-        opacity(ctx, this.props.opacity);
-        filters(ctx, this.props.filter);
+        if (this.props.transform) {
+            transform(ctx, this.props.transform, { x: xs, y: ys, width, height, type: this.type });
+        }
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
+        DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
 
         ctx.beginPath();
         ctx.moveTo(xs, ys);
-        ctx.strokeStyle = fillStyle;
-        ctx.lineWidth = this.props.stroke?.width || 1;
-        ctx.lineCap = this.props.stroke?.cap || 'butt';
-        ctx.lineJoin = this.props.stroke?.join || 'miter';
-        ctx.miterLimit = this.props.stroke?.miterLimit || 10;
-        ctx.lineDashOffset = this.props.stroke?.dashOffset || 0;
-        ctx.setLineDash(this.props.stroke?.dash || []);
         ctx.lineTo(xe, ye);
         ctx.stroke();
         ctx.closePath();
@@ -252,7 +216,6 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     protected validateProps(data: ILineLayerProps): ILineLayerProps {
         return {
             ...super.validateProps(data),
-            filled: data.filled || false,
             fillStyle: data.fillStyle || '#000000',
             centring: data.centring || Centring.None,
             endPoint: {

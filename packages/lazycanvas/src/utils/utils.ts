@@ -7,7 +7,7 @@ import {
     LayerType,
     LinkType,
     PointNumber,
-    ScaleType,
+    ScaleType, StrokeOptions,
     SubStringColor,
     TextAlign,
     Transform
@@ -16,7 +16,8 @@ import {Gradient, Link, Pattern} from "../structures/helpers";
 import {Canvas, loadImage, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
 import {defaultArg, LazyError} from "./LazyUtil";
 import {LayersManager} from "../structures/managers";
-import {BezierLayer, Group, LineLayer, Path2DLayer, QuadraticLayer, TextLayer} from "../structures/components";
+import {BezierLayer, Div, LineLayer, Path2DLayer, QuadraticLayer, TextLayer} from "../structures/components";
+import Signal, { unwrap, isSignal } from "../core/Signal";
 
 export function generateID(type: string) {
     return `${type}-${Math.random().toString(36).substr(2, 9)}`;
@@ -34,7 +35,23 @@ let hslReg = /^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/;
 let hslaReg = /^hsla\((\d+),\s*(\d+)%,\s*(\d+)%,\s*(0|0?\.\d+|1(\.0)?)\)$/;
 
 export function isColor(v: ColorType | SubStringColor) {
-    return typeof (v === 'string' && (hexReg.test(v) || rgbReg.test(v) || rgbaReg.test(v) || hslReg.test(v) || hslaReg.test(v))) || v instanceof Gradient || v instanceof Pattern || (typeof v === 'object' && (v.start && v.end && v.color));
+    if (isSignal(v)) {
+        return true;
+    }
+
+    if (typeof v === 'object' && v !== null && !isSignal(v) && 'start' in v && 'end' in v && 'color' in v) {
+        return true;
+    }
+
+    if (v instanceof Gradient || v instanceof Pattern) {
+        return true;
+    }
+
+    if (typeof v === 'string') {
+        return hexReg.test(v) || rgbReg.test(v) || rgbaReg.test(v) || hslReg.test(v) || hslaReg.test(v);
+    }
+
+    return false;
 }
 
 export function parseToNormal(
@@ -45,6 +62,11 @@ export function parseToNormal(
     options: { vertical?: boolean; layer?: boolean } = { vertical: false, layer: false },
     manager?: LayersManager
 ): number {
+    // Unwrap signal if present
+    if (isSignal(v)) {
+        v = unwrap(v) as number;
+    }
+
     if (typeof v === 'number') return v;
 
     if (typeof v === 'string') {
@@ -71,7 +93,7 @@ export function parseToNormal(
             if (!manager) return 0;
 
             const anyLayer = manager.get(match[2], true);
-            if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
+            if (!anyLayer || anyLayer instanceof Div || anyLayer instanceof Path2DLayer) return 0;
 
             const parserInstance = parser(ctx, canvas, manager);
             const additionalSpacing = parseInt(match[3]) || 0;
@@ -89,7 +111,7 @@ export function parseToNormal(
         if (!manager) return 0;
 
         const anyLayer = manager.get(v.source, true);
-        if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
+        if (!anyLayer || anyLayer instanceof Div || anyLayer instanceof Path2DLayer) return 0;
 
         const parserInstance = parser(ctx, canvas, manager);
         const additionalSpacing = parserInstance.parse(v.additionalSpacing, defaultArg.wh(layer.width, layer.height), defaultArg.vl(options.vertical, options.layer)) || 0;
@@ -141,29 +163,7 @@ export function parser(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager?:
     };
 }
 
-
-export function drawShadow(ctx: SKRSContext2D, shadow: any) {
-    if (shadow) {
-        ctx.shadowColor = shadow.color;
-        ctx.shadowBlur = shadow.blur || 0;
-        ctx.shadowOffsetX = shadow.offsetX || 0;
-        ctx.shadowOffsetY = shadow.offsetY || 0;
-    }
-}
-
-export function opacity(ctx: SKRSContext2D, opacity: number = 1) {
-    if (opacity < 1) {
-        ctx.globalAlpha = opacity;
-    }
-}
-
-export function filters(ctx: SKRSContext2D, filters: string | null | undefined) {
-    if (filters) {
-        ctx.filter = filters;
-    }
-}
-
-export function parseFillStyle(ctx: SKRSContext2D, color: ColorType | SubStringColor, opts: { debug?: boolean, layer?: { width: number, height: number, x: number, y: number, align: AnyCentring }, manager?: LayersManager }) {
+export function parseFillStyle(ctx: SKRSContext2D, color: ColorType | SubStringColor, opts: { debug?: boolean, layer?: { width: number, height: number, x: number, y: number, align: AnyCentring }, manager?: LayersManager }): string | Promise<CanvasPattern> | CanvasGradient {
     if (!ctx) throw new LazyError('The context is not defined');
     if (!color) throw new LazyError('The color is not defined');
 
@@ -171,11 +171,18 @@ export function parseFillStyle(ctx: SKRSContext2D, color: ColorType | SubStringC
         return color.draw(ctx, opts);
     }
 
-    if (typeof color === 'object' && color.start && color.end && color.color) {
-        return color.color
-    } else if (typeof color === 'string') {
+    if (isSignal(color)) {
+        return parseFillStyle(ctx, unwrap<ColorType | SubStringColor>(color), opts);
+    }
+
+    if (typeof color === 'object' && color !== null && 'start' in color && 'end' in color && 'color' in color) {
+        return unwrap(color.color);
+    }
+
+    if (typeof color === 'string') {
         return color;
     }
+
     return '#000000';
 }
 
@@ -383,6 +390,11 @@ export function getBoundingBoxBezier(points: PointNumber[], steps = 100) {
 }
 
 export function resize(value: ScaleType, ratio: number): number | string {
+    // Handle Signal - return as is (signals are not resized)
+    if (isSignal(value)) {
+        return resize(unwrap<ScaleType>(value), ratio);
+    }
+
     if (typeof value === 'number') {
         return value * ratio;
     } else if (typeof value === 'string') {
@@ -392,21 +404,22 @@ export function resize(value: ScaleType, ratio: number): number | string {
             let match = value.match(linkReg) as RegExpMatchArray;
             return `${match[1]}-${match[2]}-${parseFloat(match[3]) * ratio}`;
         }
+        return value;
     } else if (value instanceof Link) {
         return `${value.type}-${value.source}-${resize(value.additionalSpacing, ratio)}`;
     }
-    return value;
+    return 0;
 }
 
-export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
-    let newLayers: Array<AnyLayer | Group> = [];
+export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
+    let newLayers: Array<AnyLayer | Div> = [];
     if (layers.length > 0) {
         for (const layer of layers) {
-            if (!(layer instanceof Group || layer instanceof Path2DLayer)) {
+            if (!(layer instanceof Div || layer instanceof Path2DLayer)) {
                 layer.props.x = resize(layer.props.x, ratio) as ScaleType;
                 layer.props.y = resize(layer.props.y, ratio) as ScaleType;
 
-                if ('size' in layer.props) {
+                if ('size' in layer.props && layer.props.size) {
                     layer.props.size.width = resize(layer.props.size.width, ratio) as ScaleType;
                     layer.props.size.height = resize(layer.props.size.height, ratio) as ScaleType;
                     if ('radius' in layer.props.size) {
@@ -441,7 +454,7 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
                     layer.props.font.size = resize(layer.props.font.size, ratio) as number;
                 }
 
-                if ('transform' in layer.props) {
+                if ('transform' in layer.props && layer.props.transform) {
                     if (layer.props.transform.translate) {
                         layer.props.transform.translate.x = resize(layer.props.transform.translate.x, ratio) as number;
                         layer.props.transform.translate.y = resize(layer.props.transform.translate.y, ratio) as number;
@@ -451,7 +464,7 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
                         layer.props.transform.scale.y = resize(layer.props.transform.scale.y, ratio) as number;
                     }
                 }
-            } else if (layer instanceof Group) {
+            } else if (layer instanceof Div) {
                 layer.layers = resizeLayers(layer.layers, ratio);
             }
             newLayers.push(layer)

@@ -1,12 +1,10 @@
-import { AnyLayer, JSONLayer, LayerType } from "../../../types";
+import {AnyLayer, JSONLayer, LayerType} from "../../../types";
 import {
     BezierLayer,
-    ClearLayer,
-    Group,
+    Div,
     IBaseLayerMisc,
     IBezierLayerProps,
-    IClearLayerProps,
-    IGroup,
+    IDiv,
     IImageLayerProps,
     ILineLayerProps,
     ImageLayer,
@@ -24,6 +22,7 @@ import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
 import * as fs from "fs";
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
 import * as path from "path";
+import { isSignal } from "../../../core/Signal";
 
 /**
  * Class responsible for reading and parsing JSON data into a LazyCanvas instance.
@@ -86,12 +85,12 @@ export class JSONReader {
 
     /**
      * Parses an array of JSON layers into an array of AnyLayer or Group instances.
-     * @param {Array<JSONLayer | Group>} [data] - The array of JSON layers to parse.
+     * @param {Array<JSONLayer | Div>} [data] - The array of JSON layers to parse.
      * @param {Object} [opts] - Optional settings.
      * @param {boolean} [opts.debug] - Whether to enable debug logging.
-     * @returns {Array<AnyLayer | Group>} The parsed layers.
+     * @returns {Array<AnyLayer | Div>} The parsed layers.
      */
-    private static layersParse(data: Array<JSONLayer | Group>, opts?: { debug?: boolean }): Array<AnyLayer | Group> {
+    private static layersParse(data: Array<JSONLayer | Div>, opts?: { debug?: boolean }): Array<AnyLayer | Div> {
         return data.map((layer: any) => {
             if (opts?.debug) LazyLog.log('info', `Parsing layer ${layer.id}...\nData:`, layer);
             const misc = {
@@ -100,7 +99,7 @@ export class JSONReader {
                 visible: layer.visible,
             }
             if (layer.type === LayerType.Group) {
-                return new Group(misc).add(...layer.layers.map((l: any) => this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible })));
+                return new Div(misc).add(...layer.layers.map((l: any) => this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible })));
             } else {
                 return this.layerParse(layer, misc);
             }
@@ -109,13 +108,13 @@ export class JSONReader {
 
     /**
      * Parses a single JSON layer into an AnyLayer or Group instance.
-     * @param {JSONLayer | IGroup | Group} [layer] - The JSON layer to parse.
+     * @param {JSONLayer | IDiv | Div} [layer] - The JSON layer to parse.
      * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
-     * @returns {AnyLayer | Group} The parsed layer.
+     * @returns {AnyLayer | Div} The parsed layer.
      */
-    private static layerParse(layer: JSONLayer | IGroup | Group, misc?: IBaseLayerMisc): AnyLayer | Group {
-        if (layer instanceof Group) {
-            return new Group(misc).add(...layer.layers.map((l: any) => this.layerParse(l)) as AnyLayer[]);
+    private static layerParse(layer: JSONLayer | IDiv | Div, misc?: IBaseLayerMisc): AnyLayer | Div {
+        if (layer instanceof Div) {
+            return new Div(misc).add(...layer.layers.map((l: any) => this.layerParse(l)) as AnyLayer[]);
         } else {
             switch (layer.type) {
                 case LayerType.BezierCurve:
@@ -130,15 +129,13 @@ export class JSONReader {
                     return new MorphLayer(layer.props as IMorphLayerProps, misc).setColor(this.fillParse(layer));
                 case LayerType.Line:
                     return new LineLayer(layer.props as ILineLayerProps, misc).setColor(this.fillParse(layer));
-                case LayerType.Clear:
-                    return new ClearLayer(layer.props as IClearLayerProps, misc);
                 case LayerType.Path:
                     return new Path2DLayer(layer.props as IPath2DLayerProps, misc).setColor(this.fillParse(layer));
                 case LayerType.Polygon:
                     return new PolygonLayer(layer.props as IPolygonLayerProps, misc).setColor(this.fillParse(layer));
                 case LayerType.Group:
-                    return new Group(misc)
-                        .add(...((layer as unknown as IGroup).layers.map((l: any) => this.layerParse(l)) as AnyLayer[]));
+                    return new Div(misc)
+                        .add(...((layer as unknown as IDiv).layers.map((l: any) => this.layerParse(l))));
                 default:
                     return layer as AnyLayer;
             }
@@ -151,19 +148,22 @@ export class JSONReader {
      * @returns {string | Gradient | Pattern} The parsed fill style.
      */
     private static fillParse(layer: JSONLayer): string | Gradient | Pattern {
-        if ('fillStyle' in layer.props && layer.props.fillStyle && typeof layer.props.fillStyle !== 'string') {
-            switch (layer.props.fillStyle?.fillType) {
-                case 'gradient':
-                    return new Gradient({ props: layer.props.fillStyle as IGradient });
-                case 'pattern':
-                    return new Pattern()
-                        .setType((layer.props.fillStyle as IPattern).type)
-                        .setSrc(typeof (layer.props.fillStyle as IPattern).src === 'string' ? (layer.props.fillStyle as IPattern).src : this.read((layer.props.fillStyle as IPattern).src as unknown as IOLazyCanvas));
-                default:
-                    return layer.props.fillStyle;
+        if ('fillStyle' in layer.props) {
+            if (isSignal<string>(layer.props.fillStyle)) {
+                throw new LazyError("Signals are not supported in JSON fill styles");
             }
-        } else if ('fillStyle' in layer.props) {
-            console.log(layer.type, layer);
+            if (typeof layer.props.fillStyle === 'object') {
+                switch (layer.props.fillStyle?.fillType) {
+                    case 'gradient':
+                        return new Gradient({ props: layer.props.fillStyle as IGradient });
+                    case 'pattern':
+                        return new Pattern()
+                            .setType((layer.props.fillStyle as IPattern).type)
+                            .setSrc(typeof (layer.props.fillStyle as IPattern).src === 'string' ? (layer.props.fillStyle as IPattern).src : this.read((layer.props.fillStyle as IPattern).src as unknown as IOLazyCanvas));
+                    default:
+                        return layer.props.fillStyle;
+                }
+            }
             return layer.props.fillStyle || '#000000';
         } else {
             return '#000000';

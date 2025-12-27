@@ -1,7 +1,7 @@
 import { AnyCentring, AnyGradientType, Centring, FillType, GradientType, StringColorType, ScaleType } from "../../types";
 import { SKRSContext2D } from "@napi-rs/canvas";
 import { LazyLog, LazyError, defaultArg } from "../../utils/LazyUtil";
-import { parser } from "../../utils/utils";
+import {parseFillStyle, parser} from "../../utils/utils";
 import { LayersManager } from "../managers";
 
 /**
@@ -274,7 +274,7 @@ export class Gradient implements IGradient {
                 break;
         }
         for (let stop of gradientData.stops) {
-            gradient.addColorStop(stop.offset, stop.color);
+            gradient.addColorStop(stop.offset, parseFillStyle(ctx, stop.color, opts) as string);
         }
         return gradient;
     }

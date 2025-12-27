@@ -1,8 +1,8 @@
-import { Group, LineLayer } from "../structures/components";
+import { Div, LineLayer } from "../structures/components";
 import { ColorType } from "../types";
 
 const Utils = {
-    grid(size: { x: number, y: number }, opts?: gridOptions): Group {
+    grid(size: { x: number, y: number }, opts?: gridOptions): Div {
 
         if (size.x === undefined || size.y === undefined) {
             throw new Error("Size must have x and y properties");
@@ -21,7 +21,7 @@ const Utils = {
 
         const options = { ...opts } as unknown as gridOptionsNormalized;
 
-        return new Group()
+        return new Div()
             .setID(`grid-${options.cellWith}-${options.cellHeight}-${options.startX}-${options.startY}-${options.endX}-${options.endY}`)
             .add(
                 ...Array.from({ length: Math.ceil((options.endX - options.startX) / options.cellWith) }, (_, i) => {
@@ -42,7 +42,7 @@ const Utils = {
                 })
             )
     },
-    box(start: { x: number, y: number }, end: { x: number, y: number }, opts?: options): Group {
+    box(start: { x: number, y: number }, end: { x: number, y: number }, opts?: options): Div {
         if (start.x === undefined || start.y === undefined || end.x === undefined || end.y === undefined) {
             throw new Error("Start and end must have x and y properties");
         }
@@ -52,7 +52,7 @@ const Utils = {
         if (opts.color === undefined) opts.color = 'rgba(0, 0, 0, 0.5)';
         if (opts.lineWidth === undefined) opts.lineWidth = 1;
 
-        return new Group()
+        return new Div()
             .setID(`box-${start.x}-${start.y}-${end.x}-${end.y}`)
             .add(
                 new LineLayer()

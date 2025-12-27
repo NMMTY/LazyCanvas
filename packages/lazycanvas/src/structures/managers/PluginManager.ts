@@ -1,7 +1,7 @@
 import { LazyCanvas } from "../LazyCanvas";
 import { LazyLog, LazyError } from "../../utils/LazyUtil";
 import { AnyLayer } from "../../types";
-import { Group } from "../components";
+import { Div } from "../components";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 
 /**
@@ -95,7 +95,7 @@ export interface IPluginHooks {
     /**
      * Called when a layer is added.
      */
-    onLayerAdded?(canvas: LazyCanvas, layer: AnyLayer | Group): void;
+    onLayerAdded?(canvas: LazyCanvas, layer: AnyLayer | Div): void;
 
     /**
      * Called when a layer is removed.
@@ -110,7 +110,7 @@ export interface IPluginHooks {
     /**
      * Called when a layer is modified.
      */
-    onLayerModified?(canvas: LazyCanvas, layer: AnyLayer | Group): void;
+    onLayerModified?(canvas: LazyCanvas, layer: AnyLayer | Div): void;
 
     /**
      * Called when animation frame is processed.

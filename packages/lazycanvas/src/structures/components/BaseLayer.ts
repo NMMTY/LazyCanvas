@@ -10,6 +10,8 @@ import {
 } from "../../types";
 import { generateID, isColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
+import {Signal} from "../../core/Signal";
+import {Gradient, Link, Pattern} from "../helpers";
 
 /**
  * Interface representing the base structure of a layer.
@@ -58,7 +60,7 @@ export interface IBaseLayerProps {
     /**
      * The centring type of the layer.
      */
-    centring: AnyCentring;
+    centring?: AnyCentring;
 
     /**
      * The filter effects applied to the layer.
@@ -68,7 +70,7 @@ export interface IBaseLayerProps {
     /**
      * The opacity of the layer, ranging from 0 to 1.
      */
-    opacity: number;
+    opacity?: number | Signal<number>;
 
     /**
      * The shadow properties of the layer.
@@ -98,12 +100,12 @@ export interface IBaseLayerProps {
     /**
      * The transformation properties of the layer.
      */
-    transform: Transform;
+    transform?: Transform;
 
     /**
      * The global composite operation applied to the layer.
      */
-    globalComposite: AnyGlobalCompositeOperation;
+    globalComposite?: AnyGlobalCompositeOperation;
 }
 
 /**
@@ -159,6 +161,8 @@ export class BaseLayer<T extends IBaseLayerProps> {
      */
     props: T;
 
+    public _signals: Map<string, Signal<any>> = new Map();
+
     /**
      * Constructs a new `BaseLayer` instance.
      * @param {LayerType} [type] - The type of the layer.
@@ -169,9 +173,66 @@ export class BaseLayer<T extends IBaseLayerProps> {
         this.id = misc?.id || generateID(type ? type : LayerType.Base);
         this.type = type ? type : LayerType.Base;
         this.zIndex = misc?.zIndex || 1;
-        this.visible = misc?.visible || true;
+        this.visible = misc?.visible !== undefined ? misc.visible : true;
         this.props = props ? props : {} as T;
+        this.extractSignals(this.props, '');
         this.props = this.validateProps(this.props);
+    }
+
+    /**
+     * Recursively extract signals from props and nested objects
+     * @param obj - Object to extract signals from
+     * @param path - Current property path (e.g., "size.width")
+     */
+    private extractSignals(obj: any, path: string) {
+        if (!obj || typeof obj !== 'object') return;
+
+        for (const key in obj) {
+            const value = obj[key];
+            const currentPath = path ? `${path}.${key}` : key;
+
+            if (value instanceof Signal) {
+                // Store signal with its path
+                this._signals.set(currentPath, value);
+                // Replace signal with its initial value (at time 0)
+                obj[key] = value.get(0);
+            } else if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Gradient) && !(value instanceof Pattern) && !(value instanceof Link)) {
+                // Recursively process nested objects (but not arrays or special types)
+                this.extractSignals(value, currentPath);
+            }
+        }
+    }
+
+    /**
+     * Update layer properties from signals at given time
+     * @param time - Current time in seconds
+     */
+    public updateState(time: number): void {
+        this._signals.forEach((signal, path) => {
+            // Just read the current value - signals are updated by the scheduler
+            const value = signal.value ? signal.value() : signal.get(time);
+            this.setNestedProperty(this.props, path, value);
+        });
+    }
+
+    /**
+     * Set a nested property value using dot notation path
+     * @param obj - Object to set property on
+     * @param path - Property path (e.g., "size.width")
+     * @param value - Value to set
+     */
+    private setNestedProperty(obj: any, path: string, value: any): void {
+        const keys = path.split('.');
+        let current = obj;
+
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]] || typeof current[keys[i]] !== 'object') {
+                current[keys[i]] = {};
+            }
+            current = current[keys[i]];
+        }
+
+        current[keys[keys.length - 1]] = value;
     }
 
     /**

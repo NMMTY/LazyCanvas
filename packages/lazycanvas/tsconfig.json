@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "lib": [
-      "es2022",
-      "dom"
-    ],
-    "module": "commonjs",
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "outDir": "./dist",
     "esModuleInterop": true,
@@ -14,6 +11,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "downlevelIteration": true,
+    "jsx": "react",
+    "jsxFactory": "createElement",
+    "jsxFragmentFactory": "Fragment"
   },
   "include": [
     "src/**/*"
@@ -25,5 +25,5 @@
     "scripts",
     "resources",
     "public"
-  ],
+  ]
 }

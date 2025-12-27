@@ -1,7 +1,7 @@
 import { AnyExport, AnyLayer, Export } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
 import { Canvas, SKRSContext2D, SvgCanvas, ImageData } from "@napi-rs/canvas";
-import { Group } from "../components";
+import { Div } from "../components";
 import { LazyLog } from "../../utils/LazyUtil";
 // @ts-ignore
 import { GIFEncoder, quantize, applyPalette } from "gifenc";
@@ -84,10 +84,10 @@ export class RenderManager implements IRenderManager {
 
     /**
      * Renders a single layer or group of layers.
-     * @param {AnyLayer | Group} [layer] - The layer or group to render.
+     * @param {AnyLayer | Div} [layer] - The layer or group to render.
      * @returns {Promise<SKRSContext2D>} The canvas rendering context after rendering.
      */
-    private async renderLayer(layer: AnyLayer | Group): Promise<SKRSContext2D> {
+    private async renderLayer(layer: AnyLayer | Div): Promise<SKRSContext2D> {
         if (this.debug) LazyLog.log('info', `Rendering ${layer.id}...\nData:`, layer.toJSON());
         if (layer.visible) {
             this.lazyCanvas.ctx.globalCompositeOperation = layer.props?.globalComposite || 'source-over';

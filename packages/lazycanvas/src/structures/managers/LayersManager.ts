@@ -1,5 +1,5 @@
 import { AnyLayer } from "../../types";
-import { Group } from "../components";
+import { Div } from "../components";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import {LazyCanvas} from "../LazyCanvas";
 
@@ -15,7 +15,7 @@ export interface ILayersManager {
     /**
      * A map storing layers or groups with their IDs as keys.
      */
-    map: Map<string, AnyLayer | Group>;
+    map: Map<string, AnyLayer | Div>;
 
     /**
      * Whether debugging is enabled.
@@ -36,7 +36,7 @@ export class LayersManager implements ILayersManager {
     /**
      * A map storing layers or groups with their IDs as keys.
      */
-    map: Map<string, AnyLayer | Group>;
+    map: Map<string, AnyLayer | Div>;
 
     /**
      * Whether debugging is enabled.
@@ -57,11 +57,11 @@ export class LayersManager implements ILayersManager {
 
     /**
      * Adds layers or groups to the map.
-     * @param {Array<AnyLayer | Group>} [layers] - The layers or groups to add to the map.
+     * @param {Array<AnyLayer | Div>} [layers] - The layers or groups to add to the map.
      * @returns {this} The current instance for chaining.
      * @throws {LazyError} If a layer with the same ID already exists.
      */
-    public add(...layers: Array<AnyLayer | Group>): this {
+    public add(...layers: Array<AnyLayer | Div>): this {
         if (this.debug) LazyLog.log('info', `Adding layers...\nlength: ${layers.length}`);
         let layersArray = layers.flat();
         layersArray = layersArray.filter(l => l !== undefined);
@@ -108,9 +108,9 @@ export class LayersManager implements ILayersManager {
      * Retrieves a layer or group from the map by its ID.
      * @param {string} [id] - The ID of the layer or group to retrieve.
      * @param {boolean} [cross] - Whether to search within groups for the ID.
-     * @returns {AnyLayer | Group | undefined} The retrieved layer or group, or undefined if not found.
+     * @returns {AnyLayer | Div | undefined} The retrieved layer or group, or undefined if not found.
      */
-    public get(id: string, cross: boolean = false): AnyLayer | Group | undefined {
+    public get(id: string, cross: boolean = false): AnyLayer | Div | undefined {
         if (cross) return this.crossSearch(id);
         else return this.map.get(id);
     }
@@ -134,9 +134,9 @@ export class LayersManager implements ILayersManager {
 
     /**
      * Retrieves the values (layers and groups) from the map.
-     * @returns {IterableIterator<AnyLayer | Group>} An iterator for the map values.
+     * @returns {IterableIterator<AnyLayer | Div>} An iterator for the map values.
      */
-    public values(): IterableIterator<AnyLayer | Group> {
+    public values(): IterableIterator<AnyLayer | Div> {
         return this.map.values();
     }
 
@@ -150,9 +150,9 @@ export class LayersManager implements ILayersManager {
 
     /**
      * Retrieves the entries (key-value pairs) from the map.
-     * @returns {IterableIterator<[string, AnyLayer | Group]>} An iterator for the map entries.
+     * @returns {IterableIterator<[string, AnyLayer | Div]>} An iterator for the map entries.
      */
-    public entries(): IterableIterator<[string, AnyLayer | Group]> {
+    public entries(): IterableIterator<[string, AnyLayer | Div]> {
         return this.map.entries();
     }
 
@@ -161,7 +161,7 @@ export class LayersManager implements ILayersManager {
      * @param {Function} [callbackfn] - The callback function to execute.
      * @returns {this} The current instance for chaining.
      */
-    public forEach(callbackfn: (value: AnyLayer | Group, key: string, map: Map<string, AnyLayer | Group>) => void): this {
+    public forEach(callbackfn: (value: AnyLayer | Div, key: string, map: Map<string, AnyLayer | Div>) => void): this {
         this.map.forEach(callbackfn);
         return this;
     }
@@ -186,18 +186,18 @@ export class LayersManager implements ILayersManager {
 
     /**
      * Converts the map to an array of layers and groups.
-     * @returns {Array<AnyLayer | Group>} An array of layers and groups.
+     * @returns {Array<AnyLayer | Div>} An array of layers and groups.
      */
-    public toArray(): Array<AnyLayer | Group> {
+    public toArray(): Array<AnyLayer | Div> {
         return Array.from(this.map.values());
     }
 
     /**
      * Populates the map from an array of layers and groups.
-     * @param {Array<AnyLayer | Group>} [array] - The array of layers and groups to populate the map from.
+     * @param {Array<AnyLayer | Div>} [array] - The array of layers and groups to populate the map from.
      * @returns {this} The current instance for chaining.
      */
-    public fromArray(array: Array<AnyLayer | Group>): this {
+    public fromArray(array: Array<AnyLayer | Div>): this {
         this.map = new Map(array.map(l => [l.id, l]));
         return this;
     }
@@ -213,12 +213,12 @@ export class LayersManager implements ILayersManager {
     /**
      * Searches for a layer or group by its ID, including within groups.
      * @param {string} [id] - The ID of the layer or group to search for.
-     * @returns {AnyLayer | Group | undefined} The found layer or group, or undefined if not found.
+     * @returns {AnyLayer | Div | undefined} The found layer or group, or undefined if not found.
      */
-    private crossSearch(id: string): AnyLayer | Group | undefined {
+    private crossSearch(id: string): AnyLayer | Div | undefined {
         for (const layer of Array.from(this.map.values())) {
             if (layer.id === id) return layer;
-            if (layer instanceof Group) {
+            if (layer instanceof Div) {
                 const result = layer.layers.find(l => l.id === id);
                 if (result) return result;
             }

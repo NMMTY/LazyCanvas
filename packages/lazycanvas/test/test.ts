@@ -12,7 +12,7 @@ import {
     BezierLayer,
     QuadraticLayer,
     Link,
-    Path2DLayer, FontsList, Group, Utils, PolygonLayer
+    Path2DLayer, FontsList, Div, Utils, PolygonLayer
 } from "../src";
 
 const canvas = new LazyCanvas({ debug: true })
@@ -23,7 +23,7 @@ canvas.manager.layers.add(
         .setPosition('50%', '50%')
         .setColor("rgb(255, 255, 255)")
         .setSize(800, 800),
-    new Group()
+    new Div()
         .setID('rotation-test')
         .add(
             new TextLayer()
@@ -51,7 +51,7 @@ canvas.manager.layers.add(
                 ];
             }),
         ),
-    new Group()
+    new Div()
         .setID('filter-test')
         .add(
             new TextLayer()
@@ -86,7 +86,7 @@ canvas.manager.layers.add(
                 .setSrc("https://i.pinimg.com/736x/e8/4a/62/e84a620bd3535da1cd11590057ee7678.jpg")
                 .setFilters(Filters.invert(100)),
         ),
-    new Group()
+    new Div()
         .setID('gradient-test')
         .add(
             new TextLayer()
@@ -140,7 +140,7 @@ canvas.manager.layers.add(
                 ]
             }),
         ),
-    new Group()
+    new Div()
         .add(
             ...[3, 4, 5, 6, 7, 8, 9, 10].flatMap((count) => {
                 return [

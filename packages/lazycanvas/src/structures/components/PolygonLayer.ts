@@ -1,9 +1,10 @@
 import {BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps} from "./BaseLayer";
-import {ColorType, LayerType, ScaleType} from "../../types";
+import {AnyCentring, ColorType, LayerType, ScaleType, StrokeOptions} from "../../types";
 import {defaultArg, LazyError, LazyLog} from "../../utils/LazyUtil";
 import {centring, isColor, parseFillStyle, parser} from "../../utils/utils";
 import {Canvas, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
 import {LayersManager} from "../managers";
+import {DrawUtils} from "../../utils/DrawUtils";
 
 export interface IPolygonLayer extends IBaseLayer {
     /**
@@ -44,11 +45,6 @@ export interface IPolygonLayerProps extends IBaseLayerProps {
     };
 
     /**
-     * Whether the layer is filled.
-     */
-    filled: boolean;
-
-    /**
      * The fill style (color or pattern) of the layer.
      */
     fillStyle: ColorType;
@@ -56,37 +52,7 @@ export interface IPolygonLayerProps extends IBaseLayerProps {
     /**
      * The stroke properties of the polygon.
      */
-    stroke: {
-        /**
-         * The width of the stroke.
-         */
-        width: number;
-
-        /**
-         * The cap style of the stroke.
-         */
-        cap: CanvasLineCap;
-
-        /**
-         * The join style of the stroke.
-         */
-        join: CanvasLineJoin;
-
-        /**
-         * The dash offset of the stroke.
-         */
-        dashOffset: number;
-
-        /**
-         * The dash pattern of the stroke.
-         */
-        dash: number[];
-
-        /**
-         * The miter limit of the stroke.
-         */
-        miterLimit: number;
-    };
+    stroke?: StrokeOptions;
 }
 
 
@@ -150,7 +116,6 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
             dashOffset: dashOffset || 0,
             miterLimit: miterLimit || 10,
         };
-        this.props.filled = false; // Ensure filled is false when stroke is set
         return this;
     }
 
@@ -172,8 +137,8 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
 
         const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
 
-        let { x, y } = centring(this.props.centring, this.type, w, h, xs, ys);
-        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring }, manager });
+        let { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
+        let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring }, manager });
 
         if (debug) LazyLog.log('none', `PolygonLayer:`, { x, y, w, h, count: this.props.size.count, radius: this.props.size.radius } );
 
@@ -247,22 +212,16 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
             ctx.closePath();
         }
 
-        if (this.props.filled) {
-            ctx.fillStyle = fillStyle;
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
+        DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+
+        if (this.props.stroke) {
+            ctx.stroke();
+        } else {
             ctx.fill();
         }
-
-        if (this.props.stroke && this.props.stroke.width > 0) {
-            ctx.lineWidth = this.props.stroke.width;
-            ctx.lineCap = this.props.stroke.cap;
-            ctx.lineJoin = this.props.stroke.join;
-            ctx.setLineDash(this.props.stroke.dash);
-            ctx.lineDashOffset = this.props.stroke.dashOffset;
-            ctx.miterLimit = this.props.stroke.miterLimit;
-            ctx.strokeStyle = fillStyle;
-            ctx.stroke();
-        }
-
         ctx.restore();
 
     }
@@ -299,16 +258,7 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
                 radius: data.size?.radius || 0,
                 count: data.size?.count || 3
             },
-            filled: data.filled !== undefined ? data.filled : true,
-            fillStyle: data.fillStyle || '#000000',
-            stroke: {
-                width: data.stroke?.width || 1,
-                cap: data.stroke?.cap || 'butt',
-                join: data.stroke?.join || 'miter',
-                dashOffset: data.stroke?.dashOffset || 0,
-                dash: data.stroke?.dash || [],
-                miterLimit: data.stroke?.miterLimit || 10
-            }
+            fillStyle: data.fillStyle || '#000000'
         }
     }
 }

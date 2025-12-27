@@ -6,11 +6,9 @@ import {
     BezierLayer,
     QuadraticLayer,
     LineLayer,
-    ClearLayer,
     Path2DLayer,
     IMorphLayer,
     IBezierLayer,
-    IClearLayer,
     IImageLayer,
     ITextLayer,
     IQuadraticLayer,
@@ -34,16 +32,25 @@ import {
     GlobalCompositeOperation,
     ColorSpace,
 } from "./enum";
+import {Signal, ThreadGenerator, SignalOptions, TweenConfig, unwrap, isSignal} from "../core/Signal";
 
-export type ScaleType = `link-w-${string}-${number}` | `link-h-${string}-${number}` | `link-x-${string}-${number}` | `link-y-${string}-${number}` | `${number}%` | `${number}px` | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link;
+// Utility type for signal-enabled values
+export type Signalable<T> = T | Signal<T>;
 
-export type StringColorType = `rgba(${number}, ${number}, ${number}, ${number})` | `rgb(${number}, ${number}, ${number})` | `hsl(${number}, ${number}%, ${number}%)` | `hsla(${number}, ${number}%, ${number}%, ${number})` | `#${string}` | string;
+// Re-export for convenience
+export type { ThreadGenerator, SignalOptions, TweenConfig };
+export { unwrap, isSignal };
+
+// Core types with Signal support
+export type ScaleType = `link-w-${string}-${number}` | `link-h-${string}-${number}` | `link-x-${string}-${number}` | `link-y-${string}-${number}` | `${number}%` | `${number}px` | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link | Signal<number>;
+
+export type StringColorType = `rgba(${number}, ${number}, ${number}, ${number})` | `rgb(${number}, ${number}, ${number})` | `hsl(${number}, ${number}%, ${number}%)` | `hsla(${number}, ${number}%, ${number}%, ${number})` | `#${string}` | string | Signal<string>;
 
 export type ColorType = Gradient | Pattern | StringColorType;
 
-export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IClearLayer | IPath2DLayer | IPolygonLayer;
+export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IPath2DLayer | IPolygonLayer;
 
-export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | ClearLayer | Path2DLayer | PolygonLayer;
+export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | Path2DLayer | PolygonLayer;
 
 export type AnyWeight = FontWeight | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 
@@ -86,16 +93,16 @@ export type PointNumber = {
 export type Extensions = 'svg' | 'png' | 'jpeg' | 'jpg' | 'gif' | 'webp' | 'yaml' | 'json';
 
 export interface Transform {
-    rotate: number;
-    scale: {
+    rotate?: number;
+    scale?: {
         x: number;
         y: number;
     };
-    translate: {
+    translate?: {
         x: number;
         y: number;
     };
-    matrix: DOMMatrix2DInit;
+    matrix?: DOMMatrix2DInit;
 }
 
 export type RadiusCorner = 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom' | 'all';
@@ -104,4 +111,13 @@ export type SubStringColor = {
     color: StringColorType;
     start: number;
     end: number;
-}
+};
+
+export type StrokeOptions = {
+    width: number;
+    cap?: CanvasLineCap;
+    join?: CanvasLineJoin;
+    dashOffset?: number;
+    dash?: number[];
+    miterLimit?: number;
+};

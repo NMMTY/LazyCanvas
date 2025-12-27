@@ -1,6 +1,6 @@
 import {
     LazyCanvas,
-    Group,
+    Div,
     MorphLayer,
     Exporter
 } from '../src';
@@ -15,7 +15,7 @@ canvas.manager.animation.setFrameRate(60)
 
 for (let i = 0; i < 100; i++) {
     canvas.manager.layers.add(
-        new Group()
+        new Div()
             .add(
                 new MorphLayer()
                     .setPosition(100 + i * 2, 100 + i * 2)

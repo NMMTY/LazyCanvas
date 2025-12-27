@@ -1,11 +1,8 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, ScaleType, Point, Centring, LayerType } from "../../types";
+import {ColorType, ScaleType, Point, Centring, LayerType, StrokeOptions} from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
-    drawShadow,
-    filters,
     isColor,
-    opacity,
     transform,
     parseFillStyle,
     getBoundingBoxBezier,
@@ -13,6 +10,7 @@ import {
 } from "../../utils/utils";
 import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
 import { LayersManager } from "../managers";
+import {DrawUtils} from "../../utils/DrawUtils";
 
 /**
  * Interface representing a Quadratic layer.
@@ -56,37 +54,7 @@ export interface IQuadraticLayerProps extends IBaseLayerProps {
     /**
      * The stroke properties of the quadratic curve.
      */
-    stroke: {
-        /**
-         * The width of the stroke.
-         */
-        width: number;
-
-        /**
-         * The cap style of the stroke.
-         */
-        cap: CanvasLineCap;
-
-        /**
-         * The join style of the stroke.
-         */
-        join: CanvasLineJoin;
-
-        /**
-         * The dash offset of the stroke.
-         */
-        dashOffset: number;
-
-        /**
-         * The dash pattern of the stroke.
-         */
-        dash: number[];
-
-        /**
-         * The miter limit of the stroke.
-         */
-        miterLimit: number;
-    };
+    stroke: StrokeOptions;
 }
 
 /**
@@ -215,20 +183,16 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
 
         ctx.save();
 
-        transform(ctx, this.props.transform, { x: center.x, y: center.y, width, height, type: this.type });
-        drawShadow(ctx, this.props.shadow);
-        opacity(ctx, this.props.opacity);
-        filters(ctx, this.props.filter);
+        if (this.props.transform) {
+            transform(ctx, this.props.transform, { x: center.x, y: center.y, width, height, type: this.type });
+        }
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
+        DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
 
         ctx.beginPath();
         ctx.moveTo(xs, ys);
-        ctx.strokeStyle = fillStyle;
-        ctx.lineWidth = this.props.stroke?.width || 1;
-        ctx.lineCap = this.props.stroke?.cap || 'butt';
-        ctx.lineJoin = this.props.stroke?.join || 'miter';
-        ctx.miterLimit = this.props.stroke?.miterLimit || 10;
-        ctx.lineDashOffset = this.props.stroke?.dashOffset || 0;
-        ctx.setLineDash(this.props.stroke?.dash || []);
         ctx.quadraticCurveTo(cx, cy, xe, ye);
         ctx.stroke();
         ctx.closePath();
@@ -261,7 +225,6 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
     protected validateProps(data: IQuadraticLayerProps): IQuadraticLayerProps {
         return {
             ...super.validateProps(data),
-            filled: data.filled || false,
             fillStyle: data.fillStyle || '#000000',
             centring: data.centring || Centring.None,
             controlPoints: data.controlPoints || [{ x: 0, y: 0 }],

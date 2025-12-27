@@ -4,7 +4,7 @@ import {
     FontsList,
     Gradient,
     GradientType,
-    Group,
+    Div,
     LazyCanvas,
     Link,
     MorphLayer,
@@ -33,7 +33,7 @@ canvas.manager.layers.add(
     ].flatMap((centring, index) => {
 
         const layers = (c: { centring: Centring, offset: { x: number, y: number }}, ind: number) => {
-            return new Group()
+            return new Div()
                 .setID(`gradient-test-${ind}`)
                 .add(
                     ...[0, 45, 90, 135, 180, 225, 270, 315].flatMap((angle, index) => {

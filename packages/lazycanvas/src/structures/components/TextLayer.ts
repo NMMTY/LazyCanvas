@@ -10,16 +10,13 @@ import {
     LayerType,
     LineCap,
     LineJoin,
-    ScaleType,
+    ScaleType, StrokeOptions,
     SubStringColor,
     TextAlign
 } from "../../types";
 import {defaultArg, LazyError, LazyLog} from "../../utils/LazyUtil";
 import {
-    drawShadow,
-    filters,
     isColor,
-    opacity,
     parseFillStyle,
     parser,
     parseToNormal,
@@ -27,6 +24,7 @@ import {
 } from "../../utils/utils";
 import {Canvas, SKRSContext2D, SvgCanvas} from "@napi-rs/canvas";
 import {LayersManager} from "../managers";
+import {DrawUtils} from "../../utils/DrawUtils";
 
 /**
  * Interface representing a Text layer.
@@ -51,11 +49,6 @@ export interface ITextLayerProps extends IBaseLayerProps {
      * The text content of the layer.
      */
     text: string;
-
-    /**
-     * Whether the layer is filled.
-     */
-    filled: boolean;
 
     /**
      * The fill style (color or pattern) of the layer.
@@ -90,7 +83,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
     /**
      * Configuration for multiline text.
      */
-    multiline: {
+    multiline?: {
         /**
          * Whether multiline is enabled.
          */
@@ -105,7 +98,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
     /**
      * The size of the Text layer, including width and height.
      */
-    size: {
+    size?: {
         /**
          * The width of the Text layer.
          */
@@ -145,37 +138,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
     /**
      * The stroke properties of the text.
      */
-    stroke?: {
-        /**
-         * The width of the stroke.
-         */
-        width: number;
-
-        /**
-         * The cap style of the stroke.
-         */
-        cap: CanvasLineCap;
-
-        /**
-         * The join style of the stroke.
-         */
-        join: CanvasLineJoin;
-
-        /**
-         * The dash offset of the stroke.
-         */
-        dashOffset: number;
-
-        /**
-         * The dash pattern of the stroke.
-         */
-        dash: number[];
-
-        /**
-         * The miter limit of the stroke.
-         */
-        miterLimit: number;
-    };
+    stroke?: StrokeOptions;
 }
 
 /**
@@ -320,7 +283,6 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
             dashOffset: dashOffset || 0,
             miterLimit: miterLimit || 10,
         };
-        this.props.filled = false; // Ensure filled is false when stroke is set
         return this;
     }
 
@@ -351,10 +313,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
      * @returns {Object} The width and height of the text.
      */
     measureText(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas): { width: number, height: number } {
-        const w = parseToNormal(this.props.size?.width, ctx, canvas);
-        const h = parseToNormal(this.props.size?.height, ctx, canvas, { width: w, height: 0 }, { vertical: true });
-
-        if (this.props.multiline.enabled) {
+        if (this.props?.multiline?.enabled) {
+            const w = parseToNormal(this.props.size?.width || 'vw', ctx, canvas);
+            const h = parseToNormal(this.props.size?.height || 0, ctx, canvas, { width: w, height: 0 }, { vertical: true });
             return { width: w, height: h };
         } else {
             ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
@@ -376,19 +337,22 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         const { x, y, w } = parcer.parseBatch({
             x: { v: this.props.x },
             y: { v: this.props.y, options: defaultArg.vl(true) },
-            w: { v: this.props.size?.width },
+            w: { v: this.props.size?.width || 'vw'},
         })
 
-        const h = parcer.parse(this.props.size?.height, defaultArg.wh(w), defaultArg.vl(true));
+        const h = parcer.parse(this.props.size?.height || 0, defaultArg.wh(w), defaultArg.vl(true));
 
         if (debug) LazyLog.log('none', `TextLayer:`, { x, y, w, h });
 
         ctx.save();
-        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type }, { text: this.props.text, textAlign: this.props.align, fontSize: this.props.font.size, multiline: this.props.multiline.enabled });
+        if (this.props.transform) {
+            transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type }, { text: this.props.text, textAlign: this.props.align, fontSize: this.props.font.size, multiline: this.props?.multiline?.enabled || false });
+        }
         ctx.beginPath();
-        drawShadow(ctx, this.props.shadow);
-        opacity(ctx, this.props.opacity);
-        filters(ctx, this.props.filter);
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
+
 
         ctx.textAlign = this.props.align;
         if (this.props.letterSpacing) ctx.letterSpacing = `${this.props.letterSpacing}px`;
@@ -397,7 +361,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         if (this.props.direction) ctx.direction = this.props.direction;
 
         let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, layer: { width: w, height: h, x, y, align: 'center' }, manager });
-        if (this.props.multiline.enabled) {
+        if (this.props?.multiline?.enabled) {
             const words = this.props.text.split(' ');
 
             let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
@@ -453,18 +417,11 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     private drawText(props: ITextLayerProps, ctx: SKRSContext2D, fillStyle: string | CanvasGradient | CanvasPattern, text: string, x: number, y: number, w: number, textOffset: number = 0) {
         // If no substring colors are defined, draw normally
         if (!props.subStringColors || props.subStringColors.length === 0) {
-            if (props.filled) {
-                ctx.fillStyle = fillStyle;
-                ctx.fillText(text, x, y, w);
-            } else {
-                ctx.strokeStyle = fillStyle;
-                ctx.lineWidth = props.stroke?.width || 1;
-                ctx.lineCap = props.stroke?.cap || 'butt';
-                ctx.lineJoin = props.stroke?.join || 'miter';
-                ctx.miterLimit = props.stroke?.miterLimit || 10;
-                ctx.lineDashOffset = props.stroke?.dashOffset || 0;
-                ctx.setLineDash(props.stroke?.dash || []);
+            DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+            if (props.stroke) {
                 ctx.strokeText(text, x, y, w);
+            } else {
+                ctx.fillText(text, x, y, w);
             }
             return;
         }
@@ -525,7 +482,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
             if (localStart < localEnd) {
                 segments.push({
                     text: text.substring(localStart, localEnd),
-                    color: subColor.color,
+                    color: parseFillStyle(ctx, subColor.color, { debug: false, layer: { width: w, height: 0, x: 0, y: 0, align: 'center' } }) as string,
                     start: localStart,
                     end: localEnd
                 });
@@ -548,19 +505,12 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
             if (segment.text.length === 0) continue;
 
             const segmentWidth = ctx.measureText(segment.text).width;
+            DrawUtils.fillStyle(ctx, segment.color, this.props.stroke);
 
-            if (props.filled) {
-                ctx.fillStyle = segment.color;
-                ctx.fillText(segment.text, currentX, y);
-            } else {
-                ctx.strokeStyle = segment.color;
-                ctx.lineWidth = props.stroke?.width || 1;
-                ctx.lineCap = props.stroke?.cap || 'butt';
-                ctx.lineJoin = props.stroke?.join || 'miter';
-                ctx.miterLimit = props.stroke?.miterLimit || 10;
-                ctx.lineDashOffset = props.stroke?.dashOffset || 0;
-                ctx.setLineDash(props.stroke?.dash || []);
+            if (props.stroke) {
                 ctx.strokeText(segment.text, currentX, y);
+            } else {
+                ctx.fillText(segment.text, currentX, y);
             }
 
             currentX += segmentWidth;
@@ -595,7 +545,6 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     protected validateProps(data: ITextLayerProps): ITextLayerProps {
         return {
             ...super.validateProps(data),
-            filled: data.filled || true,
             fillStyle: data.fillStyle || '#000000',
             text: data.text || "",
             font: {

@@ -1,7 +1,7 @@
 import { Export, AnyExport, JSONLayer } from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
 import { LayersManager, RenderManager, FontsManager, AnimationManager, IAnimationOptions, PluginManager, ILazyCanvasPlugin } from "./managers";
-import { Group } from "./components";
+import { IDiv } from "./components";
 import { LazyLog } from "../utils/LazyUtil";
 import { resizeLayers, resize } from "../utils/utils";
 
@@ -83,7 +83,7 @@ export interface IOLazyCanvas {
     /**
      * The layers to be added to the LazyCanvas instance.
      */
-    layers: Array<JSONLayer | Group>;
+    layers: Array<JSONLayer | IDiv>;
 }
 
 /**
@@ -101,7 +101,6 @@ export class LazyCanvas implements ILazyCanvas {
     ctx: SKRSContext2D;
 
     /**
-     * The manager object containing various managers for layers, rendering, fonts, and animation.
      * The manager object containing various managers for layers, rendering, fonts, animation, and plugins.
      */
     manager: {
@@ -210,7 +209,6 @@ export class LazyCanvas implements ILazyCanvas {
         const layers = resizeLayers(this.manager.layers.toArray(), ratio);
         this.manager.layers.fromArray(layers);
 
-        // Выполняем хук onResize для всех плагинов
         this.manager.plugins.executeHook('onResize', this, ratio);
 
         return this;
@@ -233,7 +231,6 @@ export class LazyCanvas implements ILazyCanvas {
         this.ctx = this.canvas.getContext('2d');
         this.manager.layers = new LayersManager(this, { debug: this.manager.layers.debug });
 
-        // Выполняем хук onCanvasCreated для всех плагинов
         this.manager.plugins.executeHook('onCanvasCreated', this, width, height);
 
         return this;

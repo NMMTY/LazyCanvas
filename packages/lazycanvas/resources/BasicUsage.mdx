@@ -88,13 +88,13 @@ canvas.manager.layers.add(
 
 ## Grouping Elements
 
-Organize layers using `Group`:
+Organize layers using `Div`:
 
 ```typescript
-import { Group } from '@nmmty/lazycanvas';
+import { Div } from '@nmmty/lazycanvas';
 
 canvas.manager.layers.add(
-    new Group()
+    new Div()
         .setID('my-group')
         .add(
             new MorphLayer()

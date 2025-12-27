@@ -1,4 +1,4 @@
-import {Export, FontWeight, Group, LazyCanvas, MorphLayer, Exporter, TextLayer, Pattern, PatternType, ImageLayer } from '../src';
+import {Export, FontWeight, Div, LazyCanvas, MorphLayer, Exporter, TextLayer, Pattern, PatternType, ImageLayer } from '../src';
 
 const canvas = new LazyCanvas({ debug: true })
     .create(210, 210)
@@ -14,7 +14,7 @@ pattern.manager.layers.add(
 )
 
 canvas.manager.layers.add(
-    new Group()
+    new Div()
         .add(
             new MorphLayer()
                 .setPosition(105, 105)
