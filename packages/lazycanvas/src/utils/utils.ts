@@ -101,8 +101,8 @@ export function parseToNormal(
             switch (match[1]) {
                 case 'link-w': return getLayerWidth(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
                 case 'link-h': return getLayerHeight(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
-                case 'link-x': return parserInstance.parse(anyLayer.props.x) + additionalSpacing;
-                case 'link-y': return parserInstance.parse(anyLayer.props.y) + additionalSpacing;
+                case 'link-x': return parserInstance.parse(anyLayer.props.position.x) + additionalSpacing;
+                case 'link-y': return parserInstance.parse(anyLayer.props.position.y) + additionalSpacing;
             }
         }
     }
@@ -119,8 +119,8 @@ export function parseToNormal(
         switch (v.type) {
             case LinkType.Width: return getLayerWidth(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
             case LinkType.Height: return getLayerHeight(anyLayer, ctx, canvas, manager, parserInstance) + additionalSpacing;
-            case LinkType.X: return parserInstance.parse(anyLayer.props.x) + additionalSpacing;
-            case LinkType.Y: return parserInstance.parse(anyLayer.props.y) + additionalSpacing;
+            case LinkType.X: return parserInstance.parse(anyLayer.props.position.x) + additionalSpacing;
+            case LinkType.Y: return parserInstance.parse(anyLayer.props.position.y) + additionalSpacing;
         }
     }
 
@@ -416,8 +416,8 @@ export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
     if (layers.length > 0) {
         for (const layer of layers) {
             if (!(layer instanceof Div || layer instanceof Path2DLayer)) {
-                layer.props.x = resize(layer.props.x, ratio) as ScaleType;
-                layer.props.y = resize(layer.props.y, ratio) as ScaleType;
+                layer.props.position.x = resize(layer.props.position.x, ratio) as ScaleType;
+                layer.props.position.y = resize(layer.props.position.y, ratio) as ScaleType;
 
                 if ('size' in layer.props && layer.props.size) {
                     layer.props.size.width = resize(layer.props.size.width, ratio) as ScaleType;
@@ -438,9 +438,9 @@ export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
                     layer.props.stroke.width = resize(layer.props.stroke.width, ratio) as number;
                 }
 
-                if ('endPoint' in layer.props) {
-                    layer.props.endPoint.x = resize(layer.props.endPoint.x, ratio) as ScaleType;
-                    layer.props.endPoint.y = resize(layer.props.endPoint.y, ratio) as ScaleType;
+                if ('endX' in layer.props.position && 'endY' in layer.props.position) {
+                    layer.props.position.endX = resize(layer.props.position.endX, ratio) as ScaleType;
+                    layer.props.position.endY = resize(layer.props.position.endY, ratio) as ScaleType;
                 }
 
                 if ('controlPoints' in layer.props) {

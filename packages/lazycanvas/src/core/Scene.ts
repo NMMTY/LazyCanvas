@@ -1,4 +1,4 @@
-import { BaseLayer, Div } from '../structures/components';
+import { Div } from '../structures/components';
 import { AnyLayer } from "../types";
 import { ThreadScheduler } from './ThreadScheduler';
 import { ThreadGenerator, Signal } from './Signal';
@@ -10,7 +10,6 @@ import { Canvas } from "@napi-rs/canvas";
  */
 export class Scene {
     public readonly lazyCanvas: LazyCanvas;
-    public root: Div | AnyLayer | null = null;
 
     private allLayers: (AnyLayer | Div)[] = [];
     private scheduler: ThreadScheduler = new ThreadScheduler();
@@ -32,32 +31,8 @@ export class Scene {
      * @param tree - Root layer or group
      */
     public load(tree: AnyLayer | Div): void {
-        this.root = tree;
-        this.allLayers = [];
-
-        // Register all layers recursively
-        this.registerRecursively(tree);
-    }
-
-    /**
-     * Recursively register layers in the manager and collect them
-     * @param layer - Layer or group to register
-     */
-    private registerRecursively(layer: AnyLayer | Div): void {
-        // Add to our internal list for updateState iteration
-        this.allLayers.push(layer);
-
-        // Register in manager if it has an ID
-        if (layer.id && !this.lazyCanvas.manager.layers.map.has(layer.id)) {
-            this.lazyCanvas.manager.layers.add(layer);
-        }
-
-        // If it's a group, recurse into children
-        if (layer instanceof Div && layer.layers) {
-            for (const child of layer.layers) {
-                this.registerRecursively(child);
-            }
-        }
+        this.lazyCanvas.manager.layers.add(tree);
+        this.allLayers = this.lazyCanvas.manager.layers.toArray();
     }
 
     /**
@@ -65,7 +40,7 @@ export class Scene {
      * @param time - Time in seconds
      */
     public async renderFrame(time: number): Promise<void> {
-        if (!this.root) {
+        if (this.lazyCanvas.manager.layers.size() === 0) {
             throw new Error('Scene: No root layer loaded. Call scene.load(tree) first.');
         }
 
@@ -79,7 +54,7 @@ export class Scene {
         this.updateAllStates(time);
 
         // 4. PHASE 2: Draw the layer tree
-        await this.drawLayer(this.root);
+        await this.drawLayer(this.lazyCanvas.manager.layers.toArray()[0]);
 
         this.lastFrameTime = time;
     }

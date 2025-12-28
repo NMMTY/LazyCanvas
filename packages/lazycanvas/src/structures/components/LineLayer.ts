@@ -30,20 +30,18 @@ export interface ILineLayer extends IBaseLayer {
  * Interface representing the properties of a Line Layer.
  */
 export interface ILineLayerProps extends IBaseLayerProps {
-    /**
-     * The end point of the line, including x and y coordinates.
-     */
-    endPoint: {
+
+    position: IBaseLayerProps['position'] & {
         /**
-         * The x-coordinate of the end point.
+         * The x-coordinate of the end point of the line.
          */
-        x: ScaleType;
+        endX: ScaleType;
 
         /**
-         * The y-coordinate of the end point.
+         * The y-coordinate of the end point of the line.
          */
-        y: ScaleType;
-    };
+        endY: ScaleType;
+    }
 
     /**
      * Whether the layer is filled.
@@ -82,13 +80,15 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     }
 
     /**
-     * Sets the end position of the line layer.
+     * Sets the position of the line layer.
      * @param {ScaleType} [x] - The x-coordinate of the end point.
      * @param {ScaleType} [y] - The y-coordinate of the end point.
+     * @param {ScaleType} [endX] - The x-coordinate of the end point.
+     * @param {ScaleType} [endY] - The y-coordinate of the end point.
      * @returns {this} The current instance for chaining.
      */
-    setEndPosition(x: ScaleType, y: ScaleType): this {
-        this.props.endPoint = { x, y };
+    override setPosition(x: ScaleType, y: ScaleType, endX?: ScaleType, endY?: ScaleType): this {
+        this.props.position = { x, y, endX: endX || 0, endY: endY || 0 };
         return this;
     }
 
@@ -138,10 +138,10 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, xe, ye } = parcer.parseBatch({
-            xs: { v: this.props.x },
-            ys: { v: this.props.y, options: defaultArg.vl(true) },
-            xe: { v: this.props.endPoint.x },
-            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) },
+            xs: { v: this.props.position.x },
+            ys: { v: this.props.position.y, options: defaultArg.vl(true) },
+            xe: { v: this.props.position.endX },
+            ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
         });
 
         let width = xe - xs;
@@ -160,10 +160,10 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, xe, ye } = parcer.parseBatch({
-            xs: { v: this.props.x },
-            ys: { v: this.props.y, options: defaultArg.vl(true) },
-            xe: { v: this.props.endPoint.x },
-            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) },
+            xs: { v: this.props.position.x },
+            ys: { v: this.props.position.y, options: defaultArg.vl(true) },
+            xe: { v: this.props.position.endX },
+            ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
         });
 
         let width = Math.abs(xe - xs);
@@ -216,12 +216,14 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     protected validateProps(data: ILineLayerProps): ILineLayerProps {
         return {
             ...super.validateProps(data),
+            position: {
+                x: data.position?.x || 0,
+                y: data.position?.y || 0,
+                endX: data.position?.endX || 0,
+                endY: data.position?.endY || 0,
+            },
             fillStyle: data.fillStyle || '#000000',
             centring: data.centring || Centring.None,
-            endPoint: {
-                x: data.endPoint?.x || 0,
-                y: data.endPoint?.y || 0,
-            },
             stroke: {
                 width: data.stroke?.width || 1,
                 cap: data.stroke?.cap || 'butt',

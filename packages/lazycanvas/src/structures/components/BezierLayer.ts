@@ -31,15 +31,23 @@ export interface IBezierLayer extends IBaseLayer {
  * Interface representing the properties of a Bezier layer.
  */
 export interface IBezierLayerProps extends IBaseLayerProps {
+
+    position: IBaseLayerProps['position'] & {
+        /**
+         * The end x of the Bézier curve.
+         */
+        endX: ScaleType;
+
+        /**
+         * The end y of the Bézier curve.
+         */
+        endY: ScaleType;
+    };
+
     /**
      * The control points of the Bézier curve.
      */
     controlPoints: Array<Point>;
-
-    /**
-     * The end point of the Bézier curve.
-     */
-    endPoint: Point;
 
     /**
      * The fill style (color or pattern) of the layer.
@@ -85,13 +93,15 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     }
 
     /**
-     * Sets the end position of the Bezier layer.
+     * Sets the position of the Bezier layer.
      * @param {ScaleType} [x] - The x-coordinate of the end point.
      * @param {ScaleType} [y] - The y-coordinate of the end point.
+     * @param {ScaleType} [endX] - The x-coordinate of the end point.
+     * @param {ScaleType} [endY] - The y-coordinate of the end point.
      * @returns {this} The current instance for chaining.
      */
-    setEndPosition(x: ScaleType, y: ScaleType): this {
-        this.props.endPoint = { x, y };
+    override setPosition(x: ScaleType, y: ScaleType, endX?: ScaleType, endY?: ScaleType): this {
+        this.props.position = { x, y, endX: endX || 0, endY: endY || 0 };
         return this;
     }
 
@@ -141,14 +151,14 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({
-            xs: { v: this.props.x },
-            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            xs: { v: this.props.position.x },
+            ys: { v: this.props.position.y, options: defaultArg.vl(true) },
             cp1x: { v: this.props.controlPoints[0].x },
             cp1y: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
             cp2x: { v: this.props.controlPoints[1].x },
             cp2y: { v: this.props.controlPoints[1].y, options: defaultArg.vl(true) },
-            xe: { v: this.props.endPoint.x },
-            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) }
+            xe: { v: this.props.position.endX },
+            ye: { v: this.props.position.endY, options: defaultArg.vl(true) }
         });
 
         const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cp1x, y: cp1y }, { x: cp2x, y: cp2y }, { x: xe, y: ye } ]);
@@ -166,14 +176,14 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, cp1x, cp1y, cp2x, cp2y, xe, ye } = parcer.parseBatch({
-            xs: { v: this.props.x },
-            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            xs: { v: this.props.position.x },
+            ys: { v: this.props.position.y, options: defaultArg.vl(true) },
             cp1x: { v: this.props.controlPoints[0].x },
             cp1y: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
             cp2x: { v: this.props.controlPoints[1].x },
             cp2y: { v: this.props.controlPoints[1].y, options: defaultArg.vl(true) },
-            xe: { v: this.props.endPoint.x },
-            ye: { v: this.props.endPoint.y, options: defaultArg.vl(true) }
+            xe: { v: this.props.position.endX },
+            ye: { v: this.props.position.endY, options: defaultArg.vl(true) }
         });
 
         const { max, min, center, width, height } = getBoundingBoxBezier([ { x: xs, y: ys }, { x: cp1x, y: cp1y }, { x: cp2x, y: cp2y }, { x: xe, y: ye } ]);
@@ -239,10 +249,15 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     protected validateProps(data: IBezierLayerProps): IBezierLayerProps {
         return {
             ...super.validateProps(data),
+            position: {
+                x: data.position?.x || 0,
+                y: data.position?.y || 0,
+                endX: data.position?.endX || 0,
+                endY: data.position?.endY || 0,
+            },
             fillStyle: data.fillStyle || '#000000',
             centring: data.centring || Centring.None,
             controlPoints: data.controlPoints || [{x: 0, y: 0}, {x: 0, y: 0}],
-            endPoint: data.endPoint || {x: 0, y: 0},
             stroke: {
                 width: data.stroke?.width || 1,
                 cap: data.stroke?.cap || 'butt',

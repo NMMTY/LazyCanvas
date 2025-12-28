@@ -47,16 +47,17 @@ export interface IBaseLayer {
  * Interface representing the properties of a base layer.
  */
 export interface IBaseLayerProps {
-    /**
-     * The x-coordinate of the layer.
-     */
-    x: ScaleType;
+    position: {
+        /**
+         * The x-coordinate of the layer.
+         */
+        x: ScaleType;
 
-    /**
-     * The y-coordinate of the layer.
-     */
-    y: ScaleType;
-
+        /**
+         * The y-coordinate of the layer.
+         */
+        y: ScaleType;
+    }
     /**
      * The centring type of the layer.
      */
@@ -242,8 +243,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      * @returns {this} The current instance for chaining.
      */
     setPosition(x: ScaleType, y: ScaleType): this {
-        this.props.x = x;
-        this.props.y = y;
+        this.props.position = { x, y };
         return this;
     }
 
@@ -398,8 +398,7 @@ export class BaseLayer<T extends IBaseLayerProps> {
      protected validateProps(data: T): T {
         return {
             ...data,
-            x: data.x || 0,
-            y: data.y || 0,
+            position: data.position || { x: 0, y: 0 },
             centring: data.centring || Centring.Center,
             filter: data.filter || '',
             opacity: data.opacity || 1,

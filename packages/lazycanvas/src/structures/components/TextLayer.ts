@@ -335,8 +335,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         const parcer = parser(ctx, canvas, manager);
 
         const { x, y, w } = parcer.parseBatch({
-            x: { v: this.props.x },
-            y: { v: this.props.y, options: defaultArg.vl(true) },
+            x: { v: this.props.position.x },
+            y: { v: this.props.position.y, options: defaultArg.vl(true) },
             w: { v: this.props.size?.width || 'vw'},
         })
 

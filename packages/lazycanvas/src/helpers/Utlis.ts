@@ -27,16 +27,14 @@ const Utils = {
                 ...Array.from({ length: Math.ceil((options.endX - options.startX) / options.cellWith) }, (_, i) => {
                     const x = options.startX + i * options.cellWith;
                     return new LineLayer()
-                        .setPosition(x, options.startY)
-                        .setEndPosition(x, options.endY)
+                        .setPosition(x, options.startY, x, options.endY)
                         .setColor(options.color)
                         .setStroke(options.lineWidth);
                 }),
                 ...Array.from({ length: Math.ceil((options.endY - options.startY) / options.cellHeight) }, (_, i) => {
                     const y = options.startY + i * options.cellHeight;
                     return new LineLayer()
-                        .setPosition(options.startX, y)
-                        .setEndPosition(options.endX, y)
+                        .setPosition(options.startX, y, options.endX, y)
                         .setColor(options.color)
                         .setStroke(options.lineWidth);
                 })
@@ -56,23 +54,19 @@ const Utils = {
             .setID(`box-${start.x}-${start.y}-${end.x}-${end.y}`)
             .add(
                 new LineLayer()
-                    .setPosition(start.x, start.y)
-                    .setEndPosition(end.x, start.y)
+                    .setPosition(start.x, start.y, end.x, start.y)
                     .setColor(opts.color)
                     .setStroke(opts.lineWidth),
                 new LineLayer()
-                    .setPosition(end.x, start.y)
-                    .setEndPosition(end.x, end.y)
+                    .setPosition(end.x, start.y, end.x, end.y)
                     .setColor(opts.color)
                     .setStroke(opts.lineWidth),
                 new LineLayer()
-                    .setPosition(end.x, end.y)
-                    .setEndPosition(start.x, end.y)
+                    .setPosition(end.x, end.y, start.x, end.y)
                     .setColor(opts.color)
                     .setStroke(opts.lineWidth),
                 new LineLayer()
-                    .setPosition(start.x, end.y)
-                    .setEndPosition(start.x, start.y)
+                    .setPosition(start.x, end.y, start.x, start.y)
                     .setColor(opts.color)
                     .setStroke(opts.lineWidth)
             );

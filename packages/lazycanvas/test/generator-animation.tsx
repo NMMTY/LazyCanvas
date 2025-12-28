@@ -1,10 +1,20 @@
 // test/generator-animation.tsx
 /** @jsx createElement */
 import { createElement } from '../src/jsx-runtime';
-import { Scene, MorphLayer, TextLayer, Div } from '../src';
-import { createSignal, Easing, resetSignals } from '../src/core/Signal';
-import { all, chain, waitFor, loop, calculateParallelDuration } from '../src/core/SignalUtils';
-import { APNGEncoder } from '../src/utils/APNGEncoder';
+import {
+    Scene,
+    MorphLayer,
+    TextLayer,
+    Div,
+    APNGEncoder,
+    createSignal,
+    Easing,
+    resetSignals,
+    all,
+    chain,
+    waitFor,
+    calculateSequentialDuration
+} from '../src';
 import * as fs from "node:fs";
 
 /**
@@ -65,11 +75,6 @@ export async function runGeneratorAnimation() {
         yield* textOpacity.to(0, 0.5, { easing: Easing.easeIn });
     }
 
-    // Run both animations in parallel
-    scene.addAnimation(all(
-        boxAnimation(),
-        textAnimation()
-    ));
 
     // Build JSX tree
     const tree = (
@@ -106,7 +111,7 @@ export async function runGeneratorAnimation() {
 
     // Calculate animation duration automatically
     console.log('📐 Calculating animation duration...');
-    const duration = calculateParallelDuration([
+    const duration = calculateSequentialDuration([
         () => boxAnimation(),
         () => textAnimation()
     ]);
@@ -120,8 +125,8 @@ export async function runGeneratorAnimation() {
         textX, textY, textOpacity
     );
 
-    // Run both animations in parallel
-    scene.addAnimation(all(
+    // Run both animations in sequence using chain()
+    scene.addAnimation(chain(
         boxAnimation(),
         textAnimation()
     ));

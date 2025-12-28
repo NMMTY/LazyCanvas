@@ -223,6 +223,8 @@ export class APNGEncoder {
     }
 }
 
+export default APNGEncoder
+
 /**
  * Helper function to create APNG from ImageData array
  */

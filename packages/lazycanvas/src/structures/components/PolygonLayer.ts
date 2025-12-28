@@ -130,8 +130,8 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
         const parcer = parser(ctx, canvas, manager);
 
         const { xs, ys, w } = parcer.parseBatch({
-            xs: { v: this.props.x },
-            ys: { v: this.props.y, options: defaultArg.vl(true) },
+            xs: { v: this.props.position.x },
+            ys: { v: this.props.position.y, options: defaultArg.vl(true) },
             w: { v: this.props.size.width },
         });
 
