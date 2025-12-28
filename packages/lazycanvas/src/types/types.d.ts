@@ -1,38 +1,45 @@
 import { Gradient, Link, Pattern } from "../structures/helpers";
 import {
-    MorphLayer,
-    ImageLayer,
-    TextLayer,
-    BezierLayer,
-    QuadraticLayer,
-    LineLayer,
-    Path2DLayer,
-    IMorphLayer,
-    IBezierLayer,
-    IImageLayer,
-    ITextLayer,
-    IQuadraticLayer,
-    ILineLayer,
-    IPath2DLayer,
-    IPolygonLayer,
-    PolygonLayer
+  MorphLayer,
+  ImageLayer,
+  TextLayer,
+  BezierLayer,
+  QuadraticLayer,
+  LineLayer,
+  Path2DLayer,
+  IMorphLayer,
+  IBezierLayer,
+  IImageLayer,
+  ITextLayer,
+  IQuadraticLayer,
+  ILineLayer,
+  IPath2DLayer,
+  IPolygonLayer,
+  PolygonLayer,
 } from "../structures/components";
 import {
-    FontWeight,
-    GradientType,
-    TextAlign,
-    TextBaseline,
-    TextDirection,
-    LineCap,
-    LineJoin,
-    Export,
-    Centring,
-    PatternType,
-    LinkType,
-    GlobalCompositeOperation,
-    ColorSpace,
+  FontWeight,
+  GradientType,
+  TextAlign,
+  TextBaseline,
+  TextDirection,
+  LineCap,
+  LineJoin,
+  Export,
+  Centring,
+  PatternType,
+  LinkType,
+  GlobalCompositeOperation,
+  ColorSpace,
 } from "./enum";
-import {Signal, ThreadGenerator, SignalOptions, TweenConfig, unwrap, isSignal} from "../core/Signal";
+import {
+  Signal,
+  ThreadGenerator,
+  SignalOptions,
+  TweenConfig,
+  unwrap,
+  isSignal,
+} from "../core/Signal";
 
 // Utility type for signal-enabled values
 export type Signalable<T> = T | Signal<T>;
@@ -42,82 +49,184 @@ export type { ThreadGenerator, SignalOptions, TweenConfig };
 export { unwrap, isSignal };
 
 // Core types with Signal support
-export type ScaleType = `link-w-${string}-${number}` | `link-h-${string}-${number}` | `link-x-${string}-${number}` | `link-y-${string}-${number}` | `${number}%` | `${number}px` | number | 'vw' | 'vh' | 'vmin' | 'vmax' | Link | Signal<number>;
+export type ScaleType =
+  | `link-w-${string}-${number}`
+  | `link-h-${string}-${number}`
+  | `link-x-${string}-${number}`
+  | `link-y-${string}-${number}`
+  | `${number}%`
+  | `${number}px`
+  | number
+  | "vw"
+  | "vh"
+  | "vmin"
+  | "vmax"
+  | Link
+  | Signal<number>;
 
-export type StringColorType = `rgba(${number}, ${number}, ${number}, ${number})` | `rgb(${number}, ${number}, ${number})` | `hsl(${number}, ${number}%, ${number}%)` | `hsla(${number}, ${number}%, ${number}%, ${number})` | `#${string}` | string | Signal<string>;
+export type StringColorType =
+  | `rgba(${number}, ${number}, ${number}, ${number})`
+  | `rgb(${number}, ${number}, ${number})`
+  | `hsl(${number}, ${number}%, ${number}%)`
+  | `hsla(${number}, ${number}%, ${number}%, ${number})`
+  | `#${string}`
+  | string
+  | Signal<string>;
 
 export type ColorType = Gradient | Pattern | StringColorType;
 
-export type JSONLayer = IMorphLayer | IImageLayer | ITextLayer | IBezierLayer | IQuadraticLayer | ILineLayer | IPath2DLayer | IPolygonLayer;
+export type JSONLayer =
+  | IMorphLayer
+  | IImageLayer
+  | ITextLayer
+  | IBezierLayer
+  | IQuadraticLayer
+  | ILineLayer
+  | IPath2DLayer
+  | IPolygonLayer;
 
-export type AnyLayer = MorphLayer | ImageLayer | TextLayer | BezierLayer | QuadraticLayer | LineLayer | Path2DLayer | PolygonLayer;
+export type AnyLayer =
+  | MorphLayer
+  | ImageLayer
+  | TextLayer
+  | BezierLayer
+  | QuadraticLayer
+  | LineLayer
+  | Path2DLayer
+  | PolygonLayer;
 
 export type AnyWeight = FontWeight | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 
-export type AnyGradientType = GradientType | 'linear' | 'radial' | 'conic';
+export type AnyGradientType = GradientType | "linear" | "radial" | "conic";
 
-export type AnyTextAlign = TextAlign | 'left' | 'right' | 'center' | 'start' | 'end';
+export type AnyTextAlign = TextAlign | "left" | "right" | "center" | "start" | "end";
 
-export type AnyTextBaseline = TextBaseline | 'top' | 'hanging' | 'middle' | 'alphabetic' | 'ideographic' | 'bottom';
+export type AnyTextBaseline =
+  | TextBaseline
+  | "top"
+  | "hanging"
+  | "middle"
+  | "alphabetic"
+  | "ideographic"
+  | "bottom";
 
-export type AnyTextDirection = TextDirection | 'ltr' | 'rtl' | 'inherit';
+export type AnyTextDirection = TextDirection | "ltr" | "rtl" | "inherit";
 
-export type AnyLineCap = LineCap | 'butt' | 'round' | 'square';
+export type AnyLineCap = LineCap | "butt" | "round" | "square";
 
-export type AnyLineJoin = LineJoin | 'bevel' | 'round' | 'miter';
+export type AnyLineJoin = LineJoin | "bevel" | "round" | "miter";
 
-export type AnyExport = Export | 'canvas' | 'ctx' | 'buffer' | 'svg' | 'png' | 'apng' | 'jpg' | 'webp' | 'yaml' | 'json';
+export type AnyExport =
+  | Export
+  | "canvas"
+  | "ctx"
+  | "buffer"
+  | "svg"
+  | "png"
+  | "apng"
+  | "jpg"
+  | "webp"
+  | "yaml"
+  | "json";
 
-export type AnyCentring = Centring | 'start' | 'start-top' | 'start-bottom' | 'center' | 'center-top' | 'center-bottom' | 'end' | 'end-top' | 'end-bottom' | 'none';
+export type AnyCentring =
+  | Centring
+  | "start"
+  | "start-top"
+  | "start-bottom"
+  | "center"
+  | "center-top"
+  | "center-bottom"
+  | "end"
+  | "end-top"
+  | "end-bottom"
+  | "none";
 
-export type AnyPatternType = PatternType | 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
+export type AnyPatternType = PatternType | "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 
-export type AnyLinkType = LinkType | 'width' | 'height' | 'x' | 'y';
+export type AnyLinkType = LinkType | "width" | "height" | "x" | "y";
 
-export type AnyGlobalCompositeOperation = GlobalCompositeOperation | 'source-over' | 'source-in' | 'source-out' | 'source-atop' | 'destination-over' | 'destination-in' | 'destination-out' | 'destination-atop' | 'lighter' | 'copy' | 'xor' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 'color-dodge' | 'color-burn' | 'hard-light' | 'soft-light' | 'difference' | 'exclusion' | 'hue' | 'saturation' | 'color' | 'luminosity';
+export type AnyGlobalCompositeOperation =
+  | GlobalCompositeOperation
+  | "source-over"
+  | "source-in"
+  | "source-out"
+  | "source-atop"
+  | "destination-over"
+  | "destination-in"
+  | "destination-out"
+  | "destination-atop"
+  | "lighter"
+  | "copy"
+  | "xor"
+  | "multiply"
+  | "screen"
+  | "overlay"
+  | "darken"
+  | "lighten"
+  | "color-dodge"
+  | "color-burn"
+  | "hard-light"
+  | "soft-light"
+  | "difference"
+  | "exclusion"
+  | "hue"
+  | "saturation"
+  | "color"
+  | "luminosity";
 
-export type AnyColorSpace = ColorSpace | 'rgb565' | 'rgba4444' | 'rgba444';
+export type AnyColorSpace = ColorSpace | "rgb565" | "rgba4444" | "rgba444";
 
-export type AnyFilter = `sepia(${number}%)` | `saturate(${number}%)` | `opacity(${number}%)` | `invert(${number}%)` | `hue-rotate(${number}deg)` | `grayscale(${number}%)` | `drop-shadow(${number}px ${number}px ${number}px ${string})` | `contrast(${number}%)` | `brightness(${number}%)` | `blur(${number}px)`;
+export type AnyFilter =
+  | `sepia(${number}%)`
+  | `saturate(${number}%)`
+  | `opacity(${number}%)`
+  | `invert(${number}%)`
+  | `hue-rotate(${number}deg)`
+  | `grayscale(${number}%)`
+  | `drop-shadow(${number}px ${number}px ${number}px ${string})`
+  | `contrast(${number}%)`
+  | `brightness(${number}%)`
+  | `blur(${number}px)`;
 
 export type Point = {
-    x: ScaleType;
-    y: ScaleType;
-}
-
-export type PointNumber = {
-    x: number;
-    y: number;
+  x: ScaleType;
+  y: ScaleType;
 };
 
-export type Extensions = 'svg' | 'png' | 'jpeg' | 'jpg' | 'gif' | 'webp' | 'yaml' | 'json';
+export type PointNumber = {
+  x: number;
+  y: number;
+};
+
+export type Extensions = "svg" | "png" | "jpeg" | "jpg" | "gif" | "webp" | "yaml" | "json";
 
 export interface Transform {
-    rotate?: number;
-    scale?: {
-        x: number;
-        y: number;
-    };
-    translate?: {
-        x: number;
-        y: number;
-    };
-    matrix?: DOMMatrix2DInit;
+  rotate?: number;
+  scale?: {
+    x: number;
+    y: number;
+  };
+  translate?: {
+    x: number;
+    y: number;
+  };
+  matrix?: DOMMatrix2DInit;
 }
 
-export type RadiusCorner = 'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom' | 'all';
+export type RadiusCorner = "leftTop" | "leftBottom" | "rightTop" | "rightBottom" | "all";
 
 export type SubStringColor = {
-    color: StringColorType;
-    start: number;
-    end: number;
+  color: StringColorType;
+  start: number;
+  end: number;
 };
 
 export type StrokeOptions = {
-    width: number;
-    cap?: CanvasLineCap;
-    join?: CanvasLineJoin;
-    dashOffset?: number;
-    dash?: number[];
-    miterLimit?: number;
+  width: number;
+  cap?: CanvasLineCap;
+  join?: CanvasLineJoin;
+  dashOffset?: number;
+  dash?: number[];
+  miterLimit?: number;
 };

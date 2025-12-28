@@ -1,209 +1,209 @@
 import { AnyLayer } from "../../types";
 import { Div } from "../components";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
-import {LazyCanvas} from "../LazyCanvas";
+import { LazyCanvas } from "../LazyCanvas";
 
 /**
  * Interface representing the LayersManager.
  */
 export interface ILayersManager {
+  /**
+   * A map storing layers or groups with their IDs as keys.
+   */
+  map: Map<string, AnyLayer | Div>;
 
-    /**
-     * A map storing layers or groups with their IDs as keys.
-     */
-    map: Map<string, AnyLayer | Div>;
-
-    /**
-     * Whether debugging is enabled.
-     */
-    debug: boolean;
+  /**
+   * Whether debugging is enabled.
+   */
+  debug: boolean;
 }
 
 /**
  * Class representing a manager for handling layers and groups.
  */
 export class LayersManager implements ILayersManager {
+  /**
+   * A map storing layers or groups with their IDs as keys.
+   */
+  map: Map<string, AnyLayer | Div>;
 
-    /**
-     * A map storing layers or groups with their IDs as keys.
-     */
-    map: Map<string, AnyLayer | Div>;
+  /**
+   * Whether debugging is enabled.
+   */
+  debug: boolean;
 
-    /**
-     * Whether debugging is enabled.
-     */
-    debug: boolean;
+  /**
+   * Constructs a new LayersManager instance.
+   * @param {Object} [opts] - Optional settings for the LayersManager.
+   * @param {boolean} [opts.debug] - Whether debugging is enabled.
+   */
+  constructor(opts?: { debug?: boolean }) {
+    this.map = new Map();
+    this.debug = opts?.debug || false;
+  }
 
-    /**
-     * Constructs a new LayersManager instance.
-     * @param {Object} [opts] - Optional settings for the LayersManager.
-     * @param {boolean} [opts.debug] - Whether debugging is enabled.
-     */
-    constructor(opts?: { debug?: boolean }) {
-        this.map = new Map();
-        this.debug = opts?.debug || false;
+  /**
+   * Adds layers or groups to the map.
+   * @param {Array<AnyLayer | Div>} [layers] - The layers or groups to add to the map.
+   * @returns {this} The current instance for chaining.
+   * @throws {LazyError} If a layer with the same ID already exists.
+   */
+  public add(...layers: Array<AnyLayer | Div>): this {
+    if (this.debug) LazyLog.log("info", `Adding layers...\nlength: ${layers.length}`);
+    let layersArray = layers.flat();
+    layersArray = layersArray.filter((l) => l !== undefined);
+    for (const layer of layersArray) {
+      if (this.debug) LazyLog.log("none", `Data:`, "toJSON" in layer ? layer.toJSON() : layer);
+      if (this.map.has(layer.id)) throw new LazyError("Layer already exists");
+      this.map.set(layer.id, layer);
     }
+    this.sort();
+    return this;
+  }
 
-    /**
-     * Adds layers or groups to the map.
-     * @param {Array<AnyLayer | Div>} [layers] - The layers or groups to add to the map.
-     * @returns {this} The current instance for chaining.
-     * @throws {LazyError} If a layer with the same ID already exists.
-     */
-    public add(...layers: Array<AnyLayer | Div>): this {
-        if (this.debug) LazyLog.log('info', `Adding layers...\nlength: ${layers.length}`);
-        let layersArray = layers.flat();
-        layersArray = layersArray.filter(l => l !== undefined);
-        for (const layer of layersArray) {
-            if (this.debug) LazyLog.log('none', `Data:`, 'toJSON' in layer ? layer.toJSON() : layer);
-            if (this.map.has(layer.id)) throw new LazyError("Layer already exists");
-            this.map.set(layer.id, layer);
-        }
-        this.sort();
-        return this;
+  /**
+   * Removes layers or groups from the map by their IDs.
+   * @param {string[]} [ids] - The IDs of the layers or groups to remove.
+   * @returns {this} The current instance for chaining.
+   */
+  public remove(...ids: string[]): this {
+    for (const id of ids) {
+      const layer = this.map.get(id);
+      this.map.delete(id);
     }
+    return this;
+  }
 
-    /**
-     * Removes layers or groups from the map by their IDs.
-     * @param {string[]} [ids] - The IDs of the layers or groups to remove.
-     * @returns {this} The current instance for chaining.
-     */
-    public remove(...ids: string[]): this {
-        for (const id of ids) {
-            const layer = this.map.get(id);
-            this.map.delete(id);
-        }
-        return this;
-    }
+  /**
+   * Clears all layers and groups from the map.
+   * @returns {this} The current instance for chaining.
+   */
+  public clear(): this {
+    this.map.clear();
+    return this;
+  }
 
-    /**
-     * Clears all layers and groups from the map.
-     * @returns {this} The current instance for chaining.
-     */
-    public clear(): this {
-        this.map.clear();
-        return this;
-    }
+  /**
+   * Retrieves a layer or group from the map by its ID.
+   * @param {string} [id] - The ID of the layer or group to retrieve.
+   * @param {boolean} [cross] - Whether to search within groups for the ID.
+   * @returns {AnyLayer | Div | undefined} The retrieved layer or group, or undefined if not found.
+   */
+  public get(id: string, cross: boolean = false): AnyLayer | Div | undefined {
+    if (cross) return this.crossSearch(id);
+    else return this.map.get(id);
+  }
 
-    /**
-     * Retrieves a layer or group from the map by its ID.
-     * @param {string} [id] - The ID of the layer or group to retrieve.
-     * @param {boolean} [cross] - Whether to search within groups for the ID.
-     * @returns {AnyLayer | Div | undefined} The retrieved layer or group, or undefined if not found.
-     */
-    public get(id: string, cross: boolean = false): AnyLayer | Div | undefined {
-        if (cross) return this.crossSearch(id);
-        else return this.map.get(id);
-    }
+  /**
+   * Checks if a layer or group exists in the map by its ID.
+   * @param {string} [id] - The ID of the layer or group to check.
+   * @returns {boolean} True if the layer or group exists, false otherwise.
+   */
+  public has(id: string): boolean {
+    return this.map.has(id);
+  }
 
-    /**
-     * Checks if a layer or group exists in the map by its ID.
-     * @param {string} [id] - The ID of the layer or group to check.
-     * @returns {boolean} True if the layer or group exists, false otherwise.
-     */
-    public has(id: string): boolean {
-        return this.map.has(id);
-    }
+  /**
+   * Retrieves the number of layers and groups in the map.
+   * @returns {number} The size of the map.
+   */
+  public size(): number {
+    return this.map.size;
+  }
 
-    /**
-     * Retrieves the number of layers and groups in the map.
-     * @returns {number} The size of the map.
-     */
-    public size(): number {
-        return this.map.size;
-    }
+  /**
+   * Retrieves the values (layers and groups) from the map.
+   * @returns {IterableIterator<AnyLayer | Div>} An iterator for the map values.
+   */
+  public values(): IterableIterator<AnyLayer | Div> {
+    return this.map.values();
+  }
 
-    /**
-     * Retrieves the values (layers and groups) from the map.
-     * @returns {IterableIterator<AnyLayer | Div>} An iterator for the map values.
-     */
-    public values(): IterableIterator<AnyLayer | Div> {
-        return this.map.values();
-    }
+  /**
+   * Retrieves the keys (IDs) from the map.
+   * @returns {IterableIterator<string>} An iterator for the map keys.
+   */
+  public keys(): IterableIterator<string> {
+    return this.map.keys();
+  }
 
-    /**
-     * Retrieves the keys (IDs) from the map.
-     * @returns {IterableIterator<string>} An iterator for the map keys.
-     */
-    public keys(): IterableIterator<string> {
-        return this.map.keys();
-    }
+  /**
+   * Retrieves the entries (key-value pairs) from the map.
+   * @returns {IterableIterator<[string, AnyLayer | Div]>} An iterator for the map entries.
+   */
+  public entries(): IterableIterator<[string, AnyLayer | Div]> {
+    return this.map.entries();
+  }
 
-    /**
-     * Retrieves the entries (key-value pairs) from the map.
-     * @returns {IterableIterator<[string, AnyLayer | Div]>} An iterator for the map entries.
-     */
-    public entries(): IterableIterator<[string, AnyLayer | Div]> {
-        return this.map.entries();
-    }
+  /**
+   * Executes a callback function for each layer or group in the map.
+   * @param {Function} [callbackfn] - The callback function to execute.
+   * @returns {this} The current instance for chaining.
+   */
+  public forEach(
+    callbackfn: (value: AnyLayer | Div, key: string, map: Map<string, AnyLayer | Div>) => void,
+  ): this {
+    this.map.forEach(callbackfn);
+    return this;
+  }
 
-    /**
-     * Executes a callback function for each layer or group in the map.
-     * @param {Function} [callbackfn] - The callback function to execute.
-     * @returns {this} The current instance for chaining.
-     */
-    public forEach(callbackfn: (value: AnyLayer | Div, key: string, map: Map<string, AnyLayer | Div>) => void): this {
-        this.map.forEach(callbackfn);
-        return this;
-    }
+  /**
+   * Converts the map to a JSON object.
+   * @returns {object} The JSON representation of the map.
+   */
+  public toJSON(): object {
+    return Object.fromEntries(this.map);
+  }
 
-    /**
-     * Converts the map to a JSON object.
-     * @returns {object} The JSON representation of the map.
-     */
-    public toJSON(): object {
-        return Object.fromEntries(this.map);
-    }
+  /**
+   * Populates the map from a JSON object.
+   * @param {object} [json] - The JSON object to populate the map from.
+   * @returns {this} The current instance for chaining.
+   */
+  public fromJSON(json: object): this {
+    this.map = new Map(Object.entries(json));
+    return this;
+  }
 
-    /**
-     * Populates the map from a JSON object.
-     * @param {object} [json] - The JSON object to populate the map from.
-     * @returns {this} The current instance for chaining.
-     */
-    public fromJSON(json: object): this {
-        this.map = new Map(Object.entries(json));
-        return this;
-    }
+  /**
+   * Converts the map to an array of layers and groups.
+   * @returns {Array<AnyLayer | Div>} An array of layers and groups.
+   */
+  public toArray(): Array<AnyLayer | Div> {
+    return Array.from(this.map.values());
+  }
 
-    /**
-     * Converts the map to an array of layers and groups.
-     * @returns {Array<AnyLayer | Div>} An array of layers and groups.
-     */
-    public toArray(): Array<AnyLayer | Div> {
-        return Array.from(this.map.values());
-    }
+  /**
+   * Populates the map from an array of layers and groups.
+   * @param {Array<AnyLayer | Div>} [array] - The array of layers and groups to populate the map from.
+   * @returns {this} The current instance for chaining.
+   */
+  public fromArray(array: Array<AnyLayer | Div>): this {
+    this.map = new Map(array.map((l) => [l.id, l]));
+    return this;
+  }
 
-    /**
-     * Populates the map from an array of layers and groups.
-     * @param {Array<AnyLayer | Div>} [array] - The array of layers and groups to populate the map from.
-     * @returns {this} The current instance for chaining.
-     */
-    public fromArray(array: Array<AnyLayer | Div>): this {
-        this.map = new Map(array.map(l => [l.id, l]));
-        return this;
-    }
+  /**
+   * Sorts the layers and groups in the map by their zIndex property.
+   * @returns {void}
+   */
+  public sort(): void {
+    this.fromArray(this.toArray().sort((a, b) => a.zIndex - b.zIndex));
+  }
 
-    /**
-     * Sorts the layers and groups in the map by their zIndex property.
-     * @returns {void}
-     */
-    public sort(): void {
-        this.fromArray(this.toArray().sort((a, b) => a.zIndex - b.zIndex));
+  /**
+   * Searches for a layer or group by its ID, including within groups.
+   * @param {string} [id] - The ID of the layer or group to search for.
+   * @returns {AnyLayer | Div | undefined} The found layer or group, or undefined if not found.
+   */
+  private crossSearch(id: string): AnyLayer | Div | undefined {
+    for (const layer of Array.from(this.map.values())) {
+      if (layer.id === id) return layer;
+      if (layer instanceof Div) {
+        const result = layer.layers.find((l) => l.id === id);
+        if (result) return result;
+      }
     }
-
-    /**
-     * Searches for a layer or group by its ID, including within groups.
-     * @param {string} [id] - The ID of the layer or group to search for.
-     * @returns {AnyLayer | Div | undefined} The found layer or group, or undefined if not found.
-     */
-    private crossSearch(id: string): AnyLayer | Div | undefined {
-        for (const layer of Array.from(this.map.values())) {
-            if (layer.id === id) return layer;
-            if (layer instanceof Div) {
-                const result = layer.layers.find(l => l.id === id);
-                if (result) return result;
-            }
-        }
-        return undefined;
-    }
+    return undefined;
+  }
 }

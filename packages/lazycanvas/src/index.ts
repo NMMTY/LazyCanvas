@@ -13,4 +13,4 @@ export * from "./utils/APNGEncoder";
 export * from "./utils/DrawUtils";
 export * from "./utils/LazyUtil";
 export * from "./utils/utils";
-export * from "./jsx-runtime"
+export * from "./jsx-runtime";

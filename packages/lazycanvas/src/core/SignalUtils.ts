@@ -1,10 +1,10 @@
-import { ThreadGenerator, Signal } from './Signal';
+import { ThreadGenerator, Signal } from "./Signal";
 
 /**
  * Metadata for tracking animation duration
  */
 interface AnimationMetadata {
-    duration: number;
+  duration: number;
 }
 
 /**
@@ -17,23 +17,23 @@ const animationDurations = new WeakMap<any, number>();
  * @param generators - Array of animation generators
  */
 export function* all(...generators: ThreadGenerator[]): ThreadGenerator {
-    const active = [...generators];
+  const active = [...generators];
 
-    // Initialize all generators before starting
-    for (const gen of active) {
-        gen.next(); // Prime the generator
+  // Initialize all generators before starting
+  for (const gen of active) {
+    gen.next(); // Prime the generator
+  }
+
+  while (active.length > 0) {
+    const delta = yield;
+
+    for (let i = active.length - 1; i >= 0; i--) {
+      const result = active[i].next(delta);
+      if (result.done) {
+        active.splice(i, 1);
+      }
     }
-
-    while (active.length > 0) {
-        const delta = yield;
-
-        for (let i = active.length - 1; i >= 0; i--) {
-            const result = active[i].next(delta);
-            if (result.done) {
-                active.splice(i, 1);
-            }
-        }
-    }
+  }
 }
 
 /**
@@ -41,9 +41,9 @@ export function* all(...generators: ThreadGenerator[]): ThreadGenerator {
  * @param generators - Array of animation generators
  */
 export function* chain(...generators: ThreadGenerator[]): ThreadGenerator {
-    for (const generator of generators) {
-        yield* generator;
-    }
+  for (const generator of generators) {
+    yield* generator;
+  }
 }
 
 /**
@@ -51,16 +51,13 @@ export function* chain(...generators: ThreadGenerator[]): ThreadGenerator {
  * @param generator - Animation generator factory
  * @param times - Number of iterations (Infinity for endless)
  */
-export function* loop(
-    generator: () => ThreadGenerator,
-    times: number = Infinity
-): ThreadGenerator {
-    let count = 0;
+export function* loop(generator: () => ThreadGenerator, times: number = Infinity): ThreadGenerator {
+  let count = 0;
 
-    while (count < times) {
-        yield* generator();
-        count++;
-    }
+  while (count < times) {
+    yield* generator();
+    count++;
+  }
 }
 
 /**
@@ -68,30 +65,27 @@ export function* loop(
  * @param generator - Animation generator factory
  * @param duration - Total duration in seconds
  */
-export function* loopFor(
-    generator: () => ThreadGenerator,
-    duration: number
-): ThreadGenerator {
-    let elapsed = 0;
+export function* loopFor(generator: () => ThreadGenerator, duration: number): ThreadGenerator {
+  let elapsed = 0;
 
-    while (elapsed < duration) {
-        const gen = generator();
+  while (elapsed < duration) {
+    const gen = generator();
 
-        let result = gen.next();
-        while (!result.done && elapsed < duration) {
-            const delta = yield;
-            const actualDelta = typeof delta === 'number' ? delta : 1/60;
-            elapsed += actualDelta;
-            result = gen.next(delta);
-        }
-
-        // If animation finished before duration, restart
-        if (result.done && elapsed < duration) {
-            // Loop continues
-        } else {
-            break;
-        }
+    let result = gen.next();
+    while (!result.done && elapsed < duration) {
+      const delta = yield;
+      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
+      elapsed += actualDelta;
+      result = gen.next(delta);
     }
+
+    // If animation finished before duration, restart
+    if (result.done && elapsed < duration) {
+      // Loop continues
+    } else {
+      break;
+    }
+  }
 }
 
 /**
@@ -99,13 +93,13 @@ export function* loopFor(
  * @param duration - Duration in seconds
  */
 export function* waitFor(duration: number): ThreadGenerator {
-    let elapsed = 0;
+  let elapsed = 0;
 
-    while (elapsed < duration) {
-        const delta = yield;
-        const actualDelta = typeof delta === 'number' ? delta : 1/60;
-        elapsed += actualDelta;
-    }
+  while (elapsed < duration) {
+    const delta = yield;
+    const actualDelta = typeof delta === "number" ? delta : 1 / 60;
+    elapsed += actualDelta;
+  }
 }
 
 /**
@@ -114,8 +108,8 @@ export function* waitFor(duration: number): ThreadGenerator {
  * @param generator - Animation generator
  */
 export function* delay(duration: number, generator: ThreadGenerator): ThreadGenerator {
-    yield* waitFor(duration);
-    yield* generator;
+  yield* waitFor(duration);
+  yield* generator;
 }
 
 /**
@@ -123,19 +117,19 @@ export function* delay(duration: number, generator: ThreadGenerator): ThreadGene
  * @param generators - Array of animation generators
  */
 export function* any(...generators: ThreadGenerator[]): ThreadGenerator {
-    const active = [...generators];
+  const active = [...generators];
 
-    while (active.length > 0) {
-        const delta = yield;
+  while (active.length > 0) {
+    const delta = yield;
 
-        for (const gen of active) {
-            const result = gen.next(delta);
-            if (result.done) {
-                // Cancel all other generators
-                return;
-            }
-        }
+    for (const gen of active) {
+      const result = gen.next(delta);
+      if (result.done) {
+        // Cancel all other generators
+        return;
+      }
     }
+  }
 }
 
 /**
@@ -145,15 +139,15 @@ export function* any(...generators: ThreadGenerator[]): ThreadGenerator {
  * @param falseGen - Generator if condition is false
  */
 export function* conditional(
-    condition: () => boolean,
-    trueGen: ThreadGenerator,
-    falseGen?: ThreadGenerator
+  condition: () => boolean,
+  trueGen: ThreadGenerator,
+  falseGen?: ThreadGenerator,
 ): ThreadGenerator {
-    if (condition()) {
-        yield* trueGen;
-    } else if (falseGen) {
-        yield* falseGen;
-    }
+  if (condition()) {
+    yield* trueGen;
+  } else if (falseGen) {
+    yield* falseGen;
+  }
 }
 
 /**
@@ -162,12 +156,12 @@ export function* conditional(
  * @param generator - Animation generator factory
  */
 export function* repeatWhile(
-    condition: () => boolean,
-    generator: () => ThreadGenerator
+  condition: () => boolean,
+  generator: () => ThreadGenerator,
 ): ThreadGenerator {
-    while (condition()) {
-        yield* generator();
-    }
+  while (condition()) {
+    yield* generator();
+  }
 }
 
 /**
@@ -177,17 +171,17 @@ export function* repeatWhile(
  * @param times - Number of times to run (Infinity for endless)
  */
 export function* every(
-    interval: number,
-    generator: () => ThreadGenerator,
-    times: number = Infinity
+  interval: number,
+  generator: () => ThreadGenerator,
+  times: number = Infinity,
 ): ThreadGenerator {
-    let count = 0;
+  let count = 0;
 
-    while (count < times) {
-        yield* generator();
-        yield* waitFor(interval);
-        count++;
-    }
+  while (count < times) {
+    yield* generator();
+    yield* waitFor(interval);
+    count++;
+  }
 }
 
 /**
@@ -197,45 +191,45 @@ export function* every(
  * @param config - Spring configuration
  */
 export function* spring<T>(
-    signal: Signal<T>,
-    target: T,
-    config: {
-        stiffness?: number;
-        damping?: number;
-        mass?: number;
-        precision?: number;
-    } = {}
+  signal: Signal<T>,
+  target: T,
+  config: {
+    stiffness?: number;
+    damping?: number;
+    mass?: number;
+    precision?: number;
+  } = {},
 ): ThreadGenerator {
-    const stiffness = config.stiffness ?? 170;
-    const damping = config.damping ?? 26;
-    const mass = config.mass ?? 1;
-    const precision = config.precision ?? 0.01;
+  const stiffness = config.stiffness ?? 170;
+  const damping = config.damping ?? 26;
+  const mass = config.mass ?? 1;
+  const precision = config.precision ?? 0.01;
 
-    // Only works for numbers
-    if (typeof signal.value() !== 'number' || typeof target !== 'number') {
-        signal.set(target);
-        return;
-    }
-
-    let position = signal.value() as unknown as number;
-    let velocity = 0;
-    const targetNum = target as unknown as number;
-
-    while (Math.abs(position - targetNum) > precision || Math.abs(velocity) > precision) {
-        const delta = yield;
-        const actualDelta = typeof delta === 'number' ? delta : 1/60;
-
-        const force = -stiffness * (position - targetNum);
-        const dampingForce = -damping * velocity;
-        const acceleration = (force + dampingForce) / mass;
-
-        velocity += acceleration * actualDelta;
-        position += velocity * actualDelta;
-
-        signal.set(position as unknown as T);
-    }
-
+  // Only works for numbers
+  if (typeof signal.value() !== "number" || typeof target !== "number") {
     signal.set(target);
+    return;
+  }
+
+  let position = signal.value() as unknown as number;
+  let velocity = 0;
+  const targetNum = target as unknown as number;
+
+  while (Math.abs(position - targetNum) > precision || Math.abs(velocity) > precision) {
+    const delta = yield;
+    const actualDelta = typeof delta === "number" ? delta : 1 / 60;
+
+    const force = -stiffness * (position - targetNum);
+    const dampingForce = -damping * velocity;
+    const acceleration = (force + dampingForce) / mass;
+
+    velocity += acceleration * actualDelta;
+    position += velocity * actualDelta;
+
+    signal.set(position as unknown as T);
+  }
+
+  signal.set(target);
 }
 
 /**
@@ -246,14 +240,14 @@ export function* spring<T>(
  * @param config - Tween configuration
  */
 export function* sequence<T>(
-    signal: Signal<T>,
-    values: T[],
-    duration: number,
-    config?: Parameters<Signal<T>['to']>[2]
+  signal: Signal<T>,
+  values: T[],
+  duration: number,
+  config?: Parameters<Signal<T>["to"]>[2],
 ): ThreadGenerator {
-    for (const value of values) {
-        yield* signal.to(value, duration, config);
-    }
+  for (const value of values) {
+    yield* signal.to(value, duration, config);
+  }
 }
 
 /**
@@ -265,86 +259,86 @@ export function* sequence<T>(
  * @param config - Tween configuration
  */
 export function* yoyo<T>(
-    signal: Signal<T>,
-    from: T,
-    to: T,
-    duration: number,
-    config?: Parameters<Signal<T>['to']>[2]
+  signal: Signal<T>,
+  from: T,
+  to: T,
+  duration: number,
+  config?: Parameters<Signal<T>["to"]>[2],
 ): ThreadGenerator {
-    signal.set(from);
-    yield* signal.to(to, duration, config);
-    yield* signal.to(from, duration, config);
+  signal.set(from);
+  yield* signal.to(to, duration, config);
+  yield* signal.to(from, duration, config);
 }
 
 /**
  * Create a timeline builder for complex animations
  */
 export class Timeline {
-    private generators: Array<{ time: number; generator: ThreadGenerator }> = [];
-    private currentTime = 0;
+  private generators: Array<{ time: number; generator: ThreadGenerator }> = [];
+  private currentTime = 0;
 
-    /**
-     * Add animation at specific time
-     */
-    public at(time: number, generator: ThreadGenerator): this {
-        this.generators.push({ time, generator });
-        return this;
-    }
+  /**
+   * Add animation at specific time
+   */
+  public at(time: number, generator: ThreadGenerator): this {
+    this.generators.push({ time, generator });
+    return this;
+  }
 
-    /**
-     * Add animation after previous
-     */
-    public then(generator: ThreadGenerator): this {
-        this.generators.push({ time: this.currentTime, generator });
-        return this;
-    }
+  /**
+   * Add animation after previous
+   */
+  public then(generator: ThreadGenerator): this {
+    this.generators.push({ time: this.currentTime, generator });
+    return this;
+  }
 
-    /**
-     * Set current time cursor
-     */
-    public seek(time: number): this {
-        this.currentTime = time;
-        return this;
-    }
+  /**
+   * Set current time cursor
+   */
+  public seek(time: number): this {
+    this.currentTime = time;
+    return this;
+  }
 
-    /**
-     * Execute timeline
-     */
-    public *play(): ThreadGenerator {
-        // Sort by time
-        const sorted = [...this.generators].sort((a, b) => a.time - b.time);
+  /**
+   * Execute timeline
+   */
+  public *play(): ThreadGenerator {
+    // Sort by time
+    const sorted = [...this.generators].sort((a, b) => a.time - b.time);
 
-        let time = 0;
-        let activeGens: ThreadGenerator[] = [];
-        let nextIndex = 0;
+    let time = 0;
+    let activeGens: ThreadGenerator[] = [];
+    let nextIndex = 0;
 
-        while (nextIndex < sorted.length || activeGens.length > 0) {
-            const delta = yield;
-            const actualDelta = typeof delta === 'number' ? delta : 1/60;
-            time += actualDelta;
+    while (nextIndex < sorted.length || activeGens.length > 0) {
+      const delta = yield;
+      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
+      time += actualDelta;
 
-            // Start new generators that should be active now
-            while (nextIndex < sorted.length && sorted[nextIndex].time <= time) {
-                activeGens.push(sorted[nextIndex].generator);
-                nextIndex++;
-            }
+      // Start new generators that should be active now
+      while (nextIndex < sorted.length && sorted[nextIndex].time <= time) {
+        activeGens.push(sorted[nextIndex].generator);
+        nextIndex++;
+      }
 
-            // Update active generators
-            for (let i = activeGens.length - 1; i >= 0; i--) {
-                const result = activeGens[i].next(delta);
-                if (result.done) {
-                    activeGens.splice(i, 1);
-                }
-            }
+      // Update active generators
+      for (let i = activeGens.length - 1; i >= 0; i--) {
+        const result = activeGens[i].next(delta);
+        if (result.done) {
+          activeGens.splice(i, 1);
         }
+      }
     }
+  }
 }
 
 /**
  * Create a timeline
  */
 export function timeline(): Timeline {
-    return new Timeline();
+  return new Timeline();
 }
 
 /**
@@ -355,28 +349,30 @@ export function timeline(): Timeline {
  * @returns Total duration in seconds
  */
 export function calculateDuration(
-    generatorFactory: () => ThreadGenerator,
-    maxDuration: number = 3600,
-    timestep: number = 1/60
+  generatorFactory: () => ThreadGenerator,
+  maxDuration: number = 3600,
+  timestep: number = 1 / 60,
 ): number {
-    const gen = generatorFactory();
-    let totalTime = 0;
+  const gen = generatorFactory();
+  let totalTime = 0;
 
-    // Initialize generator
-    gen.next();
+  // Initialize generator
+  gen.next();
 
-    // Run generator until completion
-    let result = gen.next(timestep);
-    while (!result.done && totalTime < maxDuration) {
-        totalTime += timestep;
-        result = gen.next(timestep);
-    }
+  // Run generator until completion
+  let result = gen.next(timestep);
+  while (!result.done && totalTime < maxDuration) {
+    totalTime += timestep;
+    result = gen.next(timestep);
+  }
 
-    if (totalTime >= maxDuration) {
-        console.warn(`Animation duration calculation reached maximum limit of ${maxDuration}s. Animation may be infinite or very long.`);
-    }
+  if (totalTime >= maxDuration) {
+    console.warn(
+      `Animation duration calculation reached maximum limit of ${maxDuration}s. Animation may be infinite or very long.`,
+    );
+  }
 
-    return totalTime;
+  return totalTime;
 }
 
 /**
@@ -384,14 +380,14 @@ export function calculateDuration(
  * Returns the duration of the longest animation
  */
 export function calculateParallelDuration(
-    generatorFactories: (() => ThreadGenerator)[],
-    maxDuration: number = 3600,
-    timestep: number = 1/60
+  generatorFactories: (() => ThreadGenerator)[],
+  maxDuration: number = 3600,
+  timestep: number = 1 / 60,
 ): number {
-    const durations = generatorFactories.map(factory =>
-        calculateDuration(factory, maxDuration, timestep)
-    );
-    return Math.max(...durations);
+  const durations = generatorFactories.map((factory) =>
+    calculateDuration(factory, maxDuration, timestep),
+  );
+  return Math.max(...durations);
 }
 
 /**
@@ -399,21 +395,23 @@ export function calculateParallelDuration(
  * Returns the sum of all animation durations
  */
 export function calculateSequentialDuration(
-    generatorFactories: (() => ThreadGenerator)[],
-    maxDuration: number = 3600,
-    timestep: number = 1/60
+  generatorFactories: (() => ThreadGenerator)[],
+  maxDuration: number = 3600,
+  timestep: number = 1 / 60,
 ): number {
-    let totalDuration = 0;
+  let totalDuration = 0;
 
-    for (const factory of generatorFactories) {
-        const duration = calculateDuration(factory, maxDuration - totalDuration, timestep);
-        totalDuration += duration;
+  for (const factory of generatorFactories) {
+    const duration = calculateDuration(factory, maxDuration - totalDuration, timestep);
+    totalDuration += duration;
 
-        if (totalDuration >= maxDuration) {
-            console.warn(`Sequential animation duration calculation reached maximum limit of ${maxDuration}s.`);
-            break;
-        }
+    if (totalDuration >= maxDuration) {
+      console.warn(
+        `Sequential animation duration calculation reached maximum limit of ${maxDuration}s.`,
+      );
+      break;
     }
+  }
 
-    return totalDuration;
+  return totalDuration;
 }

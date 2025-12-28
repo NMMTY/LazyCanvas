@@ -16,19 +16,14 @@
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint ./src --ext .ts --fix",
     "font": "tsx ./scripts/font-gen.ts",
-    "build": "tsc && tsx ./scripts/post-build.ts"
+    "build": "tsc && tsx ./scripts/post-build.ts",
+    "biome-write": "npx @biomejs/biome format --write ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git"
   },
-  "keywords": [
-    "canvas",
-    "@napi-rs/canvas",
-    "node-canvas",
-    "easy",
-    "simple"
-  ],
+  "keywords": ["canvas", "@napi-rs/canvas", "node-canvas", "easy", "simple"],
   "author": "NMMTY",
   "license": "MIT",
   "bugs": {
@@ -44,6 +39,7 @@
     "zlib": "^1.0.5"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@hitomihiumi/colors.ts": "^1.0.3",
     "@hitomihiumi/micro-docgen": "workspace:*",
     "@types/js-yaml": "^4.0.9",
