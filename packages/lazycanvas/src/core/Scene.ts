@@ -36,7 +36,7 @@ export class Scene {
             manager: null as any
         };
 
-        this.manager = new LayersManager(fakeLazyCanvas as any, { debug: false });
+        this.manager = new LayersManager({ debug: false });
         fakeLazyCanvas.manager = { layers: this.manager };
     }
 

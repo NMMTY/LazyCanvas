@@ -90,19 +90,14 @@ export class JSONReader {
      * @param {boolean} [opts.debug] - Whether to enable debug logging.
      * @returns {Array<AnyLayer | Div>} The parsed layers.
      */
-    private static layersParse(data: Array<JSONLayer | Div>, opts?: { debug?: boolean }): Array<AnyLayer | Div> {
+    private static layersParse(data: Array<JSONLayer | IDiv>, opts?: { debug?: boolean }): Array<AnyLayer | Div> {
         return data.map((layer: any) => {
             if (opts?.debug) LazyLog.log('info', `Parsing layer ${layer.id}...\nData:`, layer);
-            const misc = {
+            return this.layerParse(layer, {
                 id: layer.id,
                 zIndex: layer.zIndex,
                 visible: layer.visible,
-            }
-            if (layer.type === LayerType.Group) {
-                return new Div(misc).add(...layer.layers.map((l: any) => this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible })));
-            } else {
-                return this.layerParse(layer, misc);
-            }
+            });
         });
     }
 

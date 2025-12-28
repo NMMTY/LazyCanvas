@@ -61,8 +61,6 @@ export class Exporter {
      * @throws {LazyError} If the export type is not supported.
      */
     async export(exportType: AnyExport, opts?: { name?: string, saveAsFile?: boolean }): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string> {
-        // beforeExport hook
-        this.canvas.manager.plugins.executeHook('beforeExport', this.canvas);
         let result;
         switch (exportType) {
             case Export.CTX:
@@ -132,8 +130,6 @@ export class Exporter {
             default:
                 throw new LazyError(`Export type ${exportType} is not supported`);
         }
-        // afterExport hook
-        this.canvas.manager.plugins.executeHook('afterExport', this.canvas, result);
         return result;
     }
 

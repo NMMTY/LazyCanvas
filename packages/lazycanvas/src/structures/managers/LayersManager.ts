@@ -7,10 +7,6 @@ import {LazyCanvas} from "../LazyCanvas";
  * Interface representing the LayersManager.
  */
 export interface ILayersManager {
-    /**
-     * The LazyCanvas instance associated with this manager.
-     */
-    lazyCanvas: LazyCanvas;
 
     /**
      * A map storing layers or groups with their IDs as keys.
@@ -29,11 +25,6 @@ export interface ILayersManager {
 export class LayersManager implements ILayersManager {
 
     /**
-     * The LazyCanvas instance associated with this manager.
-     */
-    lazyCanvas: LazyCanvas;
-
-    /**
      * A map storing layers or groups with their IDs as keys.
      */
     map: Map<string, AnyLayer | Div>;
@@ -45,12 +36,10 @@ export class LayersManager implements ILayersManager {
 
     /**
      * Constructs a new LayersManager instance.
-     * @param {LazyCanvas} [lazyCanvas] - The LazyCanvas instance to associate with this manager.
      * @param {Object} [opts] - Optional settings for the LayersManager.
      * @param {boolean} [opts.debug] - Whether debugging is enabled.
      */
-    constructor(lazyCanvas: LazyCanvas, opts?: { debug?: boolean }) {
-        this.lazyCanvas = lazyCanvas;
+    constructor(opts?: { debug?: boolean }) {
         this.map = new Map();
         this.debug = opts?.debug || false;
     }
@@ -69,10 +58,6 @@ export class LayersManager implements ILayersManager {
             if (this.debug) LazyLog.log('none', `Data:`, 'toJSON' in layer ? layer.toJSON() : layer);
             if (this.map.has(layer.id)) throw new LazyError("Layer already exists");
             this.map.set(layer.id, layer);
-            // onLayerAdded hook
-            if (this.lazyCanvas && this.lazyCanvas.manager?.plugins) {
-                this.lazyCanvas.manager.plugins.executeHook('onLayerAdded', this.lazyCanvas, layer);
-            }
         }
         this.sort();
         return this;
@@ -87,10 +72,6 @@ export class LayersManager implements ILayersManager {
         for (const id of ids) {
             const layer = this.map.get(id);
             this.map.delete(id);
-            // onLayerRemoved hook
-            if (this.lazyCanvas && this.lazyCanvas.manager?.plugins) {
-                this.lazyCanvas.manager.plugins.executeHook('onLayerRemoved', this.lazyCanvas, id);
-            }
         }
         return this;
     }

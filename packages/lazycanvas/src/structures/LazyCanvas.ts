@@ -1,6 +1,6 @@
 import { Export, AnyExport, JSONLayer } from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
-import { LayersManager, RenderManager, FontsManager, AnimationManager, IAnimationOptions, PluginManager, ILazyCanvasPlugin } from "./managers";
+import { LayersManager, RenderManager, FontsManager, AnimationManager, IAnimationOptions } from "./managers";
 import { IDiv } from "./components";
 import { LazyLog } from "../utils/LazyUtil";
 import { resizeLayers, resize } from "../utils/utils";
@@ -27,7 +27,6 @@ export interface ILazyCanvas {
         render: RenderManager;
         fonts: FontsManager;
         animation: AnimationManager;
-        plugins: PluginManager;
     };
 
     /**
@@ -108,7 +107,6 @@ export class LazyCanvas implements ILazyCanvas {
         render: RenderManager;
         fonts: FontsManager;
         animation: AnimationManager;
-        plugins: PluginManager;
     };
 
     /**
@@ -126,11 +124,10 @@ export class LazyCanvas implements ILazyCanvas {
         this.canvas = new Canvas(0, 0);
         this.ctx = this.canvas.getContext('2d');
         this.manager = {
-            layers: new LayersManager(this, { debug: opts?.debug }),
+            layers: new LayersManager({ debug: opts?.debug }),
             render: new RenderManager(this, { debug: opts?.debug }),
             fonts: new FontsManager({ debug: opts?.debug }),
             animation: new AnimationManager({ debug: opts?.debug, settings: { options: opts?.settings?.animation } }),
-            plugins: new PluginManager(this, { debug: opts?.debug })
         };
         this.options = {
             width: 0,
@@ -209,8 +206,6 @@ export class LazyCanvas implements ILazyCanvas {
         const layers = resizeLayers(this.manager.layers.toArray(), ratio);
         this.manager.layers.fromArray(layers);
 
-        this.manager.plugins.executeHook('onResize', this, ratio);
-
         return this;
     }
 
@@ -229,55 +224,8 @@ export class LazyCanvas implements ILazyCanvas {
             this.canvas = new Canvas(width, height);
         }
         this.ctx = this.canvas.getContext('2d');
-        this.manager.layers = new LayersManager(this, { debug: this.manager.layers.debug });
-
-        this.manager.plugins.executeHook('onCanvasCreated', this, width, height);
+        this.manager.layers = new LayersManager({ debug: this.manager.layers.debug });
 
         return this;
-    }
-
-    /**
-     * Installs a plugin to the canvas.
-     * @param {ILazyCanvasPlugin} [plugin] - The plugin to install.
-     * @returns {this} The current instance for chaining.
-     */
-    use(plugin: ILazyCanvasPlugin): this {
-        this.manager.plugins.register(plugin);
-        return this;
-    }
-
-    /**
-     * Removes a plugin from the canvas.
-     * @param {string} [pluginName] - The name of the plugin to remove.
-     * @returns {this} The current instance for chaining.
-     */
-    removePlugin(pluginName: string): this {
-        this.manager.plugins.unregister(pluginName);
-        return this;
-    }
-
-    /**
-     * Gets a plugin by name.
-     * @param {string} [pluginName] - The name of the plugin.
-     * @returns {ILazyCanvasPlugin | undefined} The plugin or undefined if not found.
-     */
-    getPlugin(pluginName: string): ILazyCanvasPlugin | undefined {
-        return this.manager.plugins.get(pluginName);
-    }
-
-    /**
-     * Lists all installed plugins.
-     * @returns {string[]} Array of plugin names.
-     */
-    listPlugins(): string[] {
-        return this.manager.plugins.list();
-    }
-
-    /**
-     * Gets information about all installed plugins.
-     * @returns Array of plugin information objects.
-     */
-    getPluginsInfo(): Array<{ name: string; version: string; description?: string; dependencies?: string[] }> {
-        return this.manager.plugins.getPluginInfo();
     }
 }

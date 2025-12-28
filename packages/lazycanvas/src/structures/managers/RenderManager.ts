@@ -148,9 +148,6 @@ export class RenderManager implements IRenderManager {
 
         let frameNumber = 0;
         for (const layer of this.lazyCanvas.manager.layers.toArray()) {
-            // onAnimationFrame hook
-            this.lazyCanvas.manager.plugins.executeHook('onAnimationFrame', this.lazyCanvas, frameNumber);
-
             const ctx = await this.renderLayer(layer);
 
             frameBuffer.push(ctx.getImageData(0, 0, width, height));
@@ -184,9 +181,6 @@ export class RenderManager implements IRenderManager {
     public async render(format: AnyExport): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string> {
         let result: Buffer | SKRSContext2D | Canvas | SvgCanvas | string;
 
-        // beforeRender hook
-        this.lazyCanvas.manager.plugins.executeHook('beforeRender', this.lazyCanvas);
-
         switch (format) {
             case Export.BUFFER:
             case "buffer":
@@ -213,9 +207,6 @@ export class RenderManager implements IRenderManager {
                 result = await this.renderStatic(Export.BUFFER);
                 break;
         }
-
-        // afterRender hook
-        this.lazyCanvas.manager.plugins.executeHook('afterRender', this.lazyCanvas);
 
         return result;
     }
