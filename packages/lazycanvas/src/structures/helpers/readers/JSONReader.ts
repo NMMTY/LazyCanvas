@@ -53,7 +53,7 @@ export class JSONReader {
             throw new LazyError("No layers found");
         }
 
-        if (opts?.debug) LazyLog.log("info", "Reading JSON...\nOptions:", data.options, "\nAnimation:", data.animation, "\nLayers Number:", data.layers.length, "\nLayers:", data.layers);
+        if (opts?.debug) LazyLog.log("info", "Reading JSON...\nOptions:", data.options, "\nLayers Number:", data.layers.length, "\nLayers:", data.layers);
 
         const layers = JSONReader.layersParse(data.layers, opts);
 

@@ -1,5 +1,3 @@
-// src/core/SignalUtils.ts - Animation composition utilities
-
 import { ThreadGenerator, Signal } from './Signal';
 
 /**

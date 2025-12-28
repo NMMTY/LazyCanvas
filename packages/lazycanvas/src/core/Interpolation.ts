@@ -1,5 +1,3 @@
-// src/core/Interpolation.ts - Interpolation utilities for different data types
-
 export type Interpolator<T> = (from: T, to: T, progress: number) => T;
 
 /**

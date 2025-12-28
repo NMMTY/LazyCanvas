@@ -43,7 +43,10 @@ export interface IDivProps {
     /**
      * Don't use, this is just for compatibility.
      */
-    globalComposite: AnyGlobalCompositeOperation;
+    globalComposite?: AnyGlobalCompositeOperation;
+
+
+    children?: Array<any>;
 }
 
 /**

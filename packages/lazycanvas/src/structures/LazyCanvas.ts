@@ -1,6 +1,6 @@
 import { Export, AnyExport, JSONLayer } from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
-import { LayersManager, RenderManager, FontsManager, AnimationManager, IAnimationOptions } from "./managers";
+import { LayersManager, RenderManager, FontsManager } from "./managers";
 import { IDiv } from "./components";
 import { LazyLog } from "../utils/LazyUtil";
 import { resizeLayers, resize } from "../utils/utils";
@@ -26,7 +26,6 @@ export interface ILazyCanvas {
         layers: LayersManager;
         render: RenderManager;
         fonts: FontsManager;
-        animation: AnimationManager;
     };
 
     /**
@@ -75,11 +74,6 @@ export interface IOLazyCanvas {
     options: ILazyCanvasOptions;
 
     /**
-     * The animation options for the LazyCanvas instance.
-     */
-    animation: IAnimationOptions;
-
-    /**
      * The layers to be added to the LazyCanvas instance.
      */
     layers: Array<JSONLayer | IDiv>;
@@ -106,7 +100,6 @@ export class LazyCanvas implements ILazyCanvas {
         layers: LayersManager;
         render: RenderManager;
         fonts: FontsManager;
-        animation: AnimationManager;
     };
 
     /**
@@ -127,7 +120,6 @@ export class LazyCanvas implements ILazyCanvas {
             layers: new LayersManager({ debug: opts?.debug }),
             render: new RenderManager(this, { debug: opts?.debug }),
             fonts: new FontsManager({ debug: opts?.debug }),
-            animation: new AnimationManager({ debug: opts?.debug, settings: { options: opts?.settings?.animation } }),
         };
         this.options = {
             width: 0,

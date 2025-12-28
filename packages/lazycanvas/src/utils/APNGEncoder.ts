@@ -1,6 +1,3 @@
-// src/utils/APNGEncoder.ts - APNG Encoder using raw ImageData (no node-apng dependency)
-
-import { createHash } from 'crypto';
 import { deflateSync } from 'zlib';
 
 /**
@@ -22,11 +19,19 @@ export class APNGEncoder {
     /**
      * Add a frame from ImageData
      */
-    public addFrame(imageData: Uint8ClampedArray): void {
+    public addFrame(imageData: Uint8ClampedArray) {
         if (imageData.length !== this.width * this.height * 4) {
             throw new Error(`Invalid ImageData size. Expected ${this.width * this.height * 4}, got ${imageData.length}`);
         }
-        this.frames.push(imageData);
+        this.frames.push(imageData)
+        return this;
+    }
+
+    public addFrames(...imageDatas: Uint8ClampedArray[]) {
+        for (const imageData of imageDatas) {
+            this.addFrame(imageData);
+        }
+        return this;
     }
 
     /**

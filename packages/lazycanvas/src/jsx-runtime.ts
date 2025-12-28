@@ -1,4 +1,3 @@
-// src/jsx-runtime.ts
 import { Div } from './structures/components';
 import { BaseLayer } from './structures/components';
 

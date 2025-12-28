@@ -1,5 +1,3 @@
-// src/core/Signal.ts - Motion Canvas inspired Signal system with generators
-
 import { getInterpolator, Interpolator, lerpColorHSL, lerpColorRGB } from './Interpolation';
 
 /**

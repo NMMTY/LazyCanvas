@@ -1,10 +1,8 @@
 import { AnyExport, AnyLayer, Export } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
-import { Canvas, SKRSContext2D, SvgCanvas, ImageData } from "@napi-rs/canvas";
+import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { Div } from "../components";
 import { LazyLog } from "../../utils/LazyUtil";
-// @ts-ignore
-import { GIFEncoder, quantize, applyPalette } from "gifenc";
 
 /**
  * Interface representing the RenderManager.
@@ -44,42 +42,6 @@ export class RenderManager implements IRenderManager {
     constructor(lazyCanvas: LazyCanvas, opts?: { debug?: boolean }) {
         this.lazyCanvas = lazyCanvas;
         this.debug = opts?.debug || false;
-    }
-
-    /**
-     * Merges multiple ImageData objects into a single ImageData object.
-     * @param {SKRSContext2D} [ctx] - The canvas rendering context.
-     * @param {ImageData[]} [imageDataList] - The list of ImageData objects to merge.
-     * @param {number} [width] - The width of the resulting ImageData.
-     * @param {number} [height] - The height of the resulting ImageData.
-     * @returns {ImageData} The merged ImageData object.
-     */
-    private mergeImageData(ctx: SKRSContext2D, imageDataList: ImageData[], width: number, height: number): ImageData {
-        const mergedData = ctx.createImageData(width, height);
-        const mergedPixels = mergedData.data;
-
-        for (const imageData of imageDataList) {
-            const pixels = imageData.data;
-
-            for (let i = 0; i < pixels.length; i += 4) {
-                const r = pixels[i];
-                const g = pixels[i + 1];
-                const b = pixels[i + 2];
-                const a = pixels[i + 3] / 255;
-
-                const existingAlpha = mergedPixels[i + 3] / 255;
-                const newAlpha = a + existingAlpha * (1 - a);
-
-                if (newAlpha > 0) {
-                    mergedPixels[i] = (r * a + mergedPixels[i] * existingAlpha * (1 - a)) / newAlpha;
-                    mergedPixels[i + 1] = (g * a + mergedPixels[i + 1] * existingAlpha * (1 - a)) / newAlpha;
-                    mergedPixels[i + 2] = (b * a + mergedPixels[i + 2] * existingAlpha * (1 - a)) / newAlpha;
-                    mergedPixels[i + 3] = newAlpha * 255;
-                }
-            }
-        }
-
-        return mergedData;
     }
 
     /**
@@ -132,82 +94,27 @@ export class RenderManager implements IRenderManager {
     }
 
     /**
-     * Renders an animated sequence of layers and exports it as a GIF.
-     * @returns {Promise<Buffer>} The rendered animation as a Buffer.
-     */
-    private async renderAnimation(): Promise<Buffer> {
-        const encoder = new GIFEncoder();
-
-        if (this.debug) LazyLog.log('info', `Rendering animation...\nData:`, this.lazyCanvas.manager.animation.options);
-
-        const frameBuffer = [];
-        const { width, height } = this.lazyCanvas.options;
-
-        const delay = 1000 / this.lazyCanvas.manager.animation.options.frameRate;
-        const { loop, colorSpace, maxColors, transparency, utils } = this.lazyCanvas.manager.animation.options;
-
-        let frameNumber = 0;
-        for (const layer of this.lazyCanvas.manager.layers.toArray()) {
-            const ctx = await this.renderLayer(layer);
-
-            frameBuffer.push(ctx.getImageData(0, 0, width, height));
-            if (frameBuffer.length > utils.buffer.size) {
-                frameBuffer.shift();
-            }
-
-            const mergeData = this.mergeImageData(ctx, frameBuffer, width, height);
-
-            const palette = quantize(mergeData.data, maxColors, { format: colorSpace });
-            const index = applyPalette(mergeData.data, palette, colorSpace);
-            encoder.writeFrame(index, width, height, {
-                palette,
-                transparent: transparency,
-                delay,
-                loop
-            });
-
-            if (utils.clear) ctx.clearRect(0, 0, width, height);
-            frameNumber++;
-        }
-        encoder.finish();
-        return encoder.bytesView();
-    }
-
-    /**
      * Renders all layers and exports the result in the specified format.
      * @param {AnyExport} [format] - The export format (e.g., buffer, context, SVG, or canvas).
      * @returns {Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string>} The rendered output in the specified format.
      */
     public async render(format: AnyExport): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string> {
-        let result: Buffer | SKRSContext2D | Canvas | SvgCanvas | string;
-
         switch (format) {
             case Export.BUFFER:
             case "buffer":
-                if (this.lazyCanvas.options.animated) {
-                    result = await this.renderAnimation();
-                } else {
-                    result = await this.renderStatic(Export.BUFFER);
-                }
-                break;
+                return await this.renderStatic(Export.BUFFER);
             case Export.CTX:
             case "ctx":
-                result = this.lazyCanvas.ctx;
-                break;
+                return this.lazyCanvas.ctx;
             case Export.SVG:
             case "svg":
-                result = await this.renderStatic(Export.SVG);
-                break;
+                return await this.renderStatic(Export.SVG);
             case Export.CANVAS:
             case "canvas":
                 await this.renderStatic(this.lazyCanvas.options.exportType === 'svg' ? Export.SVG : Export.BUFFER);
-                result = this.lazyCanvas.canvas;
-                break;
+                return this.lazyCanvas.canvas;
             default:
-                result = await this.renderStatic(Export.BUFFER);
-                break;
+                return await this.renderStatic(Export.BUFFER);
         }
-
-        return result;
     }
 }

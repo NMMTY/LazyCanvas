@@ -66,7 +66,7 @@ export type AnyLineCap = LineCap | 'butt' | 'round' | 'square';
 
 export type AnyLineJoin = LineJoin | 'bevel' | 'round' | 'miter';
 
-export type AnyExport = Export | 'canvas' | 'ctx' | 'buffer' | 'svg' | 'png' | 'jpeg' | 'jpg' | 'gif' | 'webp' | 'yaml' | 'json';
+export type AnyExport = Export | 'canvas' | 'ctx' | 'buffer' | 'svg' | 'png' | 'apng' | 'jpg' | 'webp' | 'yaml' | 'json';
 
 export type AnyCentring = Centring | 'start' | 'start-top' | 'start-bottom' | 'center' | 'center-top' | 'center-bottom' | 'end' | 'end-top' | 'end-bottom' | 'none';
 

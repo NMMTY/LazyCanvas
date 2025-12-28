@@ -1,5 +1,3 @@
-// src/core/ThreadScheduler.ts - Manages animation threads and timeline
-
 import { ThreadGenerator } from './Signal';
 
 /**

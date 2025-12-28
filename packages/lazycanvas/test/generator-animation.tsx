@@ -1,26 +1,20 @@
-// test/generator-animation.tsx
 /** @jsx createElement */
-import { createElement } from '../src/jsx-runtime';
 import {
+    createElement,
     Scene,
     MorphLayer,
     TextLayer,
     Div,
-    APNGEncoder,
     createSignal,
     Easing,
     resetSignals,
     all,
     chain,
     waitFor,
-    calculateSequentialDuration
+    calculateSequentialDuration,
+    Exporter
 } from '../src';
-import * as fs from "node:fs";
 
-/**
- * Advanced generator-based animation example
- * Demonstrates yield*, all(), chain(), loop() and complex animations
- */
 export async function runGeneratorAnimation() {
     const width = 960;
     const height = 540;
@@ -75,13 +69,14 @@ export async function runGeneratorAnimation() {
         yield* textOpacity.to(0, 0.5, { easing: Easing.easeIn });
     }
 
-
-    // Build JSX tree
-    const tree = (
+    // Load scene
+    scene.load(
         <Div>
             <MorphLayer
-                x={boxX}
-                y={boxY}
+                position={{
+                    x: boxX,
+                    y: boxY
+                }}
                 size={{
                     width: boxWidth,
                     height: boxHeight
@@ -91,10 +86,12 @@ export async function runGeneratorAnimation() {
                 centring="center"
             />
             <TextLayer
-                x={textX}
-                y={textY}
+                position={{
+                    x: textX,
+                    y: textY
+                }}
                 text="Generator Animation"
-                fillStyle="#000000"
+                fillStyle={'#000000'}
                 opacity={textOpacity}
                 font={{
                     family: 'Arial',
@@ -106,17 +103,10 @@ export async function runGeneratorAnimation() {
         </Div>
     );
 
-    // Load scene
-    scene.load(tree);
-
-    // Calculate animation duration automatically
-    console.log('📐 Calculating animation duration...');
     const duration = calculateSequentialDuration([
         () => boxAnimation(),
         () => textAnimation()
     ]);
-
-    console.log(`✅ Animation duration: ${duration.toFixed(2)}s`);
 
     // IMPORTANT: Reset all signals after duration calculation
     // because the calculation runs the animation and changes signal values
@@ -131,58 +121,12 @@ export async function runGeneratorAnimation() {
         textAnimation()
     ));
 
-    // Render animation
-    const fps = 60;
-    const frames: Uint8ClampedArray[] = [];
-
-    console.log('\n🎬 Rendering animation...');
-    console.log(`Duration: ${duration}s @ ${fps} FPS = ${Math.ceil(duration * fps)} frames`);
-    console.log(`Frame delta: ${(1/fps).toFixed(4)}s`);
-
-    const startTime = Date.now();
-
-    for (let frame = 0; frame < duration * fps; frame++) {
-        const time = frame / fps;
-        await scene.renderFrame(time);
-        const imageData = scene.getImageData();
-        frames.push(imageData);
-
-        if (frame % 60 === 0) {
-            const now = Date.now();
-            const elapsed = now - startTime;
-            const frameTime = frame > 0 ? (elapsed / frame) : 0;
-
-            console.log(`  Frame ${frame}/${Math.ceil(duration * fps)} (time: ${time.toFixed(3)}s, avg: ${frameTime.toFixed(1)}ms/frame)`);
-
-            // Log signal values for debugging
-            console.log(`    boxX: ${boxX.value().toFixed(1)}, boxOpacity: ${boxOpacity.value().toFixed(3)}, color: ${boxColor.value()}`);
-        }
-    }
-
-    const totalTime = Date.now() - startTime;
-
-    console.log(`\n⏱️  Render time: ${totalTime}ms (${(totalTime / frames.length).toFixed(2)}ms per frame)`);
-    console.log(`📊 Performance: ${(frames.length / (totalTime / 1000)).toFixed(2)} FPS`);
-
-    // Encode to APNG
-    console.log('\n🔧 Encoding APNG...');
-    const encodeStart = Date.now();
-
-    const encoder = new APNGEncoder(scene.width, scene.height, fps);
-    for (const frame of frames) {
-        encoder.addFrame(frame);
-    }
-    const buffer = encoder.encode();
-
-    const encodeTime = Date.now() - encodeStart;
-    console.log(`⚡ Encoding time: ${encodeTime}ms`);
-
-    fs.writeFileSync(`./generator-animation.png`, buffer);
-
-    console.log('✅ Generator animation rendered!');
-    console.log('📁 Saved to: ./generator-animation.png');
-
-    return frames;
+    await new Exporter(scene).export('apng', {
+        duration: duration,
+        fps: 60,
+        name: 'generator-animation',
+        saveAsFile: true
+    })
 }
 
 // Run if executed directly

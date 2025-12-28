@@ -10,3 +10,7 @@ export * from "./core/SignalUtils";
 export * from "./core/ThreadScheduler";
 export * from "./core/Interpolation";
 export * from "./utils/APNGEncoder";
+export * from "./utils/DrawUtils";
+export * from "./utils/LazyUtil";
+export * from "./utils/utils";
+export * from "./jsx-runtime"
