@@ -12,20 +12,20 @@ import * as fs from "node:fs";
  * Demonstrates yield*, all(), chain(), loop() and complex animations
  */
 export async function runGeneratorAnimation() {
-    const width = 1920;
-    const height = 1080;
+    const width = 960;
+    const height = 540;
     const scene = new Scene(width, height);
 
     // Create signals
-    const boxX = createSignal(100);
-    const boxY = createSignal(540);
-    const boxWidth = createSignal(100);
-    const boxHeight = createSignal(100);
+    const boxX = createSignal(50);
+    const boxY = createSignal(270);
+    const boxWidth = createSignal(50);
+    const boxHeight = createSignal(50);
     const boxOpacity = createSignal(0);
     const boxColor = createSignal('#ff0000', { colorSpace: 'hsl' });
 
-    const textX = createSignal(960);
-    const textY = createSignal(100);
+    const textX = createSignal(480);
+    const textY = createSignal(50);
     const textOpacity = createSignal(0);
 
     // Complex animation using generators
@@ -33,7 +33,7 @@ export async function runGeneratorAnimation() {
         // Fade in and move to center
         yield* all(
             boxOpacity.to(1, 0.5, { easing: Easing.easeOut }),
-            boxX.to(960, 1.0, { easing: Easing.easeInOutCubic })
+            boxX.to(480, 1.0, { easing: Easing.easeInOutCubic })
         );
 
         // Wait a bit
@@ -41,24 +41,11 @@ export async function runGeneratorAnimation() {
 
         // Grow and change color
         yield* all(
-            boxWidth.to(300, 0.8, { easing: Easing.easeOutBack }),
-            boxHeight.to(300, 0.8, { easing: Easing.easeOutBack }),
+            boxWidth.to(150, 0.8, { easing: Easing.easeOutBack }),
+            boxHeight.to(150, 0.8, { easing: Easing.easeOutBack }),
             boxColor.to('#00ff88', 1.0, { easing: Easing.linear })
         );
 
-        // Wait
-        yield* waitFor(0.3);
-
-        // Shrink and fade out
-        yield* all(
-            boxWidth.to(150, 0.6, { easing: Easing.easeInQuart }),
-            boxHeight.to(150, 0.6, { easing: Easing.easeInQuart }),
-        );
-
-        yield* all(
-            boxX.to(1820, 1.0, { easing: Easing.easeOutQuart }),
-            boxOpacity.to(0, 0.5, { easing: Easing.easeIn })
-        )
     }
 
     function* textAnimation() {
@@ -69,10 +56,10 @@ export async function runGeneratorAnimation() {
         yield* textOpacity.to(1, 0.5, { easing: Easing.easeOut });
 
         // Move down a bit
-        yield* textY.to(150, 0.8, { easing: Easing.easeInOutCubic });
+        yield* textY.to(75, 0.8, { easing: Easing.easeInOutCubic });
 
         // Wait for box animation
-        yield* waitFor(1.5);
+        yield* waitFor(1.0);
 
         // Fade out
         yield* textOpacity.to(0, 0.5, { easing: Easing.easeIn });
@@ -106,7 +93,7 @@ export async function runGeneratorAnimation() {
                 opacity={textOpacity}
                 font={{
                     family: 'Arial',
-                    size: 72,
+                    size: 36,
                     weight: 700,
                 }}
                 align="center"

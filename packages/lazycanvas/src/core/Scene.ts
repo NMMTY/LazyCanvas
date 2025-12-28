@@ -1,18 +1,15 @@
-// src/core/Scene.ts
-import { Canvas, SKRSContext2D } from '@napi-rs/canvas';
-import { LayersManager } from '../structures/managers';
 import { BaseLayer, Div } from '../structures/components';
 import { AnyLayer } from "../types";
 import { ThreadScheduler } from './ThreadScheduler';
 import { ThreadGenerator, Signal } from './Signal';
+import { LazyCanvas } from "../structures/LazyCanvas";
+import { Canvas } from "@napi-rs/canvas";
 
 /**
  * Scene class - manages canvas, context, layers, and animation timeline
  */
 export class Scene {
-    public readonly canvas: Canvas;
-    public readonly ctx: SKRSContext2D;
-    public readonly manager: LayersManager;
+    public readonly lazyCanvas: LazyCanvas;
     public root: Div | AnyLayer | null = null;
 
     private allLayers: (AnyLayer | Div)[] = [];
@@ -25,19 +22,8 @@ export class Scene {
      * @param height - Canvas height in pixels
      */
     constructor(width: number, height: number) {
-        this.canvas = new Canvas(width, height);
-        this.ctx = this.canvas.getContext('2d');
-
-        // Create a minimal LazyCanvas-like object for LayersManager
-        // LayersManager expects a LazyCanvas instance, but we create a standalone scene
-        const fakeLazyCanvas = {
-            canvas: this.canvas,
-            ctx: this.ctx,
-            manager: null as any
-        };
-
-        this.manager = new LayersManager({ debug: false });
-        fakeLazyCanvas.manager = { layers: this.manager };
+        this.lazyCanvas = new LazyCanvas()
+            .create(width, height)
     }
 
     /**
@@ -62,8 +48,8 @@ export class Scene {
         this.allLayers.push(layer);
 
         // Register in manager if it has an ID
-        if (layer.id && !this.manager.map.has(layer.id)) {
-            this.manager.add(layer);
+        if (layer.id && !this.lazyCanvas.manager.layers.map.has(layer.id)) {
+            this.lazyCanvas.manager.layers.add(layer);
         }
 
         // If it's a group, recurse into children
@@ -87,7 +73,7 @@ export class Scene {
         this.scheduler.update(time);
 
         // 2. Clear canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.lazyCanvas.ctx.clearRect(0, 0, this.lazyCanvas.canvas.width, this.lazyCanvas.canvas.height);
 
         // 3. PHASE 1: Update all layer states from signals
         this.updateAllStates(time);
@@ -103,7 +89,7 @@ export class Scene {
      * Much faster than encoding to PNG
      */
     public getImageData(): Uint8ClampedArray {
-        const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+        const imageData = this.lazyCanvas.ctx.getImageData(0, 0, this.width, this.height);
         return imageData.data;
     }
 
@@ -111,14 +97,14 @@ export class Scene {
      * Get canvas width
      */
     public get width(): number {
-        return this.canvas.width;
+        return this.lazyCanvas.canvas.width;
     }
 
     /**
      * Get canvas height
      */
     public get height(): number {
-        return this.canvas.height;
+        return this.lazyCanvas.canvas.height;
     }
 
     /**
@@ -143,16 +129,16 @@ export class Scene {
 
         // Set global composite operation if present
         if ('props' in layer && layer.props?.globalComposite) {
-            this.ctx.globalCompositeOperation = layer.props.globalComposite;
+            this.lazyCanvas.ctx.globalCompositeOperation = layer.props.globalComposite;
         }
 
         // Draw the layer
         if ('draw' in layer && typeof layer.draw === 'function') {
-            await layer.draw(this.ctx, this.canvas, this.manager, false);
+            await layer.draw(this.lazyCanvas.ctx, this.lazyCanvas.canvas, this.lazyCanvas.manager.layers, false);
         }
 
         // Reset shadow after drawing
-        this.ctx.shadowColor = 'transparent';
+        this.lazyCanvas.ctx.shadowColor = 'transparent';
     }
 
     /**
@@ -168,7 +154,7 @@ export class Scene {
 
         for (let time = startTime; time <= endTime; time += frameDuration) {
             await this.renderFrame(time);
-            frames.push(await this.canvas.encode('png'));
+            frames.push(await (this.lazyCanvas.canvas as Canvas).encode('png'));
         }
 
         return frames;
@@ -199,7 +185,7 @@ export class Scene {
      * @returns Layer or undefined
      */
     public getLayer(id: string): AnyLayer | Div | undefined {
-        return this.manager.get(id, true);
+        return this.lazyCanvas.manager.layers.get(id, true);
     }
 
     /**
