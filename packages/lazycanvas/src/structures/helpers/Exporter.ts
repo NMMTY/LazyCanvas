@@ -99,28 +99,44 @@ export class Exporter {
                 break;
             case Export.BUFFER:
             case "buffer":
-                result = await this.canvas.manager.render.render('buffer');
+                if (this.scene) {
+                    result = await this.scene.renderFirstFrame().then(frame => frame.toBuffer('image/png'));
+                } else {
+                    result = await this.canvas.manager.render.render('buffer') as Buffer;
+                }
                 if (opts?.saveAsFile) {
                     await this.saveFile(result, 'png', opts.name);
                 }
                 break;
             case Export.WEBP:
             case "webp":
-                result = await this.canvas.manager.render.render('buffer');
+                if (this.scene) {
+                    result = await this.scene.renderFirstFrame().then(frame => frame.toBuffer('image/webp'));
+                } else {
+                    result = await this.canvas.manager.render.render('webp');
+                }
                 if (opts?.saveAsFile) {
                     await this.saveFile(result, 'webp', opts.name);
                 }
                 break;
             case Export.JPG:
             case "jpg":
-                const jpg = await this.canvas.manager.render.render('buffer');
-                await this.saveFile(jpg, 'jpg', opts?.name);
-                return jpg;
+                if (this.scene) {
+                    result = await this.scene.renderFirstFrame().then(frame => frame.toBuffer('image/jpeg'));
+                } else {
+                    result = await this.canvas.manager.render.render('jpg');
+                }
+                await this.saveFile(result, 'jpg', opts?.name);
+                return result;
             case Export.PNG:
             case "png":
-                const png = await this.canvas.manager.render.render('buffer');
-                await this.saveFile(png, 'png', opts?.name);
-                return png;
+                if (this.scene) {
+                    result = await this.scene.renderFirstFrame().then(frame => frame.toBuffer('image/png'));
+                } else {
+                    result = await this.canvas.manager.render.render('png');
+                }
+                await this.saveFile(result, 'png', opts?.name);
+                return result;
             case Export.APNG:
             case "apng":
                 if (!this.scene) {

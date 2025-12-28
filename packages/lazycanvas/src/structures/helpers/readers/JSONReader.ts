@@ -45,10 +45,6 @@ export class JSONReader {
             throw new LazyError("Invalid export type");
         }
 
-        if (data.options.flag === undefined) {
-            throw new LazyError("Invalid export flag");
-        }
-
         if (data.layers === undefined || data.layers.length === 0) {
             throw new LazyError("No layers found");
         }

@@ -59,6 +59,11 @@ export class Scene {
         this.lastFrameTime = time;
     }
 
+    public async renderFirstFrame(): Promise<Canvas> {
+        await this.renderFrame(0);
+        return this.lazyCanvas.canvas as Canvas;
+    }
+
     /**
      * Get current frame as ImageData (Uint8ClampedArray)
      * Much faster than encoding to PNG

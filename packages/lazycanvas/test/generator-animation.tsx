@@ -15,7 +15,7 @@ import {
     Exporter
 } from '../src';
 
-export async function runGeneratorAnimation() {
+export async function run() {
     const width = 960;
     const height = 540;
     const scene = new Scene(width, height);
@@ -131,6 +131,6 @@ export async function runGeneratorAnimation() {
 
 // Run if executed directly
 if (require.main === module) {
-    runGeneratorAnimation().catch(console.error);
+    run().catch(console.error);
 }
 
