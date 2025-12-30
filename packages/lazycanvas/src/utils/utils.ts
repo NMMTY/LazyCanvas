@@ -581,6 +581,7 @@ export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
               for (const corner in layer.props.size.radius) {
                 // @ts-ignore
                 layer.props.size.radius[corner] = resize(
+                  // @ts-ignore
                   layer.props.size.radius[corner],
                   ratio,
                 ) as ScaleType;

@@ -175,6 +175,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
       for (const corner in this.props.size.radius) {
         // @ts-ignore
         rad[corner] = parcer.parse(
+          // @ts-ignore
           this.props.size.radius[corner],
           defaultArg.wh(w / 2, h / 2),
           defaultArg.vl(false, true),
