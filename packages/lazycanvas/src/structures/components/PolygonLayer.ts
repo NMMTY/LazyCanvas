@@ -19,6 +19,10 @@ export interface IPolygonLayer extends IBaseLayer {
 }
 
 export interface IPolygonLayerProps extends IBaseLayerProps {
+  position: {
+    x: ScaleType;
+    y: ScaleType;
+  };
   /**
    * The size of the Polygon Layer, including width, height, and radius.
    */

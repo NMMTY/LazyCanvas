@@ -47,7 +47,7 @@ export interface IBaseLayer {
  * Interface representing the properties of a base layer.
  */
 export interface IBaseLayerProps {
-  position: {
+  position?: {
     /**
      * The x-coordinate of the layer.
      */
@@ -58,6 +58,7 @@ export interface IBaseLayerProps {
      */
     y: ScaleType;
   };
+
   /**
    * The centring type of the layer.
    */
@@ -90,12 +91,12 @@ export interface IBaseLayerProps {
     /**
      * The horizontal offset of the shadow.
      */
-    offsetX: number;
+    offsetX?: number;
 
     /**
      * The vertical offset of the shadow.
      */
-    offsetY: number;
+    offsetY?: number;
   };
 
   /**

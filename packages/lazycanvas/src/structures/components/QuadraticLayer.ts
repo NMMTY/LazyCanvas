@@ -31,7 +31,17 @@ export interface IQuadraticLayer extends IBaseLayer {
  * Interface representing the properties of a Quadratic layer.
  */
 export interface IQuadraticLayerProps extends IBaseLayerProps {
-  position: IBaseLayerProps["position"] & {
+  position: {
+    /**
+     * The x coordinate of the quadratic curve's starting point.
+     */
+    x: ScaleType;
+
+    /**
+     * The y coordinate of the quadratic curve's starting point.
+     */
+    y: ScaleType;
+
     /**
      * The end x coordinate of the quadratic curve.
      */

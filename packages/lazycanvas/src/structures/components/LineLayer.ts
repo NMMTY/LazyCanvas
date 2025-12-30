@@ -25,7 +25,17 @@ export interface ILineLayer extends IBaseLayer {
  * Interface representing the properties of a Line Layer.
  */
 export interface ILineLayerProps extends IBaseLayerProps {
-  position: IBaseLayerProps["position"] & {
+  position: {
+    /**
+     * The x-coordinate of the start point of the line.
+     */
+    x: ScaleType;
+
+    /**
+     * The y-coordinate of the start point of the line.
+     */
+    y: ScaleType;
+
     /**
      * The x-coordinate of the end point of the line.
      */

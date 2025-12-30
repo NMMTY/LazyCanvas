@@ -31,7 +31,17 @@ export interface IBezierLayer extends IBaseLayer {
  * Interface representing the properties of a Bezier layer.
  */
 export interface IBezierLayerProps extends IBaseLayerProps {
-  position: IBaseLayerProps["position"] & {
+  position: {
+    /**
+     * The start x of the Bézier curve.
+     */
+    x: ScaleType;
+
+    /**
+     * The start y of the Bézier curve.
+     */
+    y: ScaleType;
+
     /**
      * The end x of the Bézier curve.
      */

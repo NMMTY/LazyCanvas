@@ -40,6 +40,10 @@ export interface ITextLayer extends IBaseLayer {
  * Interface representing the properties of a Text layer.
  */
 export interface ITextLayerProps extends IBaseLayerProps {
+  position: {
+    x: ScaleType;
+    y: ScaleType;
+  };
   /**
    * The text content of the layer.
    */

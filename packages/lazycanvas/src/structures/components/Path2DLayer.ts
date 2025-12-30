@@ -42,10 +42,11 @@ export interface IPath2DLayerProps extends IBaseLayerProps {
   /**
    * The stroke properties of the Path2D.
    */
-  stroke: StrokeOptions;
+  stroke?: StrokeOptions;
 
-  loadFromSVG: boolean;
-  clipPath: boolean;
+  loadFromSVG?: boolean;
+
+  clipPath?: boolean;
 }
 
 export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
@@ -301,14 +302,6 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
       ...super.validateProps(data),
       fillStyle: data.fillStyle || "#000000",
       path2D: data.path2D || new Path2D(),
-      stroke: {
-        width: data.stroke?.width || 1,
-        cap: data.stroke?.cap || "butt",
-        join: data.stroke?.join || "miter",
-        dashOffset: data.stroke?.dashOffset || 0,
-        dash: data.stroke?.dash || [],
-        miterLimit: data.stroke?.miterLimit || 10,
-      },
       loadFromSVG: data.loadFromSVG || false,
       clipPath: data.clipPath || false,
     };

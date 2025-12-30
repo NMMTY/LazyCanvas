@@ -34,6 +34,11 @@ export interface IMorphLayer extends IBaseLayer {
  * Interface representing the properties of a Morph Layer.
  */
 export interface IMorphLayerProps extends IBaseLayerProps {
+  position: {
+    x: ScaleType;
+    y: ScaleType;
+  };
+
   /**
    * The size of the Morph Layer, including width, height, and radius.
    */

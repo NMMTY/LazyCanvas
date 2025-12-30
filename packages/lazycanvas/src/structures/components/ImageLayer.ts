@@ -26,6 +26,10 @@ export interface IImageLayer extends IBaseLayer {
  * Interface representing the properties of an Image Layer.
  */
 export interface IImageLayerProps extends IBaseLayerProps {
+  position: {
+    x: ScaleType;
+    y: ScaleType;
+  };
   /**
    * The source of the image, which can be a URL or a Buffer.
    */
