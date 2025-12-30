@@ -1,9 +1,9 @@
 import { JSONReader } from "./JSONReader";
 import * as _yaml from "js-yaml";
 import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
-import * as fs from "fs";
+import * as fs from "node:fs";
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
-import * as path from "path";
+import * as path from "node:path";
 
 export class YAMLReader {
   /**

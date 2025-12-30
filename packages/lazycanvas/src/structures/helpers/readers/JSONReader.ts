@@ -22,9 +22,9 @@ import {
 } from "../../components";
 import { Gradient, IGradient, IPattern, Pattern } from "../";
 import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
-import * as fs from "fs";
+import * as fs from "node:fs";
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
-import * as path from "path";
+import * as path from "node:path";
 import { isSignal } from "../../../core/Signal";
 
 /**

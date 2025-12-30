@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "1.0.0-dev.3",
+  "version": "1.0.0-dev.4",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -34,9 +34,7 @@
     "@napi-rs/canvas": "^0.1.88",
     "gifenc": "^1.0.3",
     "js-yaml": "^4.1.0",
-    "path": "^0.12.7",
-    "svgson": "^5.3.1",
-    "zlib": "^1.0.5"
+    "svgson": "^5.3.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

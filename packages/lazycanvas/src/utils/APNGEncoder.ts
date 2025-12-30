@@ -1,4 +1,4 @@
-import { deflateSync } from "zlib";
+import { deflateSync } from "node:zlib";
 
 /**
  * APNG Encoder that works directly with Uint8ClampedArray (ImageData)

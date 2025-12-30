@@ -1,5 +1,5 @@
 /** @jsx createElement */
-import { createElement, Scene, Exporter, Div, MorphLayer, TextLayer, FontsList } from "../src";
+import { createElement, Scene, Exporter, Div, MorphLayer, TextLayer, FontsList } from "../dist";
 
 export async function run() {
   const width = 800;

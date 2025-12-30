@@ -13,7 +13,7 @@ import {
   waitFor,
   calculateSequentialDuration,
   Exporter,
-} from "../src";
+} from "../dist";
 
 export async function run() {
   const width = 960;

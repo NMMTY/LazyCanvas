@@ -2,7 +2,7 @@ import { IOLazyCanvas, LazyCanvas } from "../LazyCanvas";
 import { AnyExport, Export, Extensions } from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LazyError } from "../../utils/LazyUtil";
-import * as fs from "fs";
+import * as fs from "node:fs";
 import { generateRandomName } from "../../utils/utils";
 import { LayersManager } from "../managers";
 import * as _yaml from "js-yaml";
