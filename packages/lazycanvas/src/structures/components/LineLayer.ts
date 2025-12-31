@@ -55,7 +55,7 @@ export interface ILineLayerProps extends IBaseLayerProps {
   /**
    * The fill style (color or pattern) of the layer.
    */
-  fillStyle: ColorType;
+  color: ColorType;
 
   /**
    * The stroke properties of the line.
@@ -105,7 +105,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
   setColor(color: ColorType): this {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
-    this.props.fillStyle = color;
+    this.props.color = color;
     return this;
   }
 
@@ -188,7 +188,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
 
     let width = Math.abs(xe - xs);
     let height = Math.abs(ye - ys);
-    let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, {
+    let fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width, height, x: Math.min(xs, xe), y: Math.min(ys, ye), align: "none" },
       manager,
@@ -246,7 +246,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
         endX: data.position?.endX || 0,
         endY: data.position?.endY || 0,
       },
-      fillStyle: data.fillStyle || "#000000",
+      color: data.color || "#000000",
       centring: data.centring || Centring.None,
       stroke: {
         width: data.stroke?.width || 1,

@@ -52,7 +52,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
   /**
    * The fill style (color or pattern) of the layer.
    */
-  fillStyle: ColorType;
+  color: ColorType;
 
   /**
    * Array of substring color configurations for partial text coloring.
@@ -230,7 +230,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
   setColor(color: ColorType, ...sub: SubStringColor[]): this {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
-    this.props.fillStyle = color;
+    this.props.color = color;
     if (sub && sub.length > 0) {
       this.props.subStringColors = sub;
     }
@@ -390,7 +390,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     if (this.props.baseline) ctx.textBaseline = this.props.baseline;
     if (this.props.direction) ctx.direction = this.props.direction;
 
-    let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, {
+    let fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width: w, height: h, x, y, align: "center" },
       manager,
@@ -595,7 +595,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
   protected validateProps(data: ITextLayerProps): ITextLayerProps {
     return {
       ...super.validateProps(data),
-      fillStyle: data.fillStyle || "#000000",
+      color: data.color || "#000000",
       text: data.text || "",
       font: {
         family: data.font?.family || "Arial",

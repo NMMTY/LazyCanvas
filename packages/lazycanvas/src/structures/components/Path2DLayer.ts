@@ -12,7 +12,7 @@ import { ColorType, LayerType } from "../../types";
 import { generateID, isColor, parseFillStyle, transform } from "../../utils/utils";
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { LayersManager } from "../managers";
-import { LazyError } from "../../utils/LazyUtil";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { StrokeOptions } from "../../types";
 import { DrawUtils } from "../../utils/DrawUtils";
 
@@ -37,7 +37,7 @@ export interface IPath2DLayerProps extends IBaseLayerProps {
   /**
    * The fill style (color or pattern) of the layer.
    */
-  fillStyle: ColorType;
+  color: ColorType;
 
   /**
    * The stroke properties of the Path2D.
@@ -74,7 +74,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
   setColor(color: ColorType): this {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
-    this.props.fillStyle = color;
+    this.props.color = color;
     return this;
   }
 
@@ -248,6 +248,13 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     ctx.beginPath();
     ctx.save();
 
+    if (debug)
+      LazyLog.log("none", `Drawing Path2D Layer: `, {
+        layerId: this.id,
+        type: this.type,
+        path: this.props.path2D.toSVGString(),
+      });
+
     if (this.props.transform) {
       transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
     }
@@ -256,8 +263,8 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
 
     if (this.props.clipPath) {
       ctx.clip(this.props.path2D);
-    } else if (this.props.fillStyle) {
-      let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, { debug, manager });
+    } else if (this.props.color) {
+      let fillStyle = await parseFillStyle(ctx, this.props.color, { debug, manager });
 
       if (this.props.globalComposite) {
         ctx.globalCompositeOperation = this.props.globalComposite;
@@ -300,7 +307,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
   protected validateProps(data: IPath2DLayerProps): IPath2DLayerProps {
     return {
       ...super.validateProps(data),
-      fillStyle: data.fillStyle || "#000000",
+      color: data.color || "#000000",
       path2D: data.path2D || new Path2D(),
       loadFromSVG: data.loadFromSVG || false,
       clipPath: data.clipPath || false,

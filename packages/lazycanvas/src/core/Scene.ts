@@ -21,7 +21,7 @@ export class Scene {
    * @param height - Canvas height in pixels
    */
   constructor(width: number, height: number) {
-    this.lazyCanvas = new LazyCanvas().create(width, height);
+    this.lazyCanvas = new LazyCanvas({ debug: true }).create(width, height);
   }
 
   /**
@@ -122,7 +122,7 @@ export class Scene {
         this.lazyCanvas.ctx,
         this.lazyCanvas.canvas,
         this.lazyCanvas.manager.layers,
-        false,
+        true,
       );
     }
 

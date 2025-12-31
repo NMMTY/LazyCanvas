@@ -51,7 +51,7 @@ export interface IPolygonLayerProps extends IBaseLayerProps {
   /**
    * The fill style (color or pattern) of the layer.
    */
-  fillStyle: ColorType;
+  color: ColorType;
 
   /**
    * The stroke properties of the polygon.
@@ -95,7 +95,7 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
   setColor(color: ColorType): this {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
-    this.props.fillStyle = color;
+    this.props.color = color;
     return this;
   }
 
@@ -152,7 +152,7 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
     const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
 
     let { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
-    let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, {
+    let fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring },
       manager,
@@ -282,7 +282,7 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
         radius: data.size?.radius || 0,
         count: data.size?.count || 3,
       },
-      fillStyle: data.fillStyle || "#000000",
+      color: data.color || "#000000",
     };
   }
 }

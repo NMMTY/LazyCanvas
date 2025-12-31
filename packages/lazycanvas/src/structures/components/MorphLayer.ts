@@ -62,7 +62,7 @@ export interface IMorphLayerProps extends IBaseLayerProps {
   /**
    * The fill style (color or pattern) of the layer.
    */
-  fillStyle: ColorType;
+  color: ColorType;
 
   /**
    * The stroke properties of the morph.
@@ -119,7 +119,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
   setColor(color: ColorType): this {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
-    this.props.fillStyle = color;
+    this.props.color = color;
     return this;
   }
 
@@ -189,7 +189,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     }
 
     let { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
-    let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, {
+    let fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring },
       manager,
@@ -253,7 +253,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
   protected validateProps(data: IMorphLayerProps): IMorphLayerProps {
     return {
       ...super.validateProps(data),
-      fillStyle: data.fillStyle || "#000000",
+      color: data.color || "#000000",
       size: {
         width: data.size?.width || 100,
         height: data.size?.height || 100,

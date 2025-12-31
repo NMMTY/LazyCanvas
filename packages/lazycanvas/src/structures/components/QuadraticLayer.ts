@@ -66,7 +66,7 @@ export interface IQuadraticLayerProps extends IBaseLayerProps {
   /**
    * The fill style (color or pattern) of the layer.
    */
-  fillStyle: ColorType;
+  color: ColorType;
 
   /**
    * The stroke properties of the quadratic curve.
@@ -127,7 +127,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
   setColor(color: ColorType) {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
-    this.props.fillStyle = color;
+    this.props.color = color;
     return this;
   }
 
@@ -216,7 +216,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
       { x: cx, y: cy },
       { x: xe, y: ye },
     ]);
-    let fillStyle = await parseFillStyle(ctx, this.props.fillStyle, {
+    let fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width, height, x: min.x, y: min.y, align: "none" },
       manager,
@@ -302,7 +302,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
         endX: data.position?.endX || 0,
         endY: data.position?.endY || 0,
       },
-      fillStyle: data.fillStyle || "#000000",
+      color: data.color || "#000000",
       centring: data.centring || Centring.None,
       controlPoints: data.controlPoints || [{ x: 0, y: 0 }],
       stroke: {

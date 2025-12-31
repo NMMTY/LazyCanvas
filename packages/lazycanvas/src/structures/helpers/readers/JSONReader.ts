@@ -171,27 +171,27 @@ export class JSONReader {
    * @returns {string | Gradient | Pattern} The parsed fill style.
    */
   private static fillParse(layer: JSONLayer): string | Gradient | Pattern {
-    if ("fillStyle" in layer.props) {
-      if (isSignal<string>(layer.props.fillStyle)) {
+    if ("color" in layer.props) {
+      if (isSignal<string>(layer.props.color)) {
         throw new LazyError("Signals are not supported in JSON fill styles");
       }
-      if (typeof layer.props.fillStyle === "object") {
-        switch (layer.props.fillStyle?.fillType) {
+      if (typeof layer.props.color === "object") {
+        switch (layer.props.color?.fillType) {
           case "gradient":
-            return new Gradient({ props: layer.props.fillStyle as IGradient });
+            return new Gradient({ props: layer.props.color as IGradient });
           case "pattern":
             return new Pattern()
-              .setType((layer.props.fillStyle as IPattern).type)
+              .setType((layer.props.color as IPattern).type)
               .setSrc(
-                typeof (layer.props.fillStyle as IPattern).src === "string"
-                  ? (layer.props.fillStyle as IPattern).src
-                  : this.read((layer.props.fillStyle as IPattern).src as unknown as IOLazyCanvas),
+                typeof (layer.props.color as IPattern).src === "string"
+                  ? (layer.props.color as IPattern).src
+                  : this.read((layer.props.color as IPattern).src as unknown as IOLazyCanvas),
               );
           default:
-            return layer.props.fillStyle;
+            return layer.props.color;
         }
       }
-      return layer.props.fillStyle || "#000000";
+      return layer.props.color || "#000000";
     } else {
       return "#000000";
     }

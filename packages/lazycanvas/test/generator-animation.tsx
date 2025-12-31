@@ -80,7 +80,7 @@ export async function run() {
           width: boxWidth,
           height: boxHeight,
         }}
-        fillStyle={boxColor}
+        color={boxColor}
         opacity={boxOpacity}
         centring="center"
       />
@@ -90,7 +90,7 @@ export async function run() {
           y: textY,
         }}
         text="Generator Animation"
-        fillStyle={"#000000"}
+        color={"#000000"}
         opacity={textOpacity}
         font={{
           family: "Arial",
