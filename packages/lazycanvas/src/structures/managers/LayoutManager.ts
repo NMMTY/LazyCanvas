@@ -26,24 +26,28 @@ export class LayoutManager {
       const loadYoga = yogaPkg.default || yogaPkg;
 
       if (typeof loadYoga === "function") {
-          this.yoga = await loadYoga(
-            readFileSync(require.resolve("yoga-layout/dist/yoga.wasm"))
-          );
+        this.yoga = await loadYoga(readFileSync(require.resolve("yoga-layout/dist/yoga.wasm")));
       } else {
-          this.yoga = loadYoga;
+        this.yoga = loadYoga;
       }
     } catch (e) {
       // Fallback
       try {
-          const yoga = require("yoga-layout");
-          this.yoga = yoga;
+        const yoga = require("yoga-layout");
+        this.yoga = yoga;
       } catch (e2) {
-          console.error("Failed to initialize Yoga Layout", e, e2);
+        console.error("Failed to initialize Yoga Layout", e, e2);
       }
     }
   }
 
-  public calculateLayout(root: AnyLayer | Div, width: number, height: number, ctx?: SKRSContext2D, canvas?: Canvas | SvgCanvas) {
+  public calculateLayout(
+    root: AnyLayer | Div,
+    width: number,
+    height: number,
+    ctx?: SKRSContext2D,
+    canvas?: Canvas | SvgCanvas,
+  ) {
     if (!this.yoga) {
       if (this.debug) LazyLog.log("warn", "LayoutManager: Yoga not initialized yet");
       return;
@@ -63,7 +67,11 @@ export class LayoutManager {
     this.freeNode(rootNode);
   }
 
-  private createNode(layer: AnyLayer | Div, ctx?: SKRSContext2D, canvas?: Canvas | SvgCanvas): YogaNode | null {
+  private createNode(
+    layer: AnyLayer | Div,
+    ctx?: SKRSContext2D,
+    canvas?: Canvas | SvgCanvas,
+  ): YogaNode | null {
     if (!this.yoga) return null;
 
     const node = this.yoga.Node.create();
@@ -72,29 +80,30 @@ export class LayoutManager {
 
     // Apply explicit layout properties first
     if (layout.width !== undefined) {
-        this.setDimension(node, "width", layout.width);
+      this.setDimension(node, "width", layout.width);
     } else if (size.width !== undefined && layer.type !== LayerType.Text) {
-        // For TextLayer, skip size.width to allow measureFunc to work
-        this.setDimension(node, "width", size.width);
+      // For TextLayer, skip size.width to allow measureFunc to work
+      this.setDimension(node, "width", size.width);
     } else if ((layer instanceof Div || layer.type === "group") && !layout.flexDirection) {
-        // For Div without explicit width and not a flex container, stretch to parent
-        // Flex containers should shrink-wrap their content by default
-        node.setWidthPercent(100);
+      // For Div without explicit width and not a flex container, stretch to parent
+      // Flex containers should shrink-wrap their content by default
+      node.setWidthPercent(100);
     }
 
     if (layout.height !== undefined) {
-        this.setDimension(node, "height", layout.height);
+      this.setDimension(node, "height", layout.height);
     } else if (size.height !== undefined && layer.type !== LayerType.Text) {
-        // For TextLayer, skip size.height to allow measureFunc to work
-        this.setDimension(node, "height", size.height);
+      // For TextLayer, skip size.height to allow measureFunc to work
+      this.setDimension(node, "height", size.height);
     } else if ((layer instanceof Div || layer.type === "group") && !layout.flexDirection) {
-        // For Div without explicit height and not a flex container, stretch to parent
-        // Flex containers should shrink-wrap their content by default
-        node.setHeightPercent(100);
+      // For Div without explicit height and not a flex container, stretch to parent
+      // Flex containers should shrink-wrap their content by default
+      node.setHeightPercent(100);
     }
 
     if (layout.flexDirection) node.setFlexDirection(this.getFlexDirection(layout.flexDirection));
-    if (layout.justifyContent) node.setJustifyContent(this.getJustifyContent(layout.justifyContent));
+    if (layout.justifyContent)
+      node.setJustifyContent(this.getJustifyContent(layout.justifyContent));
     if (layout.alignItems) node.setAlignItems(this.getAlignItems(layout.alignItems));
 
     if (layout.flexGrow !== undefined) node.setFlexGrow(layout.flexGrow);
@@ -108,13 +117,13 @@ export class LayoutManager {
     // Position type (relative/absolute)
     const isAbsolute = layout.position === "absolute";
     if (isAbsolute) {
-        node.setPositionType(this.yoga.POSITION_TYPE_ABSOLUTE);
+      node.setPositionType(this.yoga.POSITION_TYPE_ABSOLUTE);
 
-        // Position values (top, left, right, bottom) - only for absolute positioning
-        if (layout.top !== undefined) node.setPosition(this.yoga.EDGE_TOP, layout.top);
-        if (layout.left !== undefined) node.setPosition(this.yoga.EDGE_LEFT, layout.left);
-        if (layout.right !== undefined) node.setPosition(this.yoga.EDGE_RIGHT, layout.right);
-        if (layout.bottom !== undefined) node.setPosition(this.yoga.EDGE_BOTTOM, layout.bottom);
+      // Position values (top, left, right, bottom) - only for absolute positioning
+      if (layout.top !== undefined) node.setPosition(this.yoga.EDGE_TOP, layout.top);
+      if (layout.left !== undefined) node.setPosition(this.yoga.EDGE_LEFT, layout.left);
+      if (layout.right !== undefined) node.setPosition(this.yoga.EDGE_RIGHT, layout.right);
+      if (layout.bottom !== undefined) node.setPosition(this.yoga.EDGE_BOTTOM, layout.bottom);
     }
     // If not absolute, ignore top/left/right/bottom as they break flexbox layout
 
@@ -133,7 +142,9 @@ export class LayoutManager {
 
         // Temporarily disable multiline and width to measure natural size
         const originalSize = textLayer.props.size ? { ...textLayer.props.size } : undefined;
-        const originalMultiline = textLayer.props.multiline ? { ...textLayer.props.multiline } : undefined;
+        const originalMultiline = textLayer.props.multiline
+          ? { ...textLayer.props.multiline }
+          : undefined;
 
         // Disable multiline for measurement
         if (textLayer.props.multiline) {
@@ -172,7 +183,8 @@ export class LayoutManager {
         // 4. Otherwise (no position, no layout), use Yoga layout by default for proper flow
 
         const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition = childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
+        const hasExplicitPosition =
+          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
         const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
 
         // Skip Yoga layout if:
@@ -194,7 +206,8 @@ export class LayoutManager {
         const childPosition = (child.props as any)?.position;
 
         const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition = childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
+        const hasExplicitPosition =
+          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
         const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
 
         if (!isContainer && hasExplicitPosition && !hasExplicitLayout) {
@@ -216,7 +229,9 @@ export class LayoutManager {
 
     // Debug logging if enabled
     if (this.debug) {
-      console.log(`[Layout] ${layer.id}: left=${layout.left}, top=${layout.top}, width=${layout.width}, height=${layout.height}`);
+      console.log(
+        `[Layout] ${layer.id}: left=${layout.left}, top=${layout.top}, width=${layout.width}, height=${layout.height}`,
+      );
     }
 
     // Apply computed layout to layer props
@@ -245,17 +260,17 @@ export class LayoutManager {
     // If layout is applied, we should probably force centring to top-left (start-top)
     // to match Yoga's coordinate system
     if ("centring" in layer.props) {
-        (layer.props as any).centring = "start-top"; // or "none" depending on implementation
+      (layer.props as any).centring = "start-top"; // or "none" depending on implementation
     }
 
     // Update size if applicable (e.g. Div or layers that support size)
     if ("size" in (layer.props as any)) {
-        // @ts-ignore
-        const currentSize = (layer.props as any).size;
-        // @ts-ignore
-        (layer.props as any).size = { ...currentSize, width: layout.width, height: layout.height };
+      // @ts-ignore
+      const currentSize = (layer.props as any).size;
+      // @ts-ignore
+      (layer.props as any).size = { ...currentSize, width: layout.width, height: layout.height };
     } else if (layer instanceof Div) {
-        // Div doesn't have size prop usually, but maybe it should?
+      // Div doesn't have size prop usually, but maybe it should?
     }
 
     // Recursively apply to children
@@ -271,7 +286,8 @@ export class LayoutManager {
         const childLayout = (child.props as any)?.layout;
         const childPosition = (child.props as any)?.position;
         const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition = childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
+        const hasExplicitPosition =
+          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
         const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
 
         // Skip if this child wasn't added to Yoga tree
@@ -294,7 +310,8 @@ export class LayoutManager {
         const childLayout = (child.props as any)?.layout;
         const childPosition = (child.props as any)?.position;
         const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition = childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
+        const hasExplicitPosition =
+          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
         const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
 
         if (!isContainer && hasExplicitPosition && !hasExplicitLayout) {
@@ -314,99 +331,117 @@ export class LayoutManager {
     // Yoga JS usually requires manual freeing.
     // node.freeRecursive(); // if available
     if (node.freeRecursive) {
-        node.freeRecursive();
+      node.freeRecursive();
     } else {
-        node.free();
+      node.free();
     }
   }
 
   // Helpers for Yoga enums
   private getFlexDirection(dir: string) {
-      switch(dir) {
-          case "row": return this.yoga!.FLEX_DIRECTION_ROW;
-          case "column": return this.yoga!.FLEX_DIRECTION_COLUMN;
-          case "row-reverse": return this.yoga!.FLEX_DIRECTION_ROW_REVERSE;
-          case "column-reverse": return this.yoga!.FLEX_DIRECTION_COLUMN_REVERSE;
-          default: return this.yoga!.FLEX_DIRECTION_ROW;
-      }
+    switch (dir) {
+      case "row":
+        return this.yoga!.FLEX_DIRECTION_ROW;
+      case "column":
+        return this.yoga!.FLEX_DIRECTION_COLUMN;
+      case "row-reverse":
+        return this.yoga!.FLEX_DIRECTION_ROW_REVERSE;
+      case "column-reverse":
+        return this.yoga!.FLEX_DIRECTION_COLUMN_REVERSE;
+      default:
+        return this.yoga!.FLEX_DIRECTION_ROW;
+    }
   }
 
   private getJustifyContent(justify: string) {
-      switch(justify) {
-          case "flex-start": return this.yoga!.JUSTIFY_FLEX_START;
-          case "center": return this.yoga!.JUSTIFY_CENTER;
-          case "flex-end": return this.yoga!.JUSTIFY_FLEX_END;
-          case "space-between": return this.yoga!.JUSTIFY_SPACE_BETWEEN;
-          case "space-around": return this.yoga!.JUSTIFY_SPACE_AROUND;
-          case "space-evenly": return this.yoga!.JUSTIFY_SPACE_EVENLY;
-          default: return this.yoga!.JUSTIFY_FLEX_START;
-      }
+    switch (justify) {
+      case "flex-start":
+        return this.yoga!.JUSTIFY_FLEX_START;
+      case "center":
+        return this.yoga!.JUSTIFY_CENTER;
+      case "flex-end":
+        return this.yoga!.JUSTIFY_FLEX_END;
+      case "space-between":
+        return this.yoga!.JUSTIFY_SPACE_BETWEEN;
+      case "space-around":
+        return this.yoga!.JUSTIFY_SPACE_AROUND;
+      case "space-evenly":
+        return this.yoga!.JUSTIFY_SPACE_EVENLY;
+      default:
+        return this.yoga!.JUSTIFY_FLEX_START;
+    }
   }
 
   private getAlignItems(align: string) {
-      switch(align) {
-          case "flex-start": return this.yoga!.ALIGN_FLEX_START;
-          case "center": return this.yoga!.ALIGN_CENTER;
-          case "flex-end": return this.yoga!.ALIGN_FLEX_END;
-          case "stretch": return this.yoga!.ALIGN_STRETCH;
-          case "baseline": return this.yoga!.ALIGN_BASELINE;
-          default: return this.yoga!.ALIGN_STRETCH;
-      }
+    switch (align) {
+      case "flex-start":
+        return this.yoga!.ALIGN_FLEX_START;
+      case "center":
+        return this.yoga!.ALIGN_CENTER;
+      case "flex-end":
+        return this.yoga!.ALIGN_FLEX_END;
+      case "stretch":
+        return this.yoga!.ALIGN_STRETCH;
+      case "baseline":
+        return this.yoga!.ALIGN_BASELINE;
+      default:
+        return this.yoga!.ALIGN_STRETCH;
+    }
   }
 
   private getPositionType(position: string) {
-      if (position === "absolute") return this.yoga!.POSITION_TYPE_ABSOLUTE;
-      return this.yoga!.POSITION_TYPE_RELATIVE;
+    if (position === "absolute") return this.yoga!.POSITION_TYPE_ABSOLUTE;
+    return this.yoga!.POSITION_TYPE_RELATIVE;
   }
 
   private setDimension(node: YogaNode, prop: "width" | "height", value: any) {
-      if (typeof value === "number") {
-          if (prop === "width") node.setWidth(value);
-          else node.setHeight(value);
-      } else if (typeof value === "string") {
-          if (value.endsWith("%")) {
-              const val = parseFloat(value);
-              if (prop === "width") node.setWidthPercent(val);
-              else node.setHeightPercent(val);
-          } else if (value === "auto") {
-              if (prop === "width") node.setWidthAuto();
-              else node.setHeightAuto();
-          }
+    if (typeof value === "number") {
+      if (prop === "width") node.setWidth(value);
+      else node.setHeight(value);
+    } else if (typeof value === "string") {
+      if (value.endsWith("%")) {
+        const val = parseFloat(value);
+        if (prop === "width") node.setWidthPercent(val);
+        else node.setHeightPercent(val);
+      } else if (value === "auto") {
+        if (prop === "width") node.setWidthAuto();
+        else node.setHeightAuto();
       }
+    }
   }
 
   private setPadding(node: YogaNode, padding: number | number[]) {
-      if (typeof padding === "number") {
-          node.setPadding(this.yoga!.EDGE_ALL, padding);
-      } else if (Array.isArray(padding)) {
-          // CSS order: top, right, bottom, left
-          if (padding.length === 1) node.setPadding(this.yoga!.EDGE_ALL, padding[0]);
-          else if (padding.length === 2) {
-              node.setPadding(this.yoga!.EDGE_VERTICAL, padding[0]);
-              node.setPadding(this.yoga!.EDGE_HORIZONTAL, padding[1]);
-          } else if (padding.length === 4) {
-              node.setPadding(this.yoga!.EDGE_TOP, padding[0]);
-              node.setPadding(this.yoga!.EDGE_RIGHT, padding[1]);
-              node.setPadding(this.yoga!.EDGE_BOTTOM, padding[2]);
-              node.setPadding(this.yoga!.EDGE_LEFT, padding[3]);
-          }
+    if (typeof padding === "number") {
+      node.setPadding(this.yoga!.EDGE_ALL, padding);
+    } else if (Array.isArray(padding)) {
+      // CSS order: top, right, bottom, left
+      if (padding.length === 1) node.setPadding(this.yoga!.EDGE_ALL, padding[0]);
+      else if (padding.length === 2) {
+        node.setPadding(this.yoga!.EDGE_VERTICAL, padding[0]);
+        node.setPadding(this.yoga!.EDGE_HORIZONTAL, padding[1]);
+      } else if (padding.length === 4) {
+        node.setPadding(this.yoga!.EDGE_TOP, padding[0]);
+        node.setPadding(this.yoga!.EDGE_RIGHT, padding[1]);
+        node.setPadding(this.yoga!.EDGE_BOTTOM, padding[2]);
+        node.setPadding(this.yoga!.EDGE_LEFT, padding[3]);
       }
+    }
   }
 
   private setMargin(node: YogaNode, margin: number | number[]) {
-      if (typeof margin === "number") {
-          node.setMargin(this.yoga!.EDGE_ALL, margin);
-      } else if (Array.isArray(margin)) {
-          if (margin.length === 1) node.setMargin(this.yoga!.EDGE_ALL, margin[0]);
-          else if (margin.length === 2) {
-              node.setMargin(this.yoga!.EDGE_VERTICAL, margin[0]);
-              node.setMargin(this.yoga!.EDGE_HORIZONTAL, margin[1]);
-          } else if (margin.length === 4) {
-              node.setMargin(this.yoga!.EDGE_TOP, margin[0]);
-              node.setMargin(this.yoga!.EDGE_RIGHT, margin[1]);
-              node.setMargin(this.yoga!.EDGE_BOTTOM, margin[2]);
-              node.setMargin(this.yoga!.EDGE_LEFT, margin[3]);
-          }
+    if (typeof margin === "number") {
+      node.setMargin(this.yoga!.EDGE_ALL, margin);
+    } else if (Array.isArray(margin)) {
+      if (margin.length === 1) node.setMargin(this.yoga!.EDGE_ALL, margin[0]);
+      else if (margin.length === 2) {
+        node.setMargin(this.yoga!.EDGE_VERTICAL, margin[0]);
+        node.setMargin(this.yoga!.EDGE_HORIZONTAL, margin[1]);
+      } else if (margin.length === 4) {
+        node.setMargin(this.yoga!.EDGE_TOP, margin[0]);
+        node.setMargin(this.yoga!.EDGE_RIGHT, margin[1]);
+        node.setMargin(this.yoga!.EDGE_BOTTOM, margin[2]);
+        node.setMargin(this.yoga!.EDGE_LEFT, margin[3]);
       }
+    }
   }
 }

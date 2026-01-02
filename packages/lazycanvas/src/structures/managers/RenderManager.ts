@@ -62,7 +62,6 @@ export class RenderManager implements IRenderManager {
         this.debug,
       );
 
-
       // Draw children if any (and not a Div, as Div handles its own children)
       // Actually, if we want to support children on any layer, we should handle it here.
       // But Div.draw already handles children.
@@ -71,30 +70,30 @@ export class RenderManager implements IRenderManager {
 
       const children = (layer as any).children;
       if (!(layer instanceof Div) && children && Array.isArray(children) && children.length > 0) {
-          const ctx = this.lazyCanvas.ctx;
-          ctx.save();
+        const ctx = this.lazyCanvas.ctx;
+        ctx.save();
 
-          // Apply parent position offset
-          // LayoutManager sets position relative to parent.
-          // We need to translate context to parent's position so children are drawn relative to it.
+        // Apply parent position offset
+        // LayoutManager sets position relative to parent.
+        // We need to translate context to parent's position so children are drawn relative to it.
 
-          // However, layer.draw() might have already drawn the layer at that position.
-          // And layer.draw() usually restores context.
+        // However, layer.draw() might have already drawn the layer at that position.
+        // And layer.draw() usually restores context.
 
-          // So we are back at parent's parent coordinate system.
-          // We need to translate to layer's position.
+        // So we are back at parent's parent coordinate system.
+        // We need to translate to layer's position.
 
-          if (layer.props.position) {
-              const x = typeof layer.props.position.x === 'number' ? layer.props.position.x : 0;
-              const y = typeof layer.props.position.y === 'number' ? layer.props.position.y : 0;
-              ctx.translate(x, y);
-          }
+        if (layer.props.position) {
+          const x = typeof layer.props.position.x === "number" ? layer.props.position.x : 0;
+          const y = typeof layer.props.position.y === "number" ? layer.props.position.y : 0;
+          ctx.translate(x, y);
+        }
 
-          for (const child of children) {
-              await this.renderLayer(child);
-          }
+        for (const child of children) {
+          await this.renderLayer(child);
+        }
 
-          ctx.restore();
+        ctx.restore();
       }
 
       this.lazyCanvas.ctx.shadowColor = "transparent";
@@ -113,9 +112,7 @@ export class RenderManager implements IRenderManager {
     // Wait for layout engine to be ready
     await this.lazyCanvas.manager.layout.ready;
 
-    const rootLayers = this.lazyCanvas.manager.layers
-      .toArray()
-      .filter((l) => !l.parent);
+    const rootLayers = this.lazyCanvas.manager.layers.toArray().filter((l) => !l.parent);
 
     for (const layer of rootLayers) {
       this.lazyCanvas.manager.layout.calculateLayout(

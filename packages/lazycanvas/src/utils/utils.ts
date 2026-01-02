@@ -569,8 +569,8 @@ export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
     for (const layer of layers) {
       if (!(layer instanceof Div || layer instanceof Path2DLayer)) {
         if (layer.props.position) {
-            layer.props.position.x = resize(layer.props.position.x, ratio) as ScaleType;
-            layer.props.position.y = resize(layer.props.position.y, ratio) as ScaleType;
+          layer.props.position.x = resize(layer.props.position.x, ratio) as ScaleType;
+          layer.props.position.y = resize(layer.props.position.y, ratio) as ScaleType;
         }
 
         if ("size" in layer.props && layer.props.size) {
@@ -596,7 +596,11 @@ export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
           layer.props.stroke.width = resize(layer.props.stroke.width, ratio) as number;
         }
 
-        if (layer.props.position && "endX" in layer.props.position && "endY" in layer.props.position) {
+        if (
+          layer.props.position &&
+          "endX" in layer.props.position &&
+          "endY" in layer.props.position
+        ) {
           layer.props.position.endX = resize(layer.props.position.endX, ratio) as ScaleType;
           layer.props.position.endY = resize(layer.props.position.endY, ratio) as ScaleType;
         }

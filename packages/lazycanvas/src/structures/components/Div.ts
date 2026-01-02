@@ -3,7 +3,7 @@ import { generateID } from "../../utils/utils";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
 import { LazyLog } from "../../utils/LazyUtil";
-import {BaseLayer, IBaseLayer, IBaseLayerProps} from "./BaseLayer";
+import { BaseLayer, IBaseLayer, IBaseLayerProps } from "./BaseLayer";
 
 /**
  * Interface representing a group of layer's.
@@ -89,12 +89,12 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    * @param {number} [opts.zIndex] - The z-index of the group.
    */
   constructor(props?: IDivProps, opts?: { id?: string; visible?: boolean; zIndex?: number }) {
-    super(LayerType.Group, props || {} as IDivProps, opts);
+    super(LayerType.Group, props || ({} as IDivProps), opts);
     this.id = opts?.id || generateID(LayerType.Group);
     this.visible = opts?.visible || true;
     this.zIndex = opts?.zIndex || 1;
     this.layers = [];
-    this.props = props || {} as IDivProps;
+    this.props = props || ({} as IDivProps);
     this.parent = null;
   }
 
@@ -209,9 +209,9 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
 
     // Apply position translation if available (from layout)
     if (this.props.position) {
-        const x = typeof this.props.position.x === 'number' ? this.props.position.x : 0;
-        const y = typeof this.props.position.y === 'number' ? this.props.position.y : 0;
-        ctx.translate(x, y);
+      const x = typeof this.props.position.x === "number" ? this.props.position.x : 0;
+      const y = typeof this.props.position.y === "number" ? this.props.position.y : 0;
+      ctx.translate(x, y);
     }
 
     for (const subLayer of this.layers) {

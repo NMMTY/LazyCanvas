@@ -344,7 +344,13 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
       // If height is fixed in props, use it, otherwise use calculated height
       const fixedHeight = this.props.size?.height
-        ? parseToNormal(this.props.size.height, ctx, canvas, { width: w, height: 0 }, { vertical: true })
+        ? parseToNormal(
+            this.props.size.height,
+            ctx,
+            canvas,
+            { width: w, height: 0 },
+            { vertical: true },
+          )
         : 0;
 
       return { width: w, height: fixedHeight || calculatedHeight };
@@ -402,11 +408,10 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     // since Yoga calculates position as top-left corner
     const useLayoutAlignment = (this.props as any)._computedLayout === true;
 
-
     ctx.textAlign = useLayoutAlignment ? "left" : this.props.align;
     if (this.props.letterSpacing) ctx.letterSpacing = `${this.props.letterSpacing}px`;
     if (this.props.wordSpacing) ctx.wordSpacing = `${this.props.wordSpacing}px`;
-    ctx.textBaseline = useLayoutAlignment ? "top" : (this.props.baseline || "alphabetic");
+    ctx.textBaseline = useLayoutAlignment ? "top" : this.props.baseline || "alphabetic";
     if (this.props.direction) ctx.direction = this.props.direction;
 
     let fillStyle = await parseFillStyle(ctx, this.props.color, {

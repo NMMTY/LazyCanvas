@@ -71,10 +71,10 @@ export async function run() {
   // Load scene
   scene.load(
     <Div
-        layout={{
+      layout={{
         width: "100%",
         height: "100%",
-        }}
+      }}
     >
       <MorphLayer
         position={{

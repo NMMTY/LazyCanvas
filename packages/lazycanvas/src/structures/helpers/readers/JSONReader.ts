@@ -122,7 +122,9 @@ export class JSONReader {
    */
   private static layerParse(layer: JSONLayer | IDiv | Div, misc?: IBaseLayerMisc): AnyLayer | Div {
     if (layer instanceof Div) {
-      return new Div({}, misc).add(...(layer.layers.map((l: any) => this.layerParse(l)) as AnyLayer[]));
+      return new Div({}, misc).add(
+        ...(layer.layers.map((l: any) => this.layerParse(l)) as AnyLayer[]),
+      );
     } else {
       switch (layer.type) {
         case LayerType.BezierCurve:

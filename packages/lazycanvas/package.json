@@ -23,13 +23,7 @@
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git"
   },
-  "keywords": [
-    "canvas",
-    "@napi-rs/canvas",
-    "node-canvas",
-    "easy",
-    "simple"
-  ],
+  "keywords": ["canvas", "@napi-rs/canvas", "node-canvas", "easy", "simple"],
   "author": "NMMTY",
   "license": "MIT",
   "bugs": {
