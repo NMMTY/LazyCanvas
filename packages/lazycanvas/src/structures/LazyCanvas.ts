@@ -1,6 +1,7 @@
 import { Export, AnyExport, JSONLayer } from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
 import { LayersManager, RenderManager, FontsManager } from "./managers";
+import { LayoutManager } from "./managers/LayoutManager";
 import { IDiv } from "./components";
 import { LazyLog } from "../utils/LazyUtil";
 import { resizeLayers, resize } from "../utils/utils";
@@ -100,6 +101,7 @@ export class LazyCanvas implements ILazyCanvas {
     layers: LayersManager;
     render: RenderManager;
     fonts: FontsManager;
+    layout: LayoutManager;
   };
 
   /**
@@ -120,6 +122,7 @@ export class LazyCanvas implements ILazyCanvas {
       layers: new LayersManager({ debug: opts?.debug }),
       render: new RenderManager(this, { debug: opts?.debug }),
       fonts: new FontsManager({ debug: opts?.debug }),
+      layout: new LayoutManager({ debug: opts?.debug }),
     };
     this.options = {
       width: 0,

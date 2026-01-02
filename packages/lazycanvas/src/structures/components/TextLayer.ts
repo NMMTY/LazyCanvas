@@ -40,10 +40,6 @@ export interface ITextLayer extends IBaseLayer {
  * Interface representing the properties of a Text layer.
  */
 export interface ITextLayerProps extends IBaseLayerProps {
-  position: {
-    x: ScaleType;
-    y: ScaleType;
-  };
   /**
    * The text content of the layer.
    */
@@ -323,18 +319,36 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    * @returns {Object} The width and height of the text.
    */
   measureText(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas): { width: number; height: number } {
+    ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
+
     if (this.props?.multiline?.enabled) {
       const w = parseToNormal(this.props.size?.width || "vw", ctx, canvas);
-      const h = parseToNormal(
-        this.props.size?.height || 0,
-        ctx,
-        canvas,
-        { width: w, height: 0 },
-        { vertical: true },
-      );
-      return { width: w, height: h };
+
+      // Calculate actual height based on text wrapping
+      const words = this.props.text.split(" ");
+      let line = "";
+      let linesCount = 1;
+
+      for (let word of words) {
+        let linePlus = line + word + " ";
+        if (ctx.measureText(linePlus).width > w) {
+          linesCount++;
+          line = word + " ";
+        } else {
+          line = linePlus;
+        }
+      }
+
+      const lineHeight = this.props.font.size * (this.props.multiline.spacing || 1.1);
+      const calculatedHeight = linesCount * lineHeight;
+
+      // If height is fixed in props, use it, otherwise use calculated height
+      const fixedHeight = this.props.size?.height
+        ? parseToNormal(this.props.size.height, ctx, canvas, { width: w, height: 0 }, { vertical: true })
+        : 0;
+
+      return { width: w, height: fixedHeight || calculatedHeight };
     } else {
-      ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
       let data = ctx.measureText(this.props.text);
       return { width: data.width, height: this.props.font.size };
     }
@@ -356,8 +370,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     const parcer = parser(ctx, canvas, manager);
 
     const { x, y, w } = parcer.parseBatch({
-      x: { v: this.props.position.x },
-      y: { v: this.props.position.y, options: defaultArg.vl(true) },
+      x: { v: this.props.position?.x || 0 },
+      y: { v: this.props.position?.y || 0, options: defaultArg.vl(true) },
       w: { v: this.props.size?.width || "vw" },
     });
 
@@ -384,10 +398,15 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     DrawUtils.opacity(ctx, this.props.opacity);
     DrawUtils.filters(ctx, this.props.filter);
 
-    ctx.textAlign = this.props.align;
+    // When layout is managed by Yoga, always use top-left alignment
+    // since Yoga calculates position as top-left corner
+    const useLayoutAlignment = (this.props as any)._computedLayout === true;
+
+
+    ctx.textAlign = useLayoutAlignment ? "left" : this.props.align;
     if (this.props.letterSpacing) ctx.letterSpacing = `${this.props.letterSpacing}px`;
     if (this.props.wordSpacing) ctx.wordSpacing = `${this.props.wordSpacing}px`;
-    if (this.props.baseline) ctx.textBaseline = this.props.baseline;
+    ctx.textBaseline = useLayoutAlignment ? "top" : (this.props.baseline || "alphabetic");
     if (this.props.direction) ctx.direction = this.props.direction;
 
     let fillStyle = await parseFillStyle(ctx, this.props.color, {
@@ -607,7 +626,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         spacing: data.multiline?.spacing || 1.1,
       },
       size: {
-        width: data.size?.width || "vw",
+        width: data.size?.width || 0,
         height: data.size?.height || 0,
       },
       align: data.align || TextAlign.Left,

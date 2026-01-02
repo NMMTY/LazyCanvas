@@ -13,12 +13,12 @@ import {
   waitFor,
   calculateSequentialDuration,
   Exporter,
-} from "../dist";
+} from "../src";
 
 export async function run() {
   const width = 960;
   const height = 540;
-  const scene = new Scene(width, height);
+  const scene = new Scene(width, height, { debug: true });
 
   // Create signals
   const boxX = createSignal(50);
@@ -70,7 +70,12 @@ export async function run() {
 
   // Load scene
   scene.load(
-    <Div>
+    <Div
+        layout={{
+        width: "100%",
+        height: "100%",
+        }}
+    >
       <MorphLayer
         position={{
           x: boxX,

@@ -3,11 +3,12 @@ import { generateID } from "../../utils/utils";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
 import { LazyLog } from "../../utils/LazyUtil";
+import {BaseLayer, IBaseLayer, IBaseLayerProps} from "./BaseLayer";
 
 /**
  * Interface representing a group of layer's.
  */
-export interface IDiv {
+export interface IDiv extends IBaseLayer {
   /**
    * The unique identifier of the group.
    */
@@ -34,12 +35,12 @@ export interface IDiv {
   layers: Array<AnyLayer | Div>;
 
   /**
-   *
+   * The properties specific to the Div group.
    */
-  props?: IDivProps;
+  props: IDivProps;
 }
 
-export interface IDivProps {
+export interface IDivProps extends IBaseLayerProps {
   /**
    * Don't use, this is just for compatibility.
    */
@@ -51,7 +52,7 @@ export interface IDivProps {
 /**
  * Class representing a group of layer's.
  */
-export class Div implements IDiv {
+export class Div extends BaseLayer<IDivProps> implements IDiv {
   /**
    * The unique identifier of the group.
    */
@@ -77,20 +78,24 @@ export class Div implements IDiv {
    */
   layers: Array<AnyLayer | Div>;
 
-  props?: IDivProps;
+  props: IDivProps;
+  parent?: IBaseLayer | any | null;
 
   /**
    * Constructs a new Group instance.
+   * @param {IDivProps} [props] - The properties of the Div.
    * @param {string} [opts.id] - The unique identifier of the group.
    * @param {boolean} [opts.visible] - The visibility of the group.
    * @param {number} [opts.zIndex] - The z-index of the group.
    */
-  constructor(opts?: { id?: string; visible?: boolean; zIndex?: number }) {
+  constructor(props?: IDivProps, opts?: { id?: string; visible?: boolean; zIndex?: number }) {
+    super(LayerType.Group, props || {} as IDivProps, opts);
     this.id = opts?.id || generateID(LayerType.Group);
     this.visible = opts?.visible || true;
     this.zIndex = opts?.zIndex || 1;
     this.layers = [];
-    this.props = {} as IDivProps;
+    this.props = props || {} as IDivProps;
+    this.parent = null;
   }
 
   /**
@@ -131,6 +136,9 @@ export class Div implements IDiv {
   add(...components: Array<AnyLayer | Div>): this {
     let layersArray = components.filter((l) => l !== undefined);
     layersArray = layersArray.sort((a, b) => a.zIndex - b.zIndex);
+    for (const layer of layersArray) {
+      layer.parent = this;
+    }
     this.layers.push(...layersArray);
     return this;
   }
@@ -197,6 +205,15 @@ export class Div implements IDiv {
     manager: LayersManager,
     debug: boolean,
   ) {
+    ctx.save();
+
+    // Apply position translation if available (from layout)
+    if (this.props.position) {
+        const x = typeof this.props.position.x === 'number' ? this.props.position.x : 0;
+        const y = typeof this.props.position.y === 'number' ? this.props.position.y : 0;
+        ctx.translate(x, y);
+    }
+
     for (const subLayer of this.layers) {
       if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
       if (subLayer.visible) {
@@ -213,6 +230,8 @@ export class Div implements IDiv {
         }
       }
     }
+
+    ctx.restore();
   }
 
   /**

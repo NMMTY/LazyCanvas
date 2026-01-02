@@ -1,5 +1,5 @@
 import { Div } from "../structures/components";
-import { AnyLayer } from "../types";
+import { AnyLayer, Export } from "../types";
 import { ThreadScheduler } from "./ThreadScheduler";
 import { ThreadGenerator, Signal } from "./Signal";
 import { LazyCanvas } from "../structures/LazyCanvas";
@@ -19,9 +19,10 @@ export class Scene {
    * Create a new Scene
    * @param width - Canvas width in pixels
    * @param height - Canvas height in pixels
+   * @param opts
    */
-  constructor(width: number, height: number) {
-    this.lazyCanvas = new LazyCanvas({ debug: true }).create(width, height);
+  constructor(width: number, height: number, opts: { debug?: boolean } = {}) {
+    this.lazyCanvas = new LazyCanvas(opts).create(width, height);
   }
 
   /**
@@ -57,8 +58,8 @@ export class Scene {
     // 3. PHASE 1: Update all layer states from signals
     this.updateAllStates(time);
 
-    // 4. PHASE 2: Draw the layer tree
-    await this.drawLayer(this.lazyCanvas.manager.layers.toArray()[0]);
+    // 4. PHASE 2: Draw the layer tree using RenderManager
+    await this.lazyCanvas.manager.render.render(Export.CTX);
 
     this.lastFrameTime = time;
   }
@@ -102,32 +103,6 @@ export class Scene {
         layer.updateState(time);
       }
     }
-  }
-
-  /**
-   * Draw a layer or group
-   * @param layer - Layer to draw
-   */
-  private async drawLayer(layer: AnyLayer | Div): Promise<void> {
-    if (!layer.visible) return;
-
-    // Set global composite operation if present
-    if ("props" in layer && layer.props?.globalComposite) {
-      this.lazyCanvas.ctx.globalCompositeOperation = layer.props.globalComposite;
-    }
-
-    // Draw the layer
-    if ("draw" in layer && typeof layer.draw === "function") {
-      await layer.draw(
-        this.lazyCanvas.ctx,
-        this.lazyCanvas.canvas,
-        this.lazyCanvas.manager.layers,
-        true,
-      );
-    }
-
-    // Reset shadow after drawing
-    this.lazyCanvas.ctx.shadowColor = "transparent";
   }
 
   /**

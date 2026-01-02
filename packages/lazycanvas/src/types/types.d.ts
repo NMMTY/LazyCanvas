@@ -230,3 +230,28 @@ export type StrokeOptions = {
   dash?: number[];
   miterLimit?: number;
 };
+
+export interface ILayoutProps {
+  width?: ScaleType;
+  height?: ScaleType;
+  flexDirection?: "row" | "column" | "row-reverse" | "column-reverse";
+  justifyContent?:
+    | "flex-start"
+    | "center"
+    | "flex-end"
+    | "space-between"
+    | "space-around"
+    | "space-evenly";
+  alignItems?: "flex-start" | "center" | "flex-end" | "stretch" | "baseline";
+  flexGrow?: number;
+  flexShrink?: number;
+  flexBasis?: number | string;
+  padding?: number | number[];
+  margin?: number | number[];
+  gap?: number;
+  position?: "absolute" | "relative";
+  top?: number | string;
+  left?: number | string;
+  right?: number | string;
+  bottom?: number | string;
+}

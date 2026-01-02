@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "1.0.0-dev.6",
+  "version": "1.0.0-dev.7",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -23,7 +23,13 @@
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git"
   },
-  "keywords": ["canvas", "@napi-rs/canvas", "node-canvas", "easy", "simple"],
+  "keywords": [
+    "canvas",
+    "@napi-rs/canvas",
+    "node-canvas",
+    "easy",
+    "simple"
+  ],
   "author": "NMMTY",
   "license": "MIT",
   "bugs": {
@@ -34,7 +40,8 @@
     "@napi-rs/canvas": "^0.1.88",
     "gifenc": "^1.0.3",
     "js-yaml": "^4.1.0",
-    "svgson": "^5.3.1"
+    "svgson": "^5.3.1",
+    "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

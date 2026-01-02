@@ -19,10 +19,6 @@ export interface IPolygonLayer extends IBaseLayer {
 }
 
 export interface IPolygonLayerProps extends IBaseLayerProps {
-  position: {
-    x: ScaleType;
-    y: ScaleType;
-  };
   /**
    * The size of the Polygon Layer, including width, height, and radius.
    */
@@ -144,8 +140,8 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
     const parcer = parser(ctx, canvas, manager);
 
     const { xs, ys, w } = parcer.parseBatch({
-      xs: { v: this.props.position.x },
-      ys: { v: this.props.position.y, options: defaultArg.vl(true) },
+      xs: { v: this.props.position?.x || 0 },
+      ys: { v: this.props.position?.y || 0, options: defaultArg.vl(true) },
       w: { v: this.props.size.width },
     });
 

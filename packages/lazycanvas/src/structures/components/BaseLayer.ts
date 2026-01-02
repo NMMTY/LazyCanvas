@@ -2,16 +2,18 @@ import {
   ScaleType,
   AnyCentring,
   AnyGlobalCompositeOperation,
-  ColorType,
   Transform,
   AnyFilter,
   Centring,
   LayerType,
+  ILayoutProps,
+  AnyLayer,
 } from "../../types";
 import { generateID, isColor } from "../../utils/utils";
 import { LazyError } from "../../utils/LazyUtil";
 import { Signal } from "../../core/Signal";
 import { Gradient, Link, Pattern } from "../helpers";
+import { Div } from "./Div";
 
 /**
  * Interface representing the base structure of a layer.
@@ -21,6 +23,16 @@ export interface IBaseLayer {
    * The unique identifier of the layer.
    */
   id: string;
+
+  /**
+   * The parent of the layer.
+   */
+  parent?: IBaseLayer | any | null;
+
+  /**
+   * The children of the layer.
+   */
+  children?: Array<AnyLayer | Div>;
 
   /**
    * The type of the layer.
@@ -58,6 +70,11 @@ export interface IBaseLayerProps {
      */
     y: ScaleType;
   };
+
+  /**
+   * The layout properties of the layer.
+   */
+  layout?: ILayoutProps;
 
   /**
    * The centring type of the layer.
@@ -136,49 +153,67 @@ export interface IBaseLayerMisc {
  *
  * @template T - A type extending `IBaseLayerProps` that defines the properties of the layer.
  */
-export class BaseLayer<T extends IBaseLayerProps> {
-  /**
-   * The unique identifier of the layer.
-   * @type {string}
-   */
+export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
   id: string;
-  /**
-   * The type of the layer.
-   * @type {LayerType}
-   */
   type: LayerType;
-  /**
-   * The z-index of the layer, determining its stacking order.
-   * @type {number}
-   */
   zIndex: number;
-  /**
-   * The visibility of the layer.
-   * @type {boolean}
-   */
   visible: boolean;
-  /**
-   * The properties of the layer, defined by the generic type `T`.
-   * @type {T}
-   */
   props: T;
+  parent?: IBaseLayer | any | null;
+  children: Array<AnyLayer | Div> = [];
+  private _signals: Map<string, Signal<any>> = new Map();
 
-  public _signals: Map<string, Signal<any>> = new Map();
+  constructor(type: LayerType, props: T, misc?: IBaseLayerMisc) {
+    this.id = misc?.id || generateID(type);
+    this.type = type;
+    this.zIndex = misc?.zIndex || 1;
+    this.visible = misc?.visible || true;
+    this.props = props;
+    this.parent = null;
+    this.children = [];
+    this.extractSignals(this.props, "");
+  }
 
   /**
-   * Constructs a new `BaseLayer` instance.
-   * @param {LayerType} [type] - The type of the layer.
-   * @param {T} [props] - The properties of the layer.
-   * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
+   * Adds components to the layer.
+   * @param {AnyLayer[] | Div[]} [components] - The components to add to the layer.
+   * @returns {this} The current instance for chaining.
    */
-  constructor(type?: LayerType, props?: T, misc?: IBaseLayerMisc) {
-    this.id = misc?.id || generateID(type ? type : LayerType.Base);
-    this.type = type ? type : LayerType.Base;
-    this.zIndex = misc?.zIndex || 1;
-    this.visible = misc?.visible !== undefined ? misc.visible : true;
-    this.props = props ? props : ({} as T);
-    this.extractSignals(this.props, "");
-    this.props = this.validateProps(this.props);
+  add(...components: Array<AnyLayer | Div>): this {
+    let layersArray = components.filter((l) => l !== undefined);
+    layersArray = layersArray.sort((a, b) => a.zIndex - b.zIndex);
+    for (const layer of layersArray) {
+      layer.parent = this;
+    }
+    this.children.push(...layersArray);
+    return this;
+  }
+
+  /**
+   * Removes a component from the layer by its ID.
+   * @param {string} [id] - The unique identifier of the component to remove.
+   * @returns {this} The current instance for chaining.
+   */
+  remove(id: string): this {
+    this.children = this.children.filter((c) => c.id !== id);
+    return this;
+  }
+
+  /**
+   * Retrieves a component from the layer by its ID.
+   * @param {string} [id] - The unique identifier of the component to retrieve.
+   * @returns {AnyLayer | Div | undefined} The component with the specified ID, or undefined if not found.
+   */
+  get(id: string): AnyLayer | Div | undefined {
+    return this.children.find((c) => c.id === id);
+  }
+
+  /**
+   * Retrieves all components from the layer.
+   * @returns {AnyLayer[] | Div[]} An array of all components in the layer.
+   */
+  getAll(): Array<AnyLayer | Div> {
+    return this.children;
   }
 
   /**
@@ -406,7 +441,6 @@ export class BaseLayer<T extends IBaseLayerProps> {
   protected validateProps(data: T): T {
     return {
       ...data,
-      position: data.position || { x: 0, y: 0 },
       centring: data.centring || Centring.Center,
       filter: data.filter || "",
       opacity: data.opacity || 1,

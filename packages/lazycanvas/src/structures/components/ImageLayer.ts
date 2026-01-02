@@ -26,10 +26,6 @@ export interface IImageLayer extends IBaseLayer {
  * Interface representing the properties of an Image Layer.
  */
 export interface IImageLayerProps extends IBaseLayerProps {
-  position: {
-    x: ScaleType;
-    y: ScaleType;
-  };
   /**
    * The source of the image, which can be a URL or a Buffer.
    */
@@ -124,8 +120,8 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     const parcer = parser(ctx, canvas, manager);
 
     const { xs, ys, w } = parcer.parseBatch({
-      xs: { v: this.props.position.x },
-      ys: { v: this.props.position.y, options: defaultArg.vl(true) },
+      xs: { v: this.props.position?.x || 0 },
+      ys: { v: this.props.position?.y || 0, options: defaultArg.vl(true) },
       w: { v: this.props.size.width },
     });
 

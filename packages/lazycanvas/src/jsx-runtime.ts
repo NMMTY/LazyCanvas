@@ -64,7 +64,7 @@ export function createElement(type: any, props: any | null, ...children: any[]):
 function createGroupInstance(props: any, children: any[]): Div {
   const { id, visible, zIndex, ...otherProps } = props;
 
-  const group = new Div({
+  const group = new Div(otherProps, {
     id,
     visible,
     zIndex,
