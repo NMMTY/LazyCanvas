@@ -199,6 +199,70 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
     }
   }
 
+  /**
+   * Renders a single layer or group of layers.
+   * @param {AnyLayer | Div} [layer] - The layer or group to render.
+   * @param {SKRSContext2D} [ctx] - The canvas rendering context.
+   * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
+   * @param {LayersManager} [manager] - The layer's manager.
+   * @param {boolean} [debug] - Whether to enable debug logging.
+   * @returns {Promise<SKRSContext2D>} The canvas rendering context after rendering.
+   */
+  private async renderLayer(
+      layer: AnyLayer | Div,
+      ctx: SKRSContext2D,
+      canvas: Canvas | SvgCanvas,
+      manager: LayersManager,
+      debug: boolean): Promise<SKRSContext2D> {
+    if (debug) LazyLog.log("info", `Rendering ${layer.id}...\nData:`, layer.toJSON());
+    if (layer.visible) {
+      ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
+
+      await layer.draw(
+          ctx,
+          canvas,
+          manager,
+          debug,
+      );
+
+      // Draw children if any (and not a Div, as Div handles its own children)
+      // Actually, if we want to support children on any layer, we should handle it here.
+      // But Div.draw already handles children.
+      // If we handle it here for Div, we get double rendering.
+      // So we skip Div.
+
+      const children = (layer as any).children;
+      if (!(layer instanceof Div) && children && Array.isArray(children) && children.length > 0) {
+        ctx.save();
+
+        // Apply parent position offset
+        // LayoutManager sets position relative to parent.
+        // We need to translate context to parent's position so children are drawn relative to it.
+
+        // However, layer.draw() might have already drawn the layer at that position.
+        // And layer.draw() usually restores context.
+
+        // So we are back at parent's parent coordinate system.
+        // We need to translate to layer's position.
+
+        if (layer.props.position) {
+          const x = typeof layer.props.position.x === "number" ? layer.props.position.x : 0;
+          const y = typeof layer.props.position.y === "number" ? layer.props.position.y : 0;
+          ctx.translate(x, y);
+        }
+
+        for (const child of children) {
+          await this.renderLayer(child, ctx, canvas, manager, debug);
+        }
+
+        ctx.restore();
+      }
+
+      ctx.shadowColor = "transparent";
+    }
+    return ctx;
+  }
+
   public async draw(
     ctx: SKRSContext2D,
     canvas: Canvas | SvgCanvas,
@@ -217,20 +281,9 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
     for (const subLayer of this.layers) {
       if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
       if (subLayer.visible) {
-        if (subLayer instanceof Div) {
-          await subLayer.draw(ctx, canvas, manager, debug);
-        } else {
-          if ("globalComposite" in subLayer.props && subLayer.props.globalComposite) {
-            ctx.globalCompositeOperation = subLayer.props.globalComposite;
-          } else {
-            ctx.globalCompositeOperation = "source-over";
-          }
-          await subLayer.draw(ctx, canvas, manager, debug);
-          ctx.shadowColor = "transparent";
-        }
+        await this.renderLayer(subLayer, ctx, canvas, manager, debug);
       }
     }
-
     ctx.restore();
   }
 

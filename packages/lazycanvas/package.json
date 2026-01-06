@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "1.0.0-dev.7",
+  "version": "1.0.0-dev.8",
   "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
