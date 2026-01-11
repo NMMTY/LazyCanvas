@@ -59,6 +59,21 @@ export interface IBaseLayer {
  * Interface representing the properties of a base layer.
  */
 export interface IBaseLayerProps {
+  /**
+   * The unique identifier of the layer (optional, for JSX support).
+   */
+  id?: string;
+
+  /**
+   * Whether the layer is visible (optional, for JSX support).
+   */
+  visible?: boolean;
+
+  /**
+   * The z-index of the layer (optional, for JSX support).
+   */
+  zIndex?: number;
+
   position?: {
     /**
      * The x-coordinate of the layer.
@@ -164,10 +179,15 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
   private _signals: Map<string, Signal<any>> = new Map();
 
   constructor(type: LayerType, props: T, misc?: IBaseLayerMisc) {
-    this.id = misc?.id || generateID(type);
+    // Extract id, visible, zIndex from props if provided (for JSX support)
+    const propsId = (props as any).id;
+    const propsVisible = (props as any).visible;
+    const propsZIndex = (props as any).zIndex;
+
+    this.id = misc?.id || propsId || generateID(type);
     this.type = type;
-    this.zIndex = misc?.zIndex || 1;
-    this.visible = misc?.visible || true;
+    this.zIndex = misc?.zIndex ?? propsZIndex ?? 1;
+    this.visible = misc?.visible ?? propsVisible ?? true;
     this.props = props;
     this.parent = null;
     this.children = [];

@@ -90,9 +90,15 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    */
   constructor(props?: IDivProps, opts?: { id?: string; visible?: boolean; zIndex?: number }) {
     super(LayerType.Group, props || ({} as IDivProps), opts);
-    this.id = opts?.id || generateID(LayerType.Group);
-    this.visible = opts?.visible || true;
-    this.zIndex = opts?.zIndex || 1;
+
+    // Extract id, visible, zIndex from props if provided (for JSX support)
+    const propsId = props?.id;
+    const propsVisible = props?.visible;
+    const propsZIndex = props?.zIndex;
+
+    this.id = opts?.id || propsId || generateID(LayerType.Group);
+    this.visible = opts?.visible ?? propsVisible ?? true;
+    this.zIndex = opts?.zIndex ?? propsZIndex ?? 1;
     this.layers = [];
     this.props = props || ({} as IDivProps);
     this.parent = null;
