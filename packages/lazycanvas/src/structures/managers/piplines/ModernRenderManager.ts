@@ -1,29 +1,14 @@
-import { AnyExport, AnyLayer, Export } from "../../types";
-import { LazyCanvas } from "../LazyCanvas";
+import { AnyExport, AnyLayer, Export } from "../../../types";
+import { LazyCanvas } from "../../LazyCanvas";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { Div, BaseLayer } from "../components";
-import { LazyLog } from "../../utils/LazyUtil";
-import { Buffer } from "buffer";
-
-/**
- * Interface representing the RenderManager.
- */
-export interface IRenderManager {
-  /**
-   * The LazyCanvas instance used for rendering.
-   */
-  lazyCanvas: LazyCanvas;
-
-  /**
-   * Whether debugging is enabled.
-   */
-  debug: boolean;
-}
+import { Div } from "../../components";
+import { LazyLog } from "../../../utils/LazyUtil";
+import {IRenderManager} from "./index";
 
 /**
  * Class responsible for managing rendering operations, including static and animated exports.
  */
-export class RenderManager implements IRenderManager {
+export class ModernRenderManager implements IRenderManager {
   /**
    * The LazyCanvas instance used for rendering.
    */

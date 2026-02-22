@@ -8,7 +8,6 @@ import {
   LinkType,
   PointNumber,
   ScaleType,
-  StrokeOptions,
   SubStringColor,
   TextAlign,
   Transform,

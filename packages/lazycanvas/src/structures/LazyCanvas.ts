@@ -1,6 +1,9 @@
 import { Export, AnyExport, JSONLayer } from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
-import { LayersManager, RenderManager, FontsManager } from "./managers";
+import {
+  LayersManager, ModernRenderManager, IRenderManager, FontsManager, RenderManagerConstructor,
+  ClassicRenderManager
+} from "./managers";
 import { LayoutManager } from "./managers/LayoutManager";
 import { IDiv } from "./components";
 import { LazyLog } from "../utils/LazyUtil";
@@ -25,8 +28,9 @@ export interface ILazyCanvas {
    */
   manager: {
     layers: LayersManager;
-    render: RenderManager;
+    render: IRenderManager;
     fonts: FontsManager;
+    layout: LayoutManager;
   };
 
   /**
@@ -99,7 +103,7 @@ export class LazyCanvas implements ILazyCanvas {
    */
   manager: {
     layers: LayersManager;
-    render: RenderManager;
+    render: IRenderManager;
     fonts: FontsManager;
     layout: LayoutManager;
   };
@@ -111,16 +115,17 @@ export class LazyCanvas implements ILazyCanvas {
 
   /**
    * Constructs a new LazyCanvas instance.
+   * @param {RenderManagerConstructor} [renderPipline] - The constructor for the render manager to be used (default is ClassicRenderManager).
    * @param {Object} [opts] - Optional settings for the LazyCanvas instance.
    * @param {boolean} [opts.debug] - Whether debugging is enabled.
    * @param {IOLazyCanvas} [opts.settings] - The input settings for the LazyCanvas instance.
    */
-  constructor(opts?: { debug?: boolean; settings?: IOLazyCanvas }) {
+  constructor(renderPipline: RenderManagerConstructor = ClassicRenderManager, opts?: { debug?: boolean; settings?: IOLazyCanvas }) {
     this.canvas = new Canvas(0, 0);
     this.ctx = this.canvas.getContext("2d");
     this.manager = {
       layers: new LayersManager({ debug: opts?.debug }),
-      render: new RenderManager(this, { debug: opts?.debug }),
+      render: new renderPipline(this, { debug: opts?.debug }),
       fonts: new FontsManager({ debug: opts?.debug }),
       layout: new LayoutManager({ debug: opts?.debug }),
     };
