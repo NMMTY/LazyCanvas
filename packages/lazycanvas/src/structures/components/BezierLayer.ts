@@ -7,10 +7,12 @@ import {
   parseFillStyle,
   parser,
   transform,
-} from "../../utils/utils";
-import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
+  defaultArg,
+  LazyError,
+  LazyLog,
+  DrawUtils,
+} from "../../utils";
 import { LayersManager } from "../managers";
-import { DrawUtils } from "../../utils/DrawUtils";
 
 /**
  * Interface representing a Bezier layer.

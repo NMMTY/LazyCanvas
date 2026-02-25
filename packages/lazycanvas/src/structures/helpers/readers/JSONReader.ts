@@ -23,9 +23,10 @@ import {
 import { Gradient, IGradient, IPattern, Pattern } from "../";
 import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
 import * as fs from "node:fs";
-import { LazyError, LazyLog } from "../../../utils/LazyUtil";
+import { LazyError, LazyLog } from "../../../utils";
 import * as path from "node:path";
-import { isSignal } from "../../../core/Signal";
+import { isSignal } from "../../../core";
+import { ClassicRenderPipeline } from "../../managers";
 
 /**
  * Class responsible for reading and parsing JSON data into a LazyCanvas instance.
@@ -65,10 +66,10 @@ export class JSONReader {
 
     const layers = JSONReader.layersParse(data.layers, opts);
 
-    const canvas = new LazyCanvas({ settings: data, debug: opts?.debug }).create(
-      data.options.width,
-      data.options.height,
-    );
+    const canvas = new LazyCanvas(ClassicRenderPipeline, {
+      settings: data,
+      debug: opts?.debug,
+    }).create(data.options.width, data.options.height);
     canvas.manager.layers.add(...layers);
 
     return canvas;

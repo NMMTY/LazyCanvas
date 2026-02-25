@@ -9,12 +9,18 @@ import {
   StrokeOptions as SKRSStrokeOptions,
 } from "@napi-rs/canvas";
 import { ColorType, LayerType } from "../../types";
-import { generateID, isColor, parseFillStyle, transform } from "../../utils/utils";
+import {
+  generateID,
+  isColor,
+  parseFillStyle,
+  transform,
+  LazyError,
+  LazyLog,
+  DrawUtils,
+} from "../../utils";
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { LayersManager } from "../managers";
-import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { StrokeOptions } from "../../types";
-import { DrawUtils } from "../../utils/DrawUtils";
 
 export interface IPath2DLayer extends IBaseLayer {
   /**

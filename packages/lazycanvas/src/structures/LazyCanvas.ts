@@ -1,6 +1,12 @@
 import { Export, AnyExport, JSONLayer } from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
-import { LayersManager, IRenderManager, FontsManager, RenderManagerConstructor, ClassicRenderPipeline } from "./managers";
+import {
+  LayersManager,
+  IRenderManager,
+  FontsManager,
+  RenderManagerConstructor,
+  ClassicRenderPipeline,
+} from "./managers";
 import { LayoutManager } from "./managers/LayoutManager";
 import { IDiv } from "./components";
 import { LazyLog, resizeLayers, resize } from "../utils";
@@ -115,7 +121,10 @@ export class LazyCanvas implements ILazyCanvas {
    * @param {boolean} [opts.debug] - Whether debugging is enabled.
    * @param {IOLazyCanvas} [opts.settings] - The input settings for the LazyCanvas instance.
    */
-  constructor(renderPipline: RenderManagerConstructor = ClassicRenderPipeline, opts?: { debug?: boolean; settings?: IOLazyCanvas }) {
+  constructor(
+    renderPipline: RenderManagerConstructor = ClassicRenderPipeline,
+    opts?: { debug?: boolean; settings?: IOLazyCanvas },
+  ) {
     this.canvas = new Canvas(0, 0);
     this.ctx = this.canvas.getContext("2d");
     this.manager = {

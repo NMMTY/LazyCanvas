@@ -4,7 +4,6 @@ import {
   AnyTextBaseline,
   AnyTextDirection,
   AnyWeight,
-  Centring,
   ColorType,
   FontWeight,
   LayerType,
@@ -15,11 +14,19 @@ import {
   SubStringColor,
   TextAlign,
 } from "../../types";
-import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { isColor, parseFillStyle, parser, parseToNormal, transform } from "../../utils/utils";
+import {
+  defaultArg,
+  LazyError,
+  LazyLog,
+  isColor,
+  parseFillStyle,
+  parser,
+  parseToNormal,
+  transform,
+  DrawUtils,
+} from "../../utils";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
-import { DrawUtils } from "../../utils/DrawUtils";
 
 /**
  * Interface representing a Text layer.

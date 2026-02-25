@@ -9,8 +9,7 @@ import {
   ILayoutProps,
   AnyLayer,
 } from "../../types";
-import { generateID, isColor } from "../../utils/utils";
-import { LazyError } from "../../utils/LazyUtil";
+import { generateID, isColor, LazyError } from "../../utils";
 import { Signal } from "../../core/Signal";
 import { Gradient, Link, Pattern } from "../helpers";
 import { Div } from "./Div";

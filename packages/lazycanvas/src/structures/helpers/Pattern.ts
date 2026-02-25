@@ -2,7 +2,7 @@ import { FillType, PatternType, AnyPatternType } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { Exporter } from "./Exporter";
-import { LazyError } from "../../utils/LazyUtil";
+import { LazyError } from "../../utils";
 
 /**
  * Interface representing a pattern.

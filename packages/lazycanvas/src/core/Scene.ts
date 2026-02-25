@@ -4,7 +4,7 @@ import { ThreadScheduler } from "./ThreadScheduler";
 import { ThreadGenerator, Signal } from "./Signal";
 import { LazyCanvas } from "../structures/LazyCanvas";
 import { Canvas } from "@napi-rs/canvas";
-import {ModernRenderPipeline} from "../structures/managers";
+import { ModernRenderPipeline } from "../structures/managers";
 
 /**
  * Scene class - manages canvas, context, layers, and animation timeline

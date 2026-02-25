@@ -24,7 +24,7 @@ import {
   QuadraticLayer,
   TextLayer,
 } from "../structures/components";
-import Signal, { unwrap, isSignal } from "../core/Signal";
+import { unwrap, isSignal } from "../core";
 
 export function generateID(type: string) {
   return `${type}-${Math.random().toString(36).substr(2, 9)}`;

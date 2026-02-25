@@ -5,15 +5,22 @@ import {
   LayerType,
   RadiusCorner,
   AnyCentring,
-  Signalable,
   StrokeOptions,
 } from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { isColor, transform, centring, parseFillStyle, parser } from "../../utils/utils";
-import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
+import {
+  isColor,
+  transform,
+  centring,
+  parseFillStyle,
+  parser,
+  defaultArg,
+  LazyError,
+  LazyLog,
+  DrawUtils,
+} from "../../utils";
 import { LayersManager } from "../managers";
 import { Link } from "../helpers";
-import { DrawUtils } from "../../utils/DrawUtils";
 
 /**
  * Interface representing a Morph Layer.

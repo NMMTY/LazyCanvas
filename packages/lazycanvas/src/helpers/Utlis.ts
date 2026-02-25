@@ -7,18 +7,17 @@ const Utils = {
       throw new Error("Size must have x and y properties");
     }
 
-    if (opts === undefined) opts = {};
-
-    if (opts.cellWith === undefined) opts.cellWith = 10;
-    if (opts.cellHeight === undefined) opts.cellHeight = 10;
-    if (opts.startX === undefined) opts.startX = 0;
-    if (opts.startY === undefined) opts.startY = 0;
-    if (opts.endX === undefined) opts.endX = size.x;
-    if (opts.endY === undefined) opts.endY = size.y;
-    if (opts.color === undefined) opts.color = "rgba(0, 0, 0, 0.5)";
-    if (opts.lineWidth === undefined) opts.lineWidth = 1;
-
-    const options = { ...opts } as unknown as gridOptionsNormalized;
+    const options = {
+      cellWith: 10,
+      cellHeight: 10,
+      startX: 0,
+      startY: 0,
+      endX: size.x,
+      endY: size.y,
+      color: "rgba(0, 0, 0, 0.5)",
+      lineWidth: 1,
+      ...opts,
+    } as gridOptionsNormalized;
 
     return new Div()
       .setID(

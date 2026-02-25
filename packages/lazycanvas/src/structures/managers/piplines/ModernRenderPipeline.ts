@@ -3,7 +3,7 @@ import { LazyCanvas } from "../../LazyCanvas";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { Div } from "../../components";
 import { LazyLog } from "../../../utils/LazyUtil";
-import {IRenderManager} from "./index";
+import { IRenderManager } from "./index";
 
 /**
  * Class responsible for managing rendering operations, including static and animated exports.

@@ -1,11 +1,18 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { ScaleType, LayerType, RadiusCorner, AnyCentring } from "../../types";
 import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { centring, isImageUrlValid, parser, transform } from "../../utils/utils";
-import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
+import {
+  centring,
+  isImageUrlValid,
+  parser,
+  transform,
+  defaultArg,
+  LazyError,
+  LazyLog,
+  DrawUtils,
+} from "../../utils";
 import { LayersManager } from "../managers";
 import { Link } from "../helpers";
-import { DrawUtils } from "../../utils/DrawUtils";
 
 /**
  * Interface representing an Image Layer.

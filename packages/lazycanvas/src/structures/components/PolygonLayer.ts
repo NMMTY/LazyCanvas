@@ -1,10 +1,17 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { AnyCentring, ColorType, LayerType, ScaleType, StrokeOptions } from "../../types";
-import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { centring, isColor, parseFillStyle, parser } from "../../utils/utils";
+import {
+  defaultArg,
+  LazyError,
+  LazyLog,
+  centring,
+  isColor,
+  parseFillStyle,
+  parser,
+  DrawUtils,
+} from "../../utils";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
-import { DrawUtils } from "../../utils/DrawUtils";
 
 export interface IPolygonLayer extends IBaseLayer {
   /**

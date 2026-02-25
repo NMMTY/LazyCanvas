@@ -1,13 +1,12 @@
 import { IOLazyCanvas, LazyCanvas } from "../LazyCanvas";
 import { AnyExport, Export, Extensions } from "../../types";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { LazyError } from "../../utils/LazyUtil";
+import { LazyError, generateRandomName } from "../../utils";
 import * as fs from "node:fs";
-import { generateRandomName } from "../../utils/utils";
 import { LayersManager } from "../managers";
 import * as _yaml from "js-yaml";
 import APNGEncoder from "../../utils/APNGEncoder";
-import { Scene } from "../../core/Scene";
+import { Scene } from "../../core";
 
 /**
  * Class responsible for exporting a LazyCanvas or Scene instance to various formats.

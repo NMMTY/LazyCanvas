@@ -1,11 +1,17 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import { ColorType, ScaleType, Centring, LayerType, StrokeOptions } from "../../types";
-import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
-import { isColor, parseFillStyle, parser, transform } from "../../utils/utils";
+import {
+  defaultArg,
+  LazyError,
+  LazyLog,
+  isColor,
+  parseFillStyle,
+  parser,
+  transform,
+  DrawUtils,
+} from "../../utils";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
-import { DrawUtils } from "../../utils/DrawUtils";
-
 /**
  * Interface representing a Line Layer.
  */

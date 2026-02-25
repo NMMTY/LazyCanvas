@@ -7,10 +7,12 @@ import {
   parseFillStyle,
   getBoundingBoxBezier,
   parser,
-} from "../../utils/utils";
-import { defaultArg, LazyError, LazyLog } from "../../utils/LazyUtil";
+  defaultArg,
+  LazyError,
+  LazyLog,
+  DrawUtils,
+} from "../../utils";
 import { LayersManager } from "../managers";
-import { DrawUtils } from "../../utils/DrawUtils";
 
 /**
  * Interface representing a Quadratic layer.

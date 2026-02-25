@@ -1,8 +1,7 @@
 import { AnyGlobalCompositeOperation, AnyLayer, LayerType } from "../../types";
-import { generateID } from "../../utils/utils";
+import { generateID, LazyLog } from "../../utils";
 import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
-import { LazyLog } from "../../utils/LazyUtil";
 import { BaseLayer, IBaseLayer, IBaseLayerProps } from "./BaseLayer";
 
 /**
@@ -215,21 +214,17 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    * @returns {Promise<SKRSContext2D>} The canvas rendering context after rendering.
    */
   private async renderLayer(
-      layer: AnyLayer | Div,
-      ctx: SKRSContext2D,
-      canvas: Canvas | SvgCanvas,
-      manager: LayersManager,
-      debug: boolean): Promise<SKRSContext2D> {
+    layer: AnyLayer | Div,
+    ctx: SKRSContext2D,
+    canvas: Canvas | SvgCanvas,
+    manager: LayersManager,
+    debug: boolean,
+  ): Promise<SKRSContext2D> {
     if (debug) LazyLog.log("info", `Rendering ${layer.id}...\nData:`, layer.toJSON());
     if (layer.visible) {
       ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
 
-      await layer.draw(
-          ctx,
-          canvas,
-          manager,
-          debug,
-      );
+      await layer.draw(ctx, canvas, manager, debug);
 
       // Draw children if any (and not a Div, as Div handles its own children)
       // Actually, if we want to support children on any layer, we should handle it here.

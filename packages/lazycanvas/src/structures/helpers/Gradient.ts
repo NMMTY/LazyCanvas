@@ -8,8 +8,7 @@ import {
   ScaleType,
 } from "../../types";
 import { SKRSContext2D } from "@napi-rs/canvas";
-import { LazyLog, LazyError, defaultArg } from "../../utils/LazyUtil";
-import { parseFillStyle, parser } from "../../utils/utils";
+import { LazyLog, LazyError, defaultArg, parseFillStyle, parser } from "../../utils";
 import { LayersManager } from "../managers";
 
 /**
