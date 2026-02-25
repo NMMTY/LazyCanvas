@@ -400,7 +400,6 @@ export function centring(
         case LayerType.Clear:
         case LayerType.Polygon:
           x -= width / 2;
-          y -= height;
           break;
       }
       return { x, y };
