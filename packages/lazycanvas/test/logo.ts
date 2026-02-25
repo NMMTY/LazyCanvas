@@ -9,9 +9,10 @@ import {
   Pattern,
   PatternType,
   ImageLayer,
+  ClassicRenderPipeline,
 } from "../src";
 
-const canvas = new LazyCanvas({ debug: true }).create(210, 210);
+const canvas = new LazyCanvas(ClassicRenderPipeline, { debug: true }).create(210, 210);
 
 const pattern = new LazyCanvas().create(400, 400);
 

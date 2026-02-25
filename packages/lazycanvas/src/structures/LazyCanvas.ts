@@ -1,14 +1,9 @@
 import { Export, AnyExport, JSONLayer } from "../types";
 import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
-import {
-  LayersManager, ModernRenderManager, IRenderManager, FontsManager, RenderManagerConstructor,
-  ClassicRenderManager
-} from "./managers";
+import { LayersManager, IRenderManager, FontsManager, RenderManagerConstructor, ClassicRenderPipeline } from "./managers";
 import { LayoutManager } from "./managers/LayoutManager";
 import { IDiv } from "./components";
-import { LazyLog } from "../utils/LazyUtil";
-import { resizeLayers, resize } from "../utils/utils";
-
+import { LazyLog, resizeLayers, resize } from "../utils";
 /**
  * Interface representing the LazyCanvas structure.
  */
@@ -115,12 +110,12 @@ export class LazyCanvas implements ILazyCanvas {
 
   /**
    * Constructs a new LazyCanvas instance.
-   * @param {RenderManagerConstructor} [renderPipline] - The constructor for the render manager to be used (default is ClassicRenderManager).
+   * @param {RenderManagerConstructor} [renderPipline] - The constructor for the render pipeline to be used (default is ClassicRenderPipeline).
    * @param {Object} [opts] - Optional settings for the LazyCanvas instance.
    * @param {boolean} [opts.debug] - Whether debugging is enabled.
    * @param {IOLazyCanvas} [opts.settings] - The input settings for the LazyCanvas instance.
    */
-  constructor(renderPipline: RenderManagerConstructor = ClassicRenderManager, opts?: { debug?: boolean; settings?: IOLazyCanvas }) {
+  constructor(renderPipline: RenderManagerConstructor = ClassicRenderPipeline, opts?: { debug?: boolean; settings?: IOLazyCanvas }) {
     this.canvas = new Canvas(0, 0);
     this.ctx = this.canvas.getContext("2d");
     this.manager = {

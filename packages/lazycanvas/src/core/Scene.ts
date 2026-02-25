@@ -4,7 +4,7 @@ import { ThreadScheduler } from "./ThreadScheduler";
 import { ThreadGenerator, Signal } from "./Signal";
 import { LazyCanvas } from "../structures/LazyCanvas";
 import { Canvas } from "@napi-rs/canvas";
-import {ModernRenderManager} from "../structures/managers";
+import {ModernRenderPipeline} from "../structures/managers";
 
 /**
  * Scene class - manages canvas, context, layers, and animation timeline
@@ -23,7 +23,7 @@ export class Scene {
    * @param opts
    */
   constructor(width: number, height: number, opts: { debug?: boolean } = {}) {
-    this.lazyCanvas = new LazyCanvas(ModernRenderManager, opts).create(width, height);
+    this.lazyCanvas = new LazyCanvas(ModernRenderPipeline, opts).create(width, height);
   }
 
   /**

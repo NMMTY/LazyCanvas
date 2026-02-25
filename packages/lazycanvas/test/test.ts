@@ -16,10 +16,10 @@ import {
     FontsList,
     Div,
     Utils,
-    PolygonLayer, ClassicRenderManager,
+    PolygonLayer, ClassicRenderPipeline,
 } from "../src";
 
-const canvas = new LazyCanvas(ClassicRenderManager, { debug: true }).create(800, 800);
+const canvas = new LazyCanvas(ClassicRenderPipeline, { debug: true }).create(800, 800);
 
 canvas.manager.layers.add(
   new MorphLayer().setPosition("50%", "50%").setColor("rgb(255, 255, 255)").setSize(800, 800),

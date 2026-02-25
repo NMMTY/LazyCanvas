@@ -23,5 +23,5 @@ export interface RenderManagerConstructor {
     new (lazyCanvas: LazyCanvas, opts?: { debug?: boolean }): IRenderManager;
 }
 
-export * from "./ClassicRenderManager";
-export * from "./ModernRenderManager";
+export * from "./ClassicRenderPipeline";
+export * from "./ModernRenderPipeline";

@@ -8,7 +8,7 @@ import {IRenderManager} from "./index";
 /**
  * Class responsible for managing rendering operations, including static and animated exports.
  */
-export class ClassicRenderManager implements IRenderManager {
+export class ClassicRenderPipeline implements IRenderManager {
     /**
      * The LazyCanvas instance used for rendering.
      */
