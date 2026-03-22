@@ -1,7 +1,6 @@
 import { Div, TextLayer } from "../components";
 import { AnyLayer, LayerType } from "../../types";
-import { LazyLog } from "../../utils/LazyUtil";
-import { readFileSync } from "fs";
+import { LazyLog } from "../../utils";
 import { SKRSContext2D, Canvas, SvgCanvas } from "@napi-rs/canvas";
 
 // Define minimal types for Yoga to avoid import issues
@@ -20,16 +19,7 @@ export class LayoutManager {
 
   private async init() {
     try {
-      // Initialize Yoga
-      // Use dynamic import to avoid issues with CJS/ESM interop and TLA
-      const yogaPkg: any = await import("yoga-layout");
-      const loadYoga = yogaPkg.default || yogaPkg;
-
-      if (typeof loadYoga === "function") {
-        this.yoga = await loadYoga(readFileSync(require.resolve("yoga-layout/dist/yoga.wasm")));
-      } else {
-        this.yoga = loadYoga;
-      }
+      this.yoga = await import("yoga-layout");
     } catch (e) {
       // Fallback
       try {
