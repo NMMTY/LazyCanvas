@@ -19,7 +19,7 @@ export class LayoutManager {
 
   private async init() {
     try {
-      this.yoga = await import("yoga-layout");
+      this.yoga = (await import("yoga-layout")).default || (await import("yoga-layout"));
     } catch (e) {
       // Fallback
       try {
