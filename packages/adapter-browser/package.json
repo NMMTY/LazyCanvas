@@ -1,0 +1,25 @@
+{
+  "name": "@nmmty/adapter-browser",
+  "version": "1.0.0-dev.1",
+  "description": "Browser adapter for @nmmty/lazycanvas using native HTMLCanvasElement",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["canvas", "browser", "adapter", "html", "react", "nextjs"],
+  "author": "NMMTY",
+  "license": "MIT",
+  "peerDependencies": {
+    "@nmmty/lazycanvas": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
