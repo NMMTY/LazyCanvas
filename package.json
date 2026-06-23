@@ -6,10 +6,13 @@
     "packages/*"
   ],
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
     "tsx": "^4.21.0"
+  },
+  "dependencies": {
+    "lazycanvas-monorepo": "link:"
   }
 }
