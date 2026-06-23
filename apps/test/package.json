@@ -1,0 +1,29 @@
+{
+  "name": "@nmmty/lazycanvas-test",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@nmmty/lazycanvas": "workspace:*",
+    "@nmmty/adapter-browser": "workspace:*",
+    "@nmmty/adapter-react": "workspace:*",
+    "next": "15.3.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3"
+  }
+}
