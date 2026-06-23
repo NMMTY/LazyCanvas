@@ -1,0 +1,30 @@
+{
+  "name": "@nmmty/adapter-node",
+  "version": "1.0.0-dev.1",
+  "description": "Node.js adapter for @nmmty/lazycanvas using @napi-rs/canvas",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["canvas", "node", "adapter", "@napi-rs/canvas"],
+  "author": "NMMTY",
+  "license": "MIT",
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@nmmty/lazycanvas": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2"
+  }
+}
