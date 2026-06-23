@@ -1,6 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, Point, ScaleType, Centring, LayerType, StrokeOptions } from "../../types";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
+import { ColorType, Point, ScaleType, Centring, LayerType, StrokeOptions, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
   getBoundingBoxBezier,
   isColor,
@@ -167,8 +166,8 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
    * @returns {Object} The bounding box details including max, min, center, width, and height.
    */
   getBoundingBox(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
   ): { max: Point; min: Point; center: Point; width: number; height: number } {
     const parcer = parser(ctx, canvas, manager);
@@ -201,8 +200,8 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
   ): Promise<void> {

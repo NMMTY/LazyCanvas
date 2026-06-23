@@ -1,22 +1,10 @@
 import { LazyCanvas } from "../../LazyCanvas";
-import { AnyExport } from "../../../types";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
+import { AnyExport, ICanvas, ICanvasRenderingContext2D } from "../../../types";
 
-/**
- * Interface representing the RenderManager.
- */
 export interface IRenderManager {
-  /**
-   * The LazyCanvas instance used for rendering.
-   */
   lazyCanvas: LazyCanvas;
-
-  /**
-   * Whether debugging is enabled.
-   */
   debug: boolean;
-
-  render(format: AnyExport): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string>;
+  render(format: AnyExport): Promise<any>;
 }
 
 export interface RenderManagerConstructor {

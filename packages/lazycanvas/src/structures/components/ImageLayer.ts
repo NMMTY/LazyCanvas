@@ -1,6 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ScaleType, LayerType, RadiusCorner, AnyCentring } from "../../types";
-import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
+import { ScaleType, LayerType, RadiusCorner, AnyCentring, ICanvas, ICanvasRenderingContext2D, ICanvasAdapter } from "../../types";
 import {
   centring,
   isImageUrlValid,
@@ -10,6 +9,7 @@ import {
   LazyError,
   LazyLog,
   DrawUtils,
+  loadImageFallback,
 } from "../../utils";
 import { LayersManager } from "../managers";
 import { Link } from "../helpers";
@@ -119,10 +119,11 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
    * @throws {LazyError} If the image could not be loaded.
    */
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
+    adapter?: ICanvasAdapter,
   ): Promise<void> {
     const parcer = parser(ctx, canvas, manager);
 
@@ -151,9 +152,13 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     if (debug) LazyLog.log("none", `ImageLayer:`, { x, y, w, h, rad });
 
     ctx.save();
-    let image = await loadImage(this.props.src);
-    image.width = w;
-    image.height = h;
+    let image = adapter
+      ? await adapter.loadImage(this.props.src)
+      : await loadImageFallback(this.props.src);
+    if (image) {
+      image.width = w;
+      image.height = h;
+    }
     if (!image) throw new LazyError("The image could not be loaded");
 
     if (this.props.transform) {

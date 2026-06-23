@@ -1,6 +1,5 @@
 import { IOLazyCanvas, LazyCanvas } from "../LazyCanvas";
 import { AnyExport, Export, Extensions } from "../../types";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LazyError, generateRandomName } from "../../utils";
 import * as fs from "node:fs";
 import { LayersManager } from "../managers";
@@ -10,22 +9,12 @@ import { Scene } from "../../core";
 
 /**
  * Class responsible for exporting a LazyCanvas or Scene instance to various formats.
+ * NOTE: This is a Node.js-only module. For browser use, render to canvas directly.
  */
 export class Exporter {
-  /**
-   * The LazyCanvas instance to be exported.
-   */
   canvas?: LazyCanvas;
-
-  /**
-   * The Scene instance to be exported.
-   */
   scene?: Scene;
 
-  /**
-   * Constructs a new Exporter instance.
-   * @param source {LazyCanvas | Scene} - The LazyCanvas or Scene instance to be exported.
-   */
   constructor(source: LazyCanvas | Scene) {
     if (source instanceof Scene) {
       this.scene = source;
@@ -35,13 +24,6 @@ export class Exporter {
     }
   }
 
-  /**
-   * Saves a file to the filesystem.
-   * @param {any} [buffer] - The data to be saved.
-   * @param {Extensions} [extension] - The file extension.
-   * @param {string} [name] - The name of the file (optional).
-   * @throws {LazyError} If the buffer or extension is not provided.
-   */
   private async saveFile(buffer: any, extension: Extensions, name?: string) {
     if (!buffer) throw new LazyError("Buffer must be provided");
     if (!extension) throw new LazyError("Extension must be provided");
@@ -49,11 +31,6 @@ export class Exporter {
     fs.writeFileSync(`${name === undefined ? generateRandomName() : name}.${extension}`, buffer);
   }
 
-  /**
-   * Exports all layers from the LayersManager as an array of JSON objects.
-   * @param {LayersManager} [manager] - The LayersManager instance.
-   * @returns {any[]} An array of JSON representations of the layers.
-   */
   private exportLayers(manager: LayersManager): any[] {
     let arr = [];
     for (const layer of Array.from(manager.map.values())) {
@@ -62,17 +39,6 @@ export class Exporter {
     return arr;
   }
 
-  /**
-   * Exports the canvas to the specified format.
-   * @param {AnyExport} [exportType] - The type of export (e.g., "png", "json").
-   * @param {Object} [opts] - Optional settings.
-   * @param {string} [opts.name] - The name of the file (optional).
-   * @param {boolean} [opts.saveAsFile] - Whether to save the export as a file (optional).
-   * @param {number} [opts.duration] - Duration of the animation in seconds (Scene only).
-   * @param {number} [opts.fps] - Frames per second for animation (default: 60, Scene only).
-   * @returns {Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string>} The exported data.
-   * @throws {LazyError} If the export type is not supported.
-   */
   async export(
     exportType: AnyExport,
     opts?: {
@@ -81,7 +47,7 @@ export class Exporter {
       duration?: number;
       fps?: number;
     },
-  ): Promise<Buffer | SKRSContext2D | Canvas | SvgCanvas | string> {
+  ): Promise<any> {
     if (!this.canvas) {
       throw new LazyError("Canvas is not initialized");
     }
@@ -102,9 +68,11 @@ export class Exporter {
       case Export.BUFFER:
       case "buffer":
         if (this.scene) {
-          result = await this.scene.renderFirstFrame().then((frame) => frame.toBuffer("image/png"));
+          const frame = await this.scene.renderFirstFrame();
+          const canvas = frame as any;
+          result = canvas.toBuffer ? canvas.toBuffer("image/png") : canvas.toDataURL("image/png");
         } else {
-          result = (await this.canvas.manager.render.render("buffer")) as Buffer;
+          result = await this.canvas.manager.render.render("buffer");
         }
         if (opts?.saveAsFile) {
           await this.saveFile(result, "png", opts.name);
@@ -113,9 +81,9 @@ export class Exporter {
       case Export.WEBP:
       case "webp":
         if (this.scene) {
-          result = await this.scene
-            .renderFirstFrame()
-            .then((frame) => frame.toBuffer("image/webp"));
+          const frame = await this.scene.renderFirstFrame();
+          const canvas = frame as any;
+          result = canvas.toBuffer ? canvas.toBuffer("image/webp") : canvas.toDataURL("image/webp");
         } else {
           result = await this.canvas.manager.render.render("webp");
         }
@@ -126,9 +94,9 @@ export class Exporter {
       case Export.JPG:
       case "jpg":
         if (this.scene) {
-          result = await this.scene
-            .renderFirstFrame()
-            .then((frame) => frame.toBuffer("image/jpeg"));
+          const frame = await this.scene.renderFirstFrame();
+          const canvas = frame as any;
+          result = canvas.toBuffer ? canvas.toBuffer("image/jpeg") : canvas.toDataURL("image/jpeg");
         } else {
           result = await this.canvas.manager.render.render("jpg");
         }
@@ -137,7 +105,9 @@ export class Exporter {
       case Export.PNG:
       case "png":
         if (this.scene) {
-          result = await this.scene.renderFirstFrame().then((frame) => frame.toBuffer("image/png"));
+          const frame = await this.scene.renderFirstFrame();
+          const canvas = frame as any;
+          result = canvas.toBuffer ? canvas.toBuffer("image/png") : canvas.toDataURL("image/png");
         } else {
           result = await this.canvas.manager.render.render("png");
         }
@@ -150,10 +120,9 @@ export class Exporter {
         }
 
         const duration = opts?.duration ?? 0;
-        const timeNow = Date.now();
         const fps = opts?.fps ?? 60;
 
-        const frameData = await this.scene.renderAnimationData(timeNow, timeNow + duration, fps);
+        const frameData = await this.scene.renderAnimationData(0, duration, fps);
 
         const encoder = new APNGEncoder(this.scene.width, this.scene.height, fps).addFrames(
           ...frameData,
@@ -173,12 +142,10 @@ export class Exporter {
         return JSON.stringify(json);
       case Export.CANVAS:
       case "canvas":
-        return (await this.canvas.manager.render.render(exportType)) as unknown as
-          | Canvas
-          | SvgCanvas;
+        return await this.canvas.manager.render.render(exportType);
       case Export.YAML:
       case "yaml":
-        const yaml = _yaml.dump(this.syncExport(Export.JSON));
+        const yaml = _yaml.dump(this.syncExport(Export.JSON) as any);
         if (opts?.saveAsFile) {
           await this.saveFile(yaml, "yaml", opts.name);
         }
@@ -189,11 +156,6 @@ export class Exporter {
     return result;
   }
 
-  /**
-   * Synchronously exports the canvas to the specified format.
-   * @param {AnyExport} [exportType] - The type of export (e.g., "json").
-   * @returns {IOLazyCanvas | void} The exported data or void if the export type is unsupported.
-   */
   syncExport(exportType: AnyExport): IOLazyCanvas | void {
     if (!this.canvas) {
       throw new LazyError("Canvas is not initialized");

@@ -1,14 +1,4 @@
-import {
-  Canvas,
-  DOMMatrix2DInit,
-  FillType,
-  Path2D,
-  PathOp,
-  SKRSContext2D,
-  SvgCanvas,
-  StrokeOptions as SKRSStrokeOptions,
-} from "@napi-rs/canvas";
-import { ColorType, LayerType } from "../../types";
+import { ColorType, LayerType, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
   generateID,
   isColor,
@@ -23,35 +13,15 @@ import { LayersManager } from "../managers";
 import { StrokeOptions } from "../../types";
 
 export interface IPath2DLayer extends IBaseLayer {
-  /**
-   * The type of the layer, which is `Path`.
-   */
   type: LayerType.Path;
-
-  /**
-   * The properties specific to the Path2D Layer.
-   */
   props: IPath2DLayerProps;
 }
 
 export interface IPath2DLayerProps extends IBaseLayerProps {
-  /**
-   * The Path2D object representing the shape of the layer.
-   */
-  path2D: Path2D;
-
-  /**
-   * The fill style (color or pattern) of the layer.
-   */
+  path2D: any;
   color: ColorType;
-
-  /**
-   * The stroke properties of the Path2D.
-   */
   stroke?: StrokeOptions;
-
   loadFromSVG?: boolean;
-
   clipPath?: boolean;
 }
 
@@ -71,12 +41,6 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     this.props = this.validateProps(this.props);
   }
 
-  /**
-   * Sets the color of the Path2D Layer.
-   * @param {ColorType} [color] - The color of the layer.
-   * @returns {this} The current instance for chaining.
-   * @throws {LazyError} If the color is not provided or invalid.
-   */
   setColor(color: ColorType): this {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
@@ -84,8 +48,14 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     return this;
   }
 
-  setPath(path: Path2D | string): this {
-    this.props.path2D = path instanceof Path2D ? path : new Path2D(path);
+  setPath(path: any | string): this {
+    if (typeof path === "string") {
+      if (typeof Path2D !== "undefined") {
+        this.props.path2D = new Path2D(path);
+      }
+    } else {
+      this.props.path2D = path;
+    }
     return this;
   }
 
@@ -100,11 +70,16 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
   }
 
   toSVGString(): string {
-    return this.props.path2D.toSVGString();
+    if (this.props.path2D && typeof this.props.path2D.toSVGString === "function") {
+      return this.props.path2D.toSVGString();
+    }
+    return "";
   }
 
-  addPath(path: Path2D, transform?: DOMMatrix2DInit | undefined): this {
-    this.props.path2D.addPath(path, transform);
+  addPath(path: any, transform?: DOMMatrix2DInit | undefined): this {
+    if (this.props.path2D && typeof this.props.path2D.addPath === "function") {
+      this.props.path2D.addPath(path, transform);
+    }
     return this;
   }
 
@@ -116,12 +91,16 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     endAngle: number,
     anticlockwise?: boolean,
   ): this {
-    this.props.path2D.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    if (this.props.path2D && typeof this.props.path2D.arc === "function") {
+      this.props.path2D.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    }
     return this;
   }
 
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): this {
-    this.props.path2D.arcTo(x1, y1, x2, y2, radius);
+    if (this.props.path2D && typeof this.props.path2D.arcTo === "function") {
+      this.props.path2D.arcTo(x1, y1, x2, y2, radius);
+    }
     return this;
   }
 
@@ -133,12 +112,16 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     x: number,
     y: number,
   ): this {
-    this.props.path2D.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+    if (this.props.path2D && typeof this.props.path2D.bezierCurveTo === "function") {
+      this.props.path2D.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+    }
     return this;
   }
 
   closePath(): this {
-    this.props.path2D.closePath();
+    if (this.props.path2D && typeof this.props.path2D.closePath === "function") {
+      this.props.path2D.closePath();
+    }
     return this;
   }
 
@@ -152,113 +135,146 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     endAngle: number,
     anticlockwise?: boolean,
   ): this {
-    this.props.path2D.ellipse(
-      x,
-      y,
-      radiusX,
-      radiusY,
-      rotation,
-      startAngle,
-      endAngle,
-      anticlockwise,
-    );
+    if (this.props.path2D && typeof this.props.path2D.ellipse === "function") {
+      this.props.path2D.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise);
+    }
     return this;
   }
 
   lineTo(x: number, y: number): this {
-    this.props.path2D.lineTo(x, y);
+    if (this.props.path2D && typeof this.props.path2D.lineTo === "function") {
+      this.props.path2D.lineTo(x, y);
+    }
     return this;
   }
 
   moveTo(x: number, y: number): this {
-    this.props.path2D.moveTo(x, y);
+    if (this.props.path2D && typeof this.props.path2D.moveTo === "function") {
+      this.props.path2D.moveTo(x, y);
+    }
     return this;
   }
 
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): this {
-    this.props.path2D.quadraticCurveTo(cpx, cpy, x, y);
+    if (this.props.path2D && typeof this.props.path2D.quadraticCurveTo === "function") {
+      this.props.path2D.quadraticCurveTo(cpx, cpy, x, y);
+    }
     return this;
   }
 
   rect(x: number, y: number, width: number, height: number): this {
-    this.props.path2D.rect(x, y, width, height);
+    if (this.props.path2D && typeof this.props.path2D.rect === "function") {
+      this.props.path2D.rect(x, y, width, height);
+    }
     return this;
   }
 
-  stroke(stroke?: SKRSStrokeOptions): this {
-    this.props.path2D.stroke(stroke);
+  stroke(stroke?: any): this {
+    if (this.props.path2D && typeof this.props.path2D.stroke === "function") {
+      this.props.path2D.stroke(stroke);
+    }
     return this;
   }
 
-  op(path: Path2D, op: PathOp): this {
-    this.props.path2D.op(path, op);
+  op(path: any, op: string): this {
+    if (this.props.path2D && typeof this.props.path2D.op === "function") {
+      this.props.path2D.op(path, op);
+    }
     return this;
   }
 
-  getFillType(): FillType {
-    return this.props.path2D.getFillType();
+  getFillType(): any {
+    if (this.props.path2D && typeof this.props.path2D.getFillType === "function") {
+      return this.props.path2D.getFillType();
+    }
+    return 0;
   }
 
   getFillTypeString(): string {
-    return this.props.path2D.getFillTypeString();
+    if (this.props.path2D && typeof this.props.path2D.getFillTypeString === "function") {
+      return this.props.path2D.getFillTypeString();
+    }
+    return "winding";
   }
 
-  setFillType(fillType: FillType): this {
-    this.props.path2D.setFillType(fillType);
+  setFillType(fillType: any): this {
+    if (this.props.path2D && typeof this.props.path2D.setFillType === "function") {
+      this.props.path2D.setFillType(fillType);
+    }
     return this;
   }
 
   simplify(): this {
-    this.props.path2D.simplify();
+    if (this.props.path2D && typeof this.props.path2D.simplify === "function") {
+      this.props.path2D.simplify();
+    }
     return this;
   }
 
   asWinding(): this {
-    this.props.path2D.asWinding();
+    if (this.props.path2D && typeof this.props.path2D.asWinding === "function") {
+      this.props.path2D.asWinding();
+    }
     return this;
   }
 
   transform(matrix: DOMMatrix2DInit): this {
-    this.props.path2D.transform(matrix);
+    if (this.props.path2D && typeof this.props.path2D.transform === "function") {
+      this.props.path2D.transform(matrix);
+    }
     return this;
   }
 
   getBounds(): [left: number, top: number, right: number, bottom: number] {
-    return this.props.path2D.getBounds();
+    if (this.props.path2D && typeof this.props.path2D.getBounds === "function") {
+      return this.props.path2D.getBounds();
+    }
+    return [0, 0, 0, 0];
   }
 
   computeTightBounds(): [left: number, top: number, right: number, bottom: number] {
-    return this.props.path2D.computeTightBounds();
+    if (this.props.path2D && typeof this.props.path2D.computeTightBounds === "function") {
+      return this.props.path2D.computeTightBounds();
+    }
+    return [0, 0, 0, 0];
   }
 
   trim(start: number, end: number, isComplement?: boolean): this {
-    this.props.path2D.trim(start, end, isComplement);
+    if (this.props.path2D && typeof this.props.path2D.trim === "function") {
+      this.props.path2D.trim(start, end, isComplement);
+    }
     return this;
   }
 
   equals(path: Path2DLayer): boolean {
-    return this.props.path2D.equals(path.props.path2D);
+    if (this.props.path2D && typeof this.props.path2D.equals === "function") {
+      return this.props.path2D.equals(path.props.path2D);
+    }
+    return false;
   }
 
   roundRect(x: number, y: number, width: number, height: number, radius: number): this {
-    this.props.path2D.roundRect(x, y, width, height, radius);
+    if (this.props.path2D && typeof this.props.path2D.roundRect === "function") {
+      this.props.path2D.roundRect(x, y, width, height, radius);
+    }
     return this;
   }
 
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
   ): Promise<void> {
     ctx.beginPath();
     ctx.save();
 
+    if (typeof this.props.path2D === "string") this.props.path2D = new Path2D(this.props.path2D)
+
     if (debug)
       LazyLog.log("none", `Drawing Path2D Layer: `, {
         layerId: this.id,
         type: this.type,
-        path: this.props.path2D.toSVGString(),
       });
 
     if (this.props.transform) {
@@ -291,10 +307,6 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     ctx.closePath();
   }
 
-  /**
-   * Converts the Path2D Layer to a JSON representation.
-   * @returns {IPath2DLayer} The JSON representation of the Path2D Layer.
-   */
   toJSON(): IPath2DLayer {
     return {
       id: this.id,
@@ -305,16 +317,19 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     };
   }
 
-  /**
-   * Validates the properties of the Path2D Layer.
-   * @param {IPath2DLayerProps} [data] - The properties to validate.
-   * @returns {IPath2DLayerProps} The validated properties.
-   */
   protected validateProps(data: IPath2DLayerProps): IPath2DLayerProps {
+    let path2D = data.path2D;
+    if (!path2D) {
+      if (typeof Path2D !== "undefined") {
+        path2D = new Path2D();
+      } else {
+        path2D = null;
+      }
+    }
     return {
       ...super.validateProps(data),
       color: data.color || "#000000",
-      path2D: data.path2D || new Path2D(),
+      path2D: path2D,
       loadFromSVG: data.loadFromSVG || false,
       clipPath: data.clipPath || false,
     };

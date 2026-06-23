@@ -6,8 +6,8 @@ import {
   GradientType,
   StringColorType,
   ScaleType,
+  ICanvasRenderingContext2D,
 } from "../../types";
-import { SKRSContext2D } from "@napi-rs/canvas";
 import { LazyLog, LazyError, defaultArg, parseFillStyle, parser } from "../../utils";
 import { LayersManager } from "../managers";
 
@@ -197,19 +197,20 @@ export class Gradient implements IGradient {
   }
 
   draw(
-    ctx: SKRSContext2D,
+    ctx: ICanvasRenderingContext2D,
     opts: {
       debug?: boolean;
       layer?: { width: number; height: number; x: number; y: number; align: AnyCentring };
       manager?: LayersManager;
+      canvas?: any;
     } = { debug: false },
-  ): CanvasGradient {
+  ): any {
     let gradientData = this.toJSON();
     let gradient;
 
     if (opts.debug) LazyLog.log("none", `Gradient:`, gradientData);
 
-    const parse = parser(ctx, ctx.canvas, opts.manager);
+    const parse = parser(ctx, opts.canvas, opts.manager);
 
     const { x0, y0, x1, y1 } = parse.parseBatch({
       x0: { v: gradientData.points[0]?.x || 0 },

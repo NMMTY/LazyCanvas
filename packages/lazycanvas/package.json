@@ -1,9 +1,15 @@
 {
   "name": "@nmmty/lazycanvas",
   "version": "1.0.0-dev.10",
-  "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
+  "description": "A simple way to interact with canvas in an advanced way!",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "test": "tsc ./test/test.ts && node ./test/test.js",
     "centring": "tsc ./test/centring.ts && node ./test/centring.js",
@@ -23,7 +29,7 @@
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git"
   },
-  "keywords": ["canvas", "@napi-rs/canvas", "node-canvas", "easy", "simple"],
+  "keywords": ["canvas", "node-canvas", "browser-canvas", "easy", "simple", "jsx"],
   "author": "NMMTY",
   "license": "MIT",
   "bugs": {
@@ -31,11 +37,18 @@
   },
   "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.88",
     "gifenc": "^1.0.3",
     "js-yaml": "^4.1.0",
     "svgson": "^5.3.1",
     "yoga-layout": "^3.2.1"
+  },
+  "peerDependencies": {
+    "@napi-rs/canvas": ">=0.1.88"
+  },
+  "peerDependenciesMeta": {
+    "@napi-rs/canvas": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

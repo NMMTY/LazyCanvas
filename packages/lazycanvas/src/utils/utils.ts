@@ -11,9 +11,11 @@ import {
   SubStringColor,
   TextAlign,
   Transform,
+  ICanvas,
+  ICanvasRenderingContext2D,
+  ICanvasAdapter,
 } from "../types";
 import { Gradient, Link, Pattern } from "../structures/helpers";
-import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { defaultArg, LazyError } from "./LazyUtil";
 import { LayersManager } from "../structures/managers";
 import {
@@ -70,8 +72,8 @@ export function isColor(v: ColorType | SubStringColor) {
 
 export function parseToNormal(
   v: ScaleType,
-  ctx: SKRSContext2D,
-  canvas: Canvas | SvgCanvas,
+  ctx: ICanvasRenderingContext2D,
+  canvas: ICanvas,
   layer: { width: number; height: number } = { width: 0, height: 0 },
   options: { vertical?: boolean; layer?: boolean } = { vertical: false, layer: false },
   manager?: LayersManager,
@@ -164,8 +166,8 @@ export function parseToNormal(
 
 function getLayerWidth(
   anyLayer: AnyLayer,
-  ctx: SKRSContext2D,
-  canvas: Canvas | SvgCanvas,
+  ctx: ICanvasRenderingContext2D,
+  canvas: ICanvas,
   manager: LayersManager,
   parserInstance: any,
 ): number {
@@ -184,8 +186,8 @@ function getLayerWidth(
 
 function getLayerHeight(
   anyLayer: AnyLayer,
-  ctx: SKRSContext2D,
-  canvas: Canvas | SvgCanvas,
+  ctx: ICanvasRenderingContext2D,
+  canvas: ICanvas,
   manager: LayersManager,
   parserInstance: any,
 ): number {
@@ -204,7 +206,7 @@ function getLayerHeight(
     : parserInstance.parse(anyLayer.props.size.height) || 0;
 }
 
-export function parser(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager?: LayersManager) {
+export function parser(ctx: ICanvasRenderingContext2D, canvas: ICanvas, manager?: LayersManager) {
   return {
     parse(
       v: ScaleType,
@@ -241,7 +243,7 @@ export function parser(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager?:
 }
 
 export function parseFillStyle(
-  ctx: SKRSContext2D,
+  ctx: ICanvasRenderingContext2D,
   color: ColorType | SubStringColor,
   opts: {
     debug?: boolean;
@@ -278,7 +280,7 @@ export function parseFillStyle(
 }
 
 export function transform(
-  ctx: SKRSContext2D,
+  ctx: ICanvasRenderingContext2D,
   transform: Transform,
   layer: { width: number; height: number; x: number; y: number; type: LayerType } = {
     width: 0,
@@ -363,12 +365,37 @@ export function generateRandomName() {
 }
 
 export function isImageUrlValid(src: string) {
+  if (typeof Image === "undefined") {
+    return true;
+  }
   try {
-    loadImage(src);
+    const img = new Image();
+    img.src = src;
     return true;
   } catch (error) {
     return false;
   }
+}
+
+export async function loadImageFallback(src: string | ArrayBuffer | Uint8Array): Promise<any> {
+  if (typeof Image === "undefined") {
+    return null;
+  }
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    if (src instanceof ArrayBuffer) {
+      const blob = new Blob([src]);
+      img.src = URL.createObjectURL(blob);
+    } else if (src instanceof Uint8Array) {
+      const blob = new Blob([src.buffer as ArrayBuffer]);
+      img.src = URL.createObjectURL(blob);
+    } else {
+      img.src = src;
+    }
+  });
 }
 
 export function centring(

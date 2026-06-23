@@ -1,5 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, ScaleType, Centring, LayerType, StrokeOptions } from "../../types";
+import { ColorType, ScaleType, Centring, LayerType, StrokeOptions, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
   defaultArg,
   LazyError,
@@ -10,7 +10,6 @@ import {
   transform,
   DrawUtils,
 } from "../../utils";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
 /**
  * Interface representing a Line Layer.
@@ -152,8 +151,8 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
    * @returns {Object} The bounding box details including start and end points, width, and height.
    */
   getBoundingBox(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
   ): { xs: number; ys: number; xe: number; ye: number; width: number; height: number } {
     const parcer = parser(ctx, canvas, manager);
@@ -178,8 +177,8 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
   ): Promise<void> {

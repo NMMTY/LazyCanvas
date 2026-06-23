@@ -1,9 +1,9 @@
-import { SKRSContext2D } from "@napi-rs/canvas";
+import { ICanvasRenderingContext2D } from "../types";
 import { Signal, unwrap } from "../core/Signal";
 import { StrokeOptions } from "../types";
 
 export class DrawUtils {
-  static drawShadow(ctx: SKRSContext2D, shadow: any) {
+  static drawShadow(ctx: ICanvasRenderingContext2D, shadow: any) {
     if (shadow) {
       ctx.shadowColor = shadow.color;
       ctx.shadowBlur = shadow.blur || 0;
@@ -12,7 +12,7 @@ export class DrawUtils {
     }
   }
 
-  static opacity(ctx: SKRSContext2D, opacity: number | Signal<number> = 1) {
+  static opacity(ctx: ICanvasRenderingContext2D, opacity: number | Signal<number> = 1) {
     const opacityValue = unwrap(opacity);
 
     if (opacityValue < 1) {
@@ -20,14 +20,14 @@ export class DrawUtils {
     }
   }
 
-  static filters(ctx: SKRSContext2D, filters: string | null | undefined) {
+  static filters(ctx: ICanvasRenderingContext2D, filters: string | null | undefined) {
     if (filters) {
       ctx.filter = filters;
     }
   }
 
   static fillStyle(
-    ctx: SKRSContext2D,
+    ctx: ICanvasRenderingContext2D,
     color: string | CanvasGradient | CanvasPattern,
     fillStyle?: StrokeOptions,
   ) {

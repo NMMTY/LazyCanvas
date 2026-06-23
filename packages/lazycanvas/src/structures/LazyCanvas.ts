@@ -1,5 +1,5 @@
 import { Export, AnyExport, JSONLayer } from "../types";
-import { Canvas, SKRSContext2D, SvgCanvas, SvgExportFlag } from "@napi-rs/canvas";
+import { ICanvas, ICanvasRenderingContext2D, ICanvasAdapter } from "../types";
 import {
   LayersManager,
   IRenderManager,
@@ -10,33 +10,20 @@ import {
 import { LayoutManager } from "./managers/LayoutManager";
 import { IDiv } from "./components";
 import { LazyLog, resizeLayers, resize } from "../utils";
+
 /**
  * Interface representing the LazyCanvas structure.
  */
 export interface ILazyCanvas {
-  /**
-   * The canvas instance, which can be either a Canvas or SvgCanvas.
-   */
-  canvas: Canvas | SvgCanvas;
-
-  /**
-   * The 2D rendering context of the canvas.
-   */
-  ctx: SKRSContext2D;
-
-  /**
-   * The manager object containing various managers for layers, rendering, fonts, animation, and plugins.
-   */
+  canvas: ICanvas;
+  ctx: ICanvasRenderingContext2D;
+  adapter: ICanvasAdapter;
   manager: {
     layers: LayersManager;
     render: IRenderManager;
     fonts: FontsManager;
     layout: LayoutManager;
   };
-
-  /**
-   * The options for configuring the LazyCanvas instance.
-   */
   options: ILazyCanvasOptions;
 }
 
@@ -44,44 +31,17 @@ export interface ILazyCanvas {
  * Interface representing the options for LazyCanvas.
  */
 export interface ILazyCanvasOptions {
-  /**
-   * The width of the canvas.
-   */
   width: number;
-
-  /**
-   * The height of the canvas.
-   */
   height: number;
-
-  /**
-   * Whether the canvas is animated.
-   */
   animated: boolean;
-
-  /**
-   * The export type for the canvas (e.g., buffer, SVG, etc.).
-   */
   exportType: AnyExport;
-
-  /**
-   * The SVG export flag for encoding paths.
-   */
-  flag: SvgExportFlag;
 }
 
 /**
  * Interface representing the input options for LazyCanvas.
  */
 export interface IOLazyCanvas {
-  /**
-   * The options for configuring the LazyCanvas instance.
-   */
   options: ILazyCanvasOptions;
-
-  /**
-   * The layers to be added to the LazyCanvas instance.
-   */
   layers: Array<JSONLayer | IDiv>;
 }
 
@@ -89,48 +49,28 @@ export interface IOLazyCanvas {
  * Class representing a LazyCanvas, which provides a structured way to manage canvas rendering.
  */
 export class LazyCanvas implements ILazyCanvas {
-  /**
-   * The canvas instance, which can be either a Canvas or SvgCanvas.
-   */
-  canvas: Canvas | SvgCanvas;
-
-  /**
-   * The 2D rendering context of the canvas.
-   */
-  ctx: SKRSContext2D;
-
-  /**
-   * The manager object containing various managers for layers, rendering, fonts, animation, and plugins.
-   */
+  canvas: ICanvas;
+  ctx: ICanvasRenderingContext2D;
+  adapter: ICanvasAdapter;
   manager: {
     layers: LayersManager;
     render: IRenderManager;
     fonts: FontsManager;
     layout: LayoutManager;
   };
-
-  /**
-   * The options for configuring the LazyCanvas instance.
-   */
   options: ILazyCanvasOptions;
 
-  /**
-   * Constructs a new LazyCanvas instance.
-   * @param {RenderManagerConstructor} [renderPipline] - The constructor for the render pipeline to be used (default is ClassicRenderPipeline).
-   * @param {Object} [opts] - Optional settings for the LazyCanvas instance.
-   * @param {boolean} [opts.debug] - Whether debugging is enabled.
-   * @param {IOLazyCanvas} [opts.settings] - The input settings for the LazyCanvas instance.
-   */
   constructor(
     renderPipline: RenderManagerConstructor = ClassicRenderPipeline,
-    opts?: { debug?: boolean; settings?: IOLazyCanvas },
+    opts?: { debug?: boolean; settings?: IOLazyCanvas; adapter?: ICanvasAdapter },
   ) {
-    this.canvas = new Canvas(0, 0);
+    this.adapter = opts?.adapter!;
+    this.canvas = this.adapter.createCanvas(0, 0);
     this.ctx = this.canvas.getContext("2d");
     this.manager = {
       layers: new LayersManager({ debug: opts?.debug }),
       render: new renderPipline(this, { debug: opts?.debug }),
-      fonts: new FontsManager({ debug: opts?.debug }),
+      fonts: new FontsManager({ debug: opts?.debug, adapter: opts?.adapter }),
       layout: new LayoutManager({ debug: opts?.debug }),
     };
     this.options = {
@@ -138,110 +78,43 @@ export class LazyCanvas implements ILazyCanvas {
       height: 0,
       animated: false,
       exportType: Export.BUFFER,
-      flag: SvgExportFlag.RelativePathEncoding,
       ...opts?.settings?.options,
     };
 
     if (opts?.debug) LazyLog.log("info", "LazyCanvas initialized with settings:", opts.settings);
   }
 
-  /**
-   * Sets the export type for the canvas.
-   * @param {AnyExport} [type] - The export type (e.g., buffer, SVG, etc.).
-   * @returns {this} The current instance for chaining.
-   */
   public setExportType(type: AnyExport): this {
     this.options.exportType = type;
-    switch (type) {
-      case Export.BUFFER:
-        this.canvas = new Canvas(this.options.width, this.options.height);
-        this.ctx = this.canvas.getContext("2d");
-        break;
-      case Export.CTX:
-        break;
-      case Export.SVG:
-        this.canvas = new Canvas(
-          this.options.width,
-          this.options.height,
-          this.options.flag || SvgExportFlag.RelativePathEncoding,
-        );
-        this.ctx = this.canvas.getContext("2d");
-        break;
-    }
+    this.canvas = this.adapter.createCanvas(this.options.width, this.options.height);
+    this.ctx = this.canvas.getContext("2d");
     return this;
   }
 
-  /**
-   * Sets the SVG export flag. This method should be called after `setExportType`.
-   * @param {SvgExportFlag} [flag] - The SVG export flag.
-   * @returns {this} The current instance for chaining.
-   */
-  setSvgExportFlag(flag: SvgExportFlag): this {
-    if (this.options.exportType === Export.SVG) {
-      this.canvas = new Canvas(this.options.width, this.options.height, flag);
-      this.ctx = this.canvas.getContext("2d");
-      this.options.flag = flag;
-    }
-    return this;
-  }
-
-  /**
-   * Enables animation for the canvas.
-   * @returns {this} The current instance for chaining.
-   */
   animated(): this {
     this.options.animated = true;
     return this;
   }
 
-  /**
-   * Resizes the canvas to the specified dimensions.
-   * @param {number} [ratio] - The ratio to resize the canvas.
-   * @returns {this} The current instance for chaining.
-   */
   resize(ratio: number): this {
     if (this.options.width <= 0 || this.options.height <= 0) {
       throw new Error("Canvas dimensions are not set.");
     }
     this.options.width = resize(this.options.width, ratio) as number;
     this.options.height = resize(this.options.height, ratio) as number;
-    if (this.options.exportType === Export.SVG) {
-      this.canvas = new Canvas(
-        this.options.width,
-        this.options.height,
-        this.options.flag || SvgExportFlag.RelativePathEncoding,
-      );
-    } else {
-      this.canvas = new Canvas(this.options.width, this.options.height);
-    }
+    this.canvas = this.adapter.createCanvas(this.options.width, this.options.height);
     this.ctx = this.canvas.getContext("2d");
     const layers = resizeLayers(this.manager.layers.toArray(), ratio);
     this.manager.layers.fromArray(layers);
-
     return this;
   }
 
-  /**
-   * Creates a new canvas with the specified dimensions.
-   * @param {number} [width] - The width of the canvas.
-   * @param {number} [height] - The height of the canvas.
-   * @returns {this} The current instance for chaining.
-   */
   create(width: number, height: number): this {
     this.options.width = width;
     this.options.height = height;
-    if (this.options.exportType === Export.SVG) {
-      this.canvas = new Canvas(
-        width,
-        height,
-        this.options.flag || SvgExportFlag.RelativePathEncoding,
-      );
-    } else {
-      this.canvas = new Canvas(width, height);
-    }
+    this.canvas = this.adapter.createCanvas(width, height);
     this.ctx = this.canvas.getContext("2d");
     this.manager.layers = new LayersManager({ debug: this.manager.layers.debug });
-
     return this;
   }
 }

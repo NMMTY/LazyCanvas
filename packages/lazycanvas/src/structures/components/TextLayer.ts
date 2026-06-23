@@ -13,6 +13,8 @@ import {
   StrokeOptions,
   SubStringColor,
   TextAlign,
+  ICanvas,
+  ICanvasRenderingContext2D,
 } from "../../types";
 import {
   defaultArg,
@@ -25,8 +27,8 @@ import {
   transform,
   DrawUtils,
 } from "../../utils";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
+import {Signal, unwrap} from "../../core";
 
 /**
  * Interface representing a Text layer.
@@ -50,7 +52,7 @@ export interface ITextLayerProps extends IBaseLayerProps {
   /**
    * The text content of the layer.
    */
-  text: string;
+  text: string | Signal<string>;
 
   /**
    * The fill style (color or pattern) of the layer.
@@ -325,14 +327,14 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
    * @returns {Object} The width and height of the text.
    */
-  measureText(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas): { width: number; height: number } {
+  measureText(ctx: ICanvasRenderingContext2D, canvas: ICanvas): { width: number; height: number } {
     ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
 
     if (this.props?.multiline?.enabled) {
       const w = parseToNormal(this.props.size?.width || "vw", ctx, canvas);
 
       // Calculate actual height based on text wrapping
-      const words = this.props.text.split(" ");
+      const words = unwrap(this.props.text).split(" ");
       let line = "";
       let linesCount = 1;
 
@@ -362,7 +364,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
       return { width: w, height: fixedHeight || calculatedHeight };
     } else {
-      let data = ctx.measureText(this.props.text);
+      let data = ctx.measureText(unwrap(this.props.text));
       return { width: data.width, height: this.props.font.size };
     }
   }
@@ -375,8 +377,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
   ): Promise<void> {
@@ -399,7 +401,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         this.props.transform,
         { width: w, height: h, x, y, type: this.type },
         {
-          text: this.props.text,
+          text: unwrap(this.props.text),
           textAlign: this.props.align,
           fontSize: this.props.font.size,
           multiline: this.props?.multiline?.enabled || false,
@@ -427,7 +429,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
       manager,
     });
     if (this.props?.multiline?.enabled) {
-      const words = this.props.text.split(" ");
+      const words = unwrap(this.props.text).split(" ");
 
       let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
 
@@ -461,7 +463,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
       }
     } else {
       ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
-      this.drawText(this.props, ctx, fillStyle, this.props.text, x, y, w, 0);
+      this.drawText(this.props, ctx, fillStyle, unwrap(this.props.text), x, y, w, 0);
     }
     ctx.closePath();
     ctx.restore();
@@ -480,7 +482,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    */
   private drawText(
     props: ITextLayerProps,
-    ctx: SKRSContext2D,
+    ctx: ICanvasRenderingContext2D,
     fillStyle: string | CanvasGradient | CanvasPattern,
     text: string,
     x: number,

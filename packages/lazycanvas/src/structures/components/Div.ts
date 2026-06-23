@@ -1,6 +1,12 @@
-import { AnyGlobalCompositeOperation, AnyLayer, LayerType } from "../../types";
+import {
+  AnyGlobalCompositeOperation,
+  AnyLayer,
+  LayerType,
+  ICanvas,
+  ICanvasRenderingContext2D,
+  ICanvasAdapter
+} from "../../types";
 import { generateID, LazyLog } from "../../utils";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
 import { BaseLayer, IBaseLayer, IBaseLayerProps } from "./BaseLayer";
 
@@ -45,7 +51,7 @@ export interface IDivProps extends IBaseLayerProps {
    */
   globalComposite?: AnyGlobalCompositeOperation;
 
-  children?: Array<any>;
+  children?: any;
 }
 
 /**
@@ -215,16 +221,17 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    */
   private async renderLayer(
     layer: AnyLayer | Div,
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-  ): Promise<SKRSContext2D> {
+    adapter?: ICanvasAdapter
+  ): Promise<ICanvasRenderingContext2D> {
     if (debug) LazyLog.log("info", `Rendering ${layer.id}...\nData:`, layer.toJSON());
     if (layer.visible) {
       ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
 
-      await layer.draw(ctx, canvas, manager, debug);
+      await layer.draw(ctx, canvas, manager, debug, adapter);
 
       // Draw children if any (and not a Div, as Div handles its own children)
       // Actually, if we want to support children on any layer, we should handle it here.
@@ -253,7 +260,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
         }
 
         for (const child of children) {
-          await this.renderLayer(child, ctx, canvas, manager, debug);
+          await this.renderLayer(child, ctx, canvas, manager, debug, adapter);
         }
 
         ctx.restore();
@@ -265,10 +272,11 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
   }
 
   public async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
+    adapter?: ICanvasAdapter
   ) {
     ctx.save();
 
@@ -282,7 +290,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
     for (const subLayer of this.layers) {
       if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
       if (subLayer.visible) {
-        await this.renderLayer(subLayer, ctx, canvas, manager, debug);
+        await this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter);
       }
     }
     ctx.restore();

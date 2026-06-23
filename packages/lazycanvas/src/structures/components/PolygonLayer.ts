@@ -1,5 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { AnyCentring, ColorType, LayerType, ScaleType, StrokeOptions } from "../../types";
+import { AnyCentring, ColorType, LayerType, ScaleType, StrokeOptions, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
   defaultArg,
   LazyError,
@@ -10,7 +10,6 @@ import {
   parser,
   DrawUtils,
 } from "../../utils";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import { LayersManager } from "../managers";
 
 export interface IPolygonLayer extends IBaseLayer {
@@ -139,8 +138,8 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
   ): Promise<void> {

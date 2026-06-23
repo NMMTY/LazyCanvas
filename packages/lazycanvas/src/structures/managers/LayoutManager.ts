@@ -1,7 +1,6 @@
 import { Div, TextLayer } from "../components";
-import { AnyLayer, LayerType } from "../../types";
+import { AnyLayer, LayerType, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import { LazyLog } from "../../utils";
-import { SKRSContext2D, Canvas, SvgCanvas } from "@napi-rs/canvas";
 
 // Define minimal types for Yoga to avoid import issues
 type YogaNode = any;
@@ -19,15 +18,21 @@ export class LayoutManager {
 
   private async init() {
     try {
-      this.yoga = (await import("yoga-layout")).default || (await import("yoga-layout"));
-    } catch (e) {
-      // Fallback
-      try {
-        const yoga = require("yoga-layout");
-        this.yoga = yoga;
-      } catch (e2) {
-        console.error("Failed to initialize Yoga Layout", e, e2);
+      const mod = await import("yoga-layout");
+
+      this.yoga = mod.default || mod;
+
+      for (const [key, value] of Object.entries(mod)) {
+        if (key !== "default" && !(key in this.yoga)) {
+          (this.yoga as any)[key] = value;
+        }
       }
+
+      if (this.debug) {
+        console.log("Yoga Layout initialized successfully via Base64");
+      }
+    } catch (e) {
+      console.error("Failed to initialize Yoga Layout:", e);
     }
   }
 
@@ -35,8 +40,8 @@ export class LayoutManager {
     root: AnyLayer | Div,
     width: number,
     height: number,
-    ctx?: SKRSContext2D,
-    canvas?: Canvas | SvgCanvas,
+    ctx?: ICanvasRenderingContext2D,
+    canvas?: ICanvas,
   ) {
     if (!this.yoga) {
       if (this.debug) LazyLog.log("warn", "LayoutManager: Yoga not initialized yet");
@@ -59,8 +64,8 @@ export class LayoutManager {
 
   private createNode(
     layer: AnyLayer | Div,
-    ctx?: SKRSContext2D,
-    canvas?: Canvas | SvgCanvas,
+    ctx?: ICanvasRenderingContext2D,
+    canvas?: ICanvas,
   ): YogaNode | null {
     if (!this.yoga) return null;
 

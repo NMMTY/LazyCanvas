@@ -6,8 +6,9 @@ import {
   RadiusCorner,
   AnyCentring,
   StrokeOptions,
+  ICanvas,
+  ICanvasRenderingContext2D,
 } from "../../types";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
 import {
   isColor,
   transform,
@@ -162,8 +163,8 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
   ): Promise<void> {

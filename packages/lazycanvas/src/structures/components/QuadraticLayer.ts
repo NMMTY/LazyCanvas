@@ -1,6 +1,5 @@
 import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, ScaleType, Point, Centring, LayerType, StrokeOptions } from "../../types";
-import { Canvas, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
+import { ColorType, ScaleType, Point, Centring, LayerType, StrokeOptions, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
   isColor,
   transform,
@@ -169,7 +168,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
    * @param {LayersManager} [manager] - The layer's manager.
    * @returns {Object} The bounding box details including max, min, center, width, and height.
    */
-  getBoundingBox(ctx: SKRSContext2D, canvas: Canvas | SvgCanvas, manager: LayersManager) {
+  getBoundingBox(ctx: ICanvasRenderingContext2D, canvas: ICanvas, manager: LayersManager) {
     const parcer = parser(ctx, canvas, manager);
 
     const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
@@ -197,8 +196,8 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
   async draw(
-    ctx: SKRSContext2D,
-    canvas: Canvas | SvgCanvas,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
   ): Promise<void> {
