@@ -1,4 +1,3 @@
-import { Fonts } from "../../helpers/Fonts";
 import type { ICanvasAdapter, IFontsAdapter } from "../../types";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Font, type IFonts } from "../helpers";
@@ -23,10 +22,23 @@ export class FontsManager implements IFontsManager {
     this.map = new Map();
     this.debug = opts?.debug || false;
     this.adapter = opts?.adapter?.fonts;
-
-    this.loadFonts(Fonts);
   }
 
+  /**
+   * Registers every family/weight of a font list.
+   *
+   * The bundled Geist families are no longer loaded automatically — they are
+   * ~2.7 MB of base64 data that most projects never use. Opt in explicitly:
+   *
+   * ```ts
+   * import { Fonts } from "@nmmty/lazycanvas/fonts";
+   *
+   * canvas.manager.fonts.loadFonts(Fonts);
+   * ```
+   *
+   * @param {IFonts} [fontList] - Families mapped to weight/base64 pairs.
+   * @returns {this} The current instance for chaining.
+   */
   loadFonts(fontList: IFonts): this {
     this.add(
       ...Object.entries(fontList).flatMap(([fontFamily, fontWeights]) => {

@@ -1,3 +1,4 @@
+import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import {
   Centring,
@@ -198,8 +199,17 @@ describe("JSON round-trip", () => {
 });
 
 describe("Text rendering", () => {
-  it("draws visible glyphs with a bundled font", async () => {
+  it("draws nothing recognisable for a family that was never registered", async () => {
+    // The bundled fonts are opt-in, so "Geist" is unknown until loadFonts runs.
     const scene = new Scene(240, 60, { adapter });
+    expect(scene.lazyCanvas.manager.fonts.size()).toBe(0);
+    expect(scene.lazyCanvas.manager.fonts.has("Geist")).toBe(false);
+  });
+
+  it("draws visible glyphs once the bundled fonts are loaded", async () => {
+    const scene = new Scene(240, 60, { adapter });
+    scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
+    expect(scene.lazyCanvas.manager.fonts.has("Geist")).toBe(true);
     scene.load(
       new Div().add(
         new TextLayer({

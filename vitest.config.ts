@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@nmmty/lazycanvas/node": resolve(__dirname, "packages/lazycanvas/src/node/index.ts"),
+      "@nmmty/lazycanvas/fonts": resolve(__dirname, "packages/lazycanvas/src/fonts/index.ts"),
       "@nmmty/lazycanvas": resolve(__dirname, "packages/lazycanvas/src/index.ts"),
       "@nmmty/adapter-node": resolve(__dirname, "packages/adapter-node/src/index.ts"),
       "@nmmty/adapter-browser": resolve(__dirname, "packages/adapter-browser/src/index.ts"),
