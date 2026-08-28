@@ -84,7 +84,6 @@ export enum Export {
   PNG = "png",
   APNG = "apng",
   JPG = "jpg",
-  SVG = "svg",
   WEBP = "webp",
   YAML = "yaml",
   JSON = "json",

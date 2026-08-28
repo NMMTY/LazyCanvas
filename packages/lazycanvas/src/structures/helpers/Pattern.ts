@@ -1,6 +1,6 @@
 import { FillType, PatternType, AnyPatternType, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import { LazyCanvas } from "../LazyCanvas";
-import { Exporter } from "./Exporter";
+import { serializeCanvas } from "./serialize";
 import { LazyError, loadImageFallback } from "../../utils";
 
 export interface IPattern {
@@ -47,7 +47,7 @@ export class Pattern implements IPattern {
     let src = this.src;
     if (this.src instanceof LazyCanvas) {
       // @ts-ignore
-      src = new Exporter(this.src).syncExport("json");
+      src = serializeCanvas(this.src);
     }
     return {
       fillType: this.fillType,

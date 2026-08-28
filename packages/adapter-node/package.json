@@ -13,7 +13,12 @@
   "scripts": {
     "build": "tsc"
   },
-  "keywords": ["canvas", "node", "adapter", "@napi-rs/canvas"],
+  "keywords": [
+    "canvas",
+    "node",
+    "adapter",
+    "@napi-rs/canvas"
+  ],
   "author": "NMMTY",
   "license": "MIT",
   "dependencies": {
@@ -26,5 +31,18 @@
     "typescript": "^5.4.5",
     "@types/node": "^22.10.2",
     "tsx": "^4.19.2"
-  }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git",
+    "directory": "packages/adapter-node"
+  },
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  },
+  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-node#readme"
 }

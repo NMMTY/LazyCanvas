@@ -13,7 +13,14 @@
   "scripts": {
     "build": "tsc"
   },
-  "keywords": ["canvas", "browser", "adapter", "html", "react", "nextjs"],
+  "keywords": [
+    "canvas",
+    "browser",
+    "adapter",
+    "html",
+    "react",
+    "nextjs"
+  ],
   "author": "NMMTY",
   "license": "MIT",
   "peerDependencies": {
@@ -21,5 +28,18 @@
   },
   "devDependencies": {
     "typescript": "^5.4.5"
-  }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git",
+    "directory": "packages/adapter-browser"
+  },
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  },
+  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-browser#readme"
 }

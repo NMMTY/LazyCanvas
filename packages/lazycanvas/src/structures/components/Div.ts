@@ -6,7 +6,7 @@ import {
   ICanvasRenderingContext2D,
   ICanvasAdapter
 } from "../../types";
-import { generateID, LazyLog } from "../../utils";
+import { generateID, getChildren, LazyLog } from "../../utils";
 import { LayersManager } from "../managers";
 import { BaseLayer, IBaseLayer, IBaseLayerProps } from "./BaseLayer";
 
@@ -199,25 +199,14 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
   }
 
   /**
-   * Update state for all child layers (for animation support)
-   * @param {number} time - Current time in seconds
-   */
-  public updateState(time: number): void {
-    for (const layer of this.layers) {
-      if ("updateState" in layer && typeof layer.updateState === "function") {
-        layer.updateState(time);
-      }
-    }
-  }
-
-  /**
-   * Renders a single layer or group of layers.
+   * Renders a layer and, unless it manages its own children, its subtree.
    * @param {AnyLayer | Div} [layer] - The layer or group to render.
-   * @param {SKRSContext2D} [ctx] - The canvas rendering context.
-   * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
+   * @param {ICanvasRenderingContext2D} [ctx] - The canvas rendering context.
+   * @param {ICanvas} [canvas] - The canvas instance.
    * @param {LayersManager} [manager] - The layer's manager.
    * @param {boolean} [debug] - Whether to enable debug logging.
-   * @returns {Promise<SKRSContext2D>} The canvas rendering context after rendering.
+   * @param {ICanvasAdapter} [adapter] - The canvas adapter.
+   * @returns {Promise<ICanvasRenderingContext2D>} The context after rendering.
    */
   private async renderLayer(
     layer: AnyLayer | Div,
@@ -225,49 +214,38 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-    adapter?: ICanvasAdapter
+    adapter?: ICanvasAdapter,
   ): Promise<ICanvasRenderingContext2D> {
     if (debug) LazyLog.log("info", `Rendering ${layer.id}...\nData:`, layer.toJSON());
-    if (layer.visible) {
-      ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
+    if (!layer.visible) return ctx;
 
-      await layer.draw(ctx, canvas, manager, debug, adapter);
+    ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
 
-      // Draw children if any (and not a Div, as Div handles its own children)
-      // Actually, if we want to support children on any layer, we should handle it here.
-      // But Div.draw already handles children.
-      // If we handle it here for Div, we get double rendering.
-      // So we skip Div.
+    await layer.draw(ctx, canvas, manager, debug, adapter);
 
-      const children = (layer as any).children;
-      if (!(layer instanceof Div) && children && Array.isArray(children) && children.length > 0) {
-        ctx.save();
+    // A Div renders its own subtree inside `draw`, so descending into it here
+    // would draw every descendant twice.
+    const children = layer instanceof Div ? [] : getChildren(layer);
+    if (children.length > 0) {
+      ctx.save();
 
-        // Apply parent position offset
-        // LayoutManager sets position relative to parent.
-        // We need to translate context to parent's position so children are drawn relative to it.
-
-        // However, layer.draw() might have already drawn the layer at that position.
-        // And layer.draw() usually restores context.
-
-        // So we are back at parent's parent coordinate system.
-        // We need to translate to layer's position.
-
-        if (layer.props.position) {
-          const x = typeof layer.props.position.x === "number" ? layer.props.position.x : 0;
-          const y = typeof layer.props.position.y === "number" ? layer.props.position.y : 0;
-          ctx.translate(x, y);
-        }
-
-        for (const child of children) {
-          await this.renderLayer(child, ctx, canvas, manager, debug, adapter);
-        }
-
-        ctx.restore();
+      // Layout positions are relative to the parent, so move into the parent's
+      // coordinate space before drawing the children.
+      const position = layer.props?.position;
+      if (position) {
+        const x = typeof position.x === "number" ? position.x : 0;
+        const y = typeof position.y === "number" ? position.y : 0;
+        ctx.translate(x, y);
       }
 
-      ctx.shadowColor = "transparent";
+      for (const child of children) {
+        await this.renderLayer(child, ctx, canvas, manager, debug, adapter);
+      }
+
+      ctx.restore();
     }
+
+    ctx.shadowColor = "transparent";
     return ctx;
   }
 
@@ -306,6 +284,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
       type: this.type,
       visible: this.visible,
       zIndex: this.zIndex,
+      props: this.props,
       // @ts-ignore
       layers: this.layers.map((c) => c.toJSON()),
     };

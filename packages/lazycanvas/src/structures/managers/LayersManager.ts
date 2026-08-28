@@ -1,6 +1,7 @@
 import { AnyLayer } from "../../types";
 import { Div } from "../components";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
+import { findLayer } from "../../utils/tree";
 import { LazyCanvas } from "../LazyCanvas";
 
 /**
@@ -68,7 +69,6 @@ export class LayersManager implements ILayersManager {
    */
   public remove(...ids: string[]): this {
     for (const id of ids) {
-      const layer = this.map.get(id);
       this.map.delete(id);
     }
     return this;
@@ -192,18 +192,12 @@ export class LayersManager implements ILayersManager {
   }
 
   /**
-   * Searches for a layer or group by its ID, including within groups.
+   * Recursively searches the whole layer tree for a layer with the given ID,
+   * descending into both `Div.layers` and a layer's `children`.
    * @param {string} [id] - The ID of the layer or group to search for.
    * @returns {AnyLayer | Div | undefined} The found layer or group, or undefined if not found.
    */
   private crossSearch(id: string): AnyLayer | Div | undefined {
-    for (const layer of Array.from(this.map.values())) {
-      if (layer.id === id) return layer;
-      if (layer instanceof Div) {
-        const result = layer.layers.find((l) => l.id === id);
-        if (result) return result;
-      }
-    }
-    return undefined;
+    return findLayer(this.toArray(), id) as AnyLayer | Div | undefined;
   }
 }

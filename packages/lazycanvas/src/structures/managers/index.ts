@@ -1,3 +1,4 @@
 export * from "./LayersManager";
 export * from "./FontsManager";
-export * from "./piplines";
+export * from "./LayoutManager";
+export * from "./pipelines";

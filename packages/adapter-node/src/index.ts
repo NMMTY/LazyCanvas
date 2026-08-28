@@ -1,4 +1,4 @@
-import { Canvas, GlobalFonts, loadImage as napiLoadImage, Path2D } from "@napi-rs/canvas";
+import { Canvas, GlobalFonts, loadImage as napiLoadImage, Path2D as NapiPath2D } from "@napi-rs/canvas";
 import type {
   ICanvasAdapter,
   ICanvas,
@@ -14,17 +14,15 @@ export class NodeCanvasAdapter implements ICanvasAdapter {
   fonts: IFontsAdapter = {
     registerFromPath: (path: string, family: string): boolean => {
       try {
-        const result = GlobalFonts.registerFromPath(path, family);
-        return result !== null;
+        return GlobalFonts.registerFromPath(path, family) !== null;
       } catch {
         return false;
       }
     },
     register: (source: string, family: string): boolean => {
       try {
-        const buffer = Buffer.from(source);
-        const result = GlobalFonts.register(buffer, family);
-        return result !== null;
+        const buffer = Buffer.from(source, "base64");
+        return GlobalFonts.register(buffer, family) !== null;
       } catch {
         return false;
       }
@@ -32,19 +30,22 @@ export class NodeCanvasAdapter implements ICanvasAdapter {
     has: (family: string): boolean => {
       return GlobalFonts.has(family);
     },
-    families: GlobalFonts.families.map((f: any) =>
-      typeof f === "string" ? f : f.family || "",
-    ),
+    get families(): string[] {
+      return GlobalFonts.families.map((f: any) => (typeof f === "string" ? f : f.family || ""));
+    },
   };
 
   createCanvas(width: number, height: number): ICanvas {
-    const canvas = new Canvas(width, height);
-    return canvas as unknown as ICanvas;
+    return new Canvas(width, height) as unknown as ICanvas;
   }
 
   loadImage = async (src: ImageSource): Promise<any> => {
     return napiLoadImage(src as any);
   };
 
-  Path2D?: Path2D;
+  /**
+   * `Path2D` implementation of @napi-rs/canvas. Node has no global `Path2D`,
+   * so layers must take the constructor from the adapter.
+   */
+  Path2D = NapiPath2D;
 }

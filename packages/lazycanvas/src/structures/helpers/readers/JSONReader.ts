@@ -1,4 +1,4 @@
-import { AnyLayer, JSONLayer, LayerType } from "../../../types";
+import { AnyLayer, ICanvasAdapter, JSONLayer, LayerType } from "../../../types";
 import {
   BezierLayer,
   Div,
@@ -22,9 +22,7 @@ import {
 } from "../../components";
 import { Gradient, IGradient, IPattern, Pattern } from "../";
 import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
-import * as fs from "node:fs";
 import { LazyError, LazyLog } from "../../../utils";
-import * as path from "node:path";
 import { isSignal } from "../../../core";
 import { ClassicRenderPipeline } from "../../managers";
 
@@ -40,7 +38,10 @@ export class JSONReader {
    * @returns {LazyCanvas} The created LazyCanvas instance.
    * @throws {LazyError} If the data contains invalid options or no layers are found.
    */
-  static read(data: IOLazyCanvas, opts?: { debug?: boolean }): LazyCanvas {
+  static read(
+    data: IOLazyCanvas,
+    opts?: { debug?: boolean; adapter?: ICanvasAdapter },
+  ): LazyCanvas {
     if (data.options.width <= 0 || data.options.height <= 0) {
       throw new LazyError("Invalid width or height");
     }
@@ -69,29 +70,11 @@ export class JSONReader {
     const canvas = new LazyCanvas(ClassicRenderPipeline, {
       settings: data,
       debug: opts?.debug,
+      adapter: opts?.adapter,
     }).create(data.options.width, data.options.height);
     canvas.manager.layers.add(...layers);
 
     return canvas;
-  }
-
-  /**
-   * Reads a JSON file and converts it into a LazyCanvas instance.
-   * @param {string} [file] - The path to the JSON file.
-   * @param {Object} [opts] - Optional settings.
-   * @param {boolean} [opts.debug] - Whether to enable debug logging.
-   * @returns {LazyCanvas} The created LazyCanvas instance.
-   * @throws {LazyError} If the file does not exist.
-   */
-  static readFile(file: string, opts?: { debug?: boolean }): LazyCanvas {
-    const filePath = path.resolve(file);
-    if (!fs.existsSync(filePath)) throw new LazyError("File not found");
-    const json = fs.readFileSync(filePath, "utf-8");
-    const data = JSON.parse(json) as IOLazyCanvas;
-
-    if (opts?.debug) LazyLog.log("info", "Reading JSON file...\nFile:", filePath, "\nData:", data);
-
-    return JSONReader.read(data, opts);
   }
 
   /**
@@ -123,8 +106,10 @@ export class JSONReader {
    */
   private static layerParse(layer: JSONLayer | IDiv | Div, misc?: IBaseLayerMisc): AnyLayer | Div {
     if (layer instanceof Div) {
-      return new Div({}, misc).add(
-        ...(layer.layers.map((l: any) => this.layerParse(l)) as AnyLayer[]),
+      return new Div(layer.props, misc).add(
+        ...(layer.layers.map((l: any) =>
+          this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
+        ) as AnyLayer[]),
       );
     } else {
       switch (layer.type) {
@@ -159,8 +144,10 @@ export class JSONReader {
             this.fillParse(layer),
           );
         case LayerType.Group:
-          return new Div({}, misc).add(
-            ...(layer as unknown as IDiv).layers.map((l: any) => this.layerParse(l)),
+          return new Div((layer as unknown as IDiv).props, misc).add(
+            ...((layer as unknown as IDiv).layers ?? []).map((l: any) =>
+              this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
+            ),
           );
         default:
           return layer as AnyLayer;

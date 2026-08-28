@@ -121,7 +121,6 @@ export type AnyExport =
   | "canvas"
   | "ctx"
   | "buffer"
-  | "svg"
   | "png"
   | "apng"
   | "jpg"
@@ -199,7 +198,7 @@ export type PointNumber = {
   y: number;
 };
 
-export type Extensions = "svg" | "png" | "jpeg" | "jpg" | "gif" | "webp" | "yaml" | "json";
+export type Extensions = "png" | "jpeg" | "jpg" | "webp" | "yaml" | "json";
 
 export interface Transform {
   rotate?: number;

@@ -9,7 +9,7 @@ import {
 } from "./managers";
 import { LayoutManager } from "./managers/LayoutManager";
 import { IDiv } from "./components";
-import { LazyLog, resizeLayers, resize } from "../utils";
+import { LazyError, LazyLog, registerPath2D, resizeLayers, resize } from "../utils";
 
 /**
  * Interface representing the LazyCanvas structure.
@@ -64,7 +64,16 @@ export class LazyCanvas implements ILazyCanvas {
     renderPipline: RenderManagerConstructor = ClassicRenderPipeline,
     opts?: { debug?: boolean; settings?: IOLazyCanvas; adapter?: ICanvasAdapter },
   ) {
-    this.adapter = opts?.adapter!;
+    if (!opts?.adapter) {
+      throw new LazyError(
+        "A canvas adapter is required. Install and pass one, e.g.:\n" +
+          '  import { NodeCanvasAdapter } from "@nmmty/adapter-node";\n' +
+          "  new LazyCanvas(ClassicRenderPipeline, { adapter: new NodeCanvasAdapter() })",
+      );
+    }
+    this.adapter = opts.adapter;
+    // Make the adapter's Path2D reachable from layers created without one.
+    registerPath2D(this.adapter.Path2D);
     this.canvas = this.adapter.createCanvas(0, 0);
     this.ctx = this.canvas.getContext("2d");
     this.manager = {

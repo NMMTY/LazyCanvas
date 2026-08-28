@@ -13,7 +13,14 @@
   "scripts": {
     "build": "tsc"
   },
-  "keywords": ["react", "canvas", "jsx", "scene", "lazy", "nextjs"],
+  "keywords": [
+    "react",
+    "canvas",
+    "jsx",
+    "scene",
+    "lazy",
+    "nextjs"
+  ],
   "author": "NMMTY",
   "license": "MIT",
   "peerDependencies": {
@@ -22,7 +29,20 @@
     "@nmmty/adapter-browser": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "^18.0.0",
+    "@types/react": "^19.0.0",
     "typescript": "^5.4.5"
-  }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git",
+    "directory": "packages/adapter-react"
+  },
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  },
+  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-react#readme"
 }

@@ -1,9 +1,10 @@
 import { Div } from "../structures/components";
-import { AnyLayer, Export, ICanvas, ICanvasAdapter } from "../types";
+import { AnyExport, AnyLayer, Export, ICanvas, ICanvasAdapter } from "../types";
 import { ThreadScheduler } from "./ThreadScheduler";
 import { ThreadGenerator, Signal } from "./Signal";
 import { LazyCanvas } from "../structures/LazyCanvas";
 import { ModernRenderPipeline } from "../structures/managers";
+import { walkLayers } from "../utils";
 
 export class Scene {
   public readonly lazyCanvas: LazyCanvas;
@@ -65,11 +66,21 @@ export class Scene {
   }
 
   private updateAllStates(time: number): void {
-    for (const layer of this.allLayers) {
+    for (const layer of walkLayers(this.allLayers)) {
       if ("updateState" in layer && typeof layer.updateState === "function") {
-        layer.updateState(time);
+        (layer as { updateState(t: number): void }).updateState(time);
       }
     }
+  }
+
+  /**
+   * Encodes whatever is currently on the canvas, without rendering a new frame.
+   *
+   * @param {AnyExport} [format] - The target format.
+   * @returns {any} A buffer/data URL for raster formats, or the raw context/canvas.
+   */
+  public encode(format: AnyExport): any {
+    return this.lazyCanvas.manager.render.encode(format);
   }
 
   public async renderAnimation(
