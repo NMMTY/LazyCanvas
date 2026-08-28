@@ -8,14 +8,12 @@ import React, {
   forwardRef,
   useImperativeHandle,
   type ReactNode,
-  type ComponentType,
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
 import {
   Scene as LazyScene,
   createElement,
-  Fragment,
   Div,
   Signal,
   type ThreadGenerator,
@@ -87,13 +85,11 @@ export function createLayerComponent<T extends Record<string, any>>(
   LayerClass: new (props?: T, misc?: any) => any,
   displayName?: string,
 ): React.ComponentType<T & { children?: React.ReactNode }> {
-  const Wrapper = forwardRef<any, T & { children?: React.ReactNode }>((props, ref) => {
-    return React.createElement(LayerComponentInner, {
-      layerClass: LayerClass,
-      layerProps: props,
-      forwardedRef: ref,
-    }) as any;
-  }) as ForwardRefExoticComponent<T & { children?: React.ReactNode } & RefAttributes<any>> & {
+  // The component never renders DOM: `createElementTree` reads the marker below
+  // and instantiates the real layer from the element's props.
+  const Wrapper = forwardRef<any, T & { children?: React.ReactNode }>(
+    () => null,
+  ) as ForwardRefExoticComponent<T & { children?: React.ReactNode } & RefAttributes<any>> & {
     [LAZY_LAYER_CLASS]: any;
   };
 
@@ -102,23 +98,6 @@ export function createLayerComponent<T extends Record<string, any>>(
   (Wrapper as any)[LAZY_LAYER_CLASS] = LayerClass;
 
   return Wrapper as React.FC<T>;
-}
-
-/**
- * Internal component that stores layer data for tree traversal.
- */
-function LayerComponentInner({
-  layerClass,
-  layerProps,
-  forwardedRef,
-}: {
-  layerClass: any;
-  layerProps: any;
-  forwardedRef: any;
-}) {
-  // This component never renders visible DOM.
-  // Its props are read by the Scene's createElementTree via the marker.
-  return null;
 }
 
 /**
@@ -203,23 +182,14 @@ function createElementTree(
     return instantiateLayer(LayerClass, elementProps, elementChildren, adapter);
   }
 
-  // Function / class component
+  // Function / class component: look it up in the registry by display name.
+  // Anything unknown (plain DOM elements and user components) is skipped.
   if (typeof type === "function") {
-    // 1. Check marker on wrapper component
-    const LayerClass = getLayerClass(type);
-    if (LayerClass) {
-      return instantiateLayer(LayerClass, elementProps, elementChildren, adapter);
-    }
-
-    // 2. Check registry by display name
-    const name =
-      (type as any).displayName || (type as any).name || "";
+    const name = (type as any).displayName || (type as any).name || "";
     const meta = LAYER_REGISTRY[name];
     if (meta) {
       return instantiateLayer(meta.classRef, elementProps, elementChildren, adapter);
     }
-
-    // 3. Unknown component — skip silently (DOM components like <div>, <span>, etc.)
     return null;
   }
 
@@ -296,19 +266,32 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<LazyScene | null>(null);
-  const adapterRef = useRef<ICanvasAdapter>(adapter as ICanvasAdapter);
-  const childrenRef = useRef<ReactNode>(children);
-  childrenRef.current = children;
-  const animatedRef = useRef(animated);
-  animatedRef.current = animated;
+  const adapterRef = useRef<ICanvasAdapter | null>(adapter ?? null);
 
-  // Stores registered animation factories for replaying on loop
-  type AnimEntry = { signal: Signal<any>; factory: () => ThreadGenerator };
+  // Callbacks are read through refs so that a new inline function on every
+  // parent render does not tear down the scene or restart the animation loop.
+  const onReadyRef = useRef(onReady);
+  const onFrameRef = useRef(onFrame);
+  onReadyRef.current = onReady;
+  onFrameRef.current = onFrame;
+
+  // Stores registered animation factories so a loop can replay them.
+  type AnimEntry = { signal: Signal<any> | null; factory: () => ThreadGenerator };
   const animEntriesRef = useRef<AnimEntry[]>([]);
   const origPlayRef = useRef<(signal: any, gen: any) => void>(() => {});
   const origAddRef = useRef<(gen: any) => void>(() => {});
 
-  function flushAnimations() {
+  // Bumped whenever a new LazyScene instance exists, so the render effects
+  // below re-run against it.
+  const [sceneGeneration, setSceneGeneration] = useState(0);
+
+  const [contextValue, setContextValue] = useState<SceneContextValue>({
+    scene: null,
+    canvas: null,
+    adapter: adapterRef.current as ICanvasAdapter,
+  });
+
+  const flushAnimations = useCallback(() => {
     const scene = sceneRef.current;
     if (!scene) return;
     scene.clearAnimations();
@@ -320,53 +303,50 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
         origAddRef.current(entry.factory());
       }
     }
-  }
+  }, []);
 
-  useImperativeHandle(ref, () => ({
-    get scene() {
-      return sceneRef.current;
-    },
-    renderFrame(time: number) {
-      if (!sceneRef.current) return Promise.resolve();
-      return sceneRef.current.renderFrame(time);
-    },
-    playAnimation(signal: Signal<any>, genOrFactory: any) {
-      const factory = typeof genOrFactory === "function" ? genOrFactory : () => genOrFactory;
-      animEntriesRef.current.push({ signal, factory });
-      origPlayRef.current(signal, factory());
-    },
-    addAnimation(genOrFactory: any) {
-      const factory = typeof genOrFactory === "function" ? genOrFactory : () => genOrFactory;
-      animEntriesRef.current.push({ signal: null as any, factory });
-      origAddRef.current(factory());
-    },
-    clearAnimations() {
-      animEntriesRef.current = [];
-      sceneRef.current?.clearAnimations();
-    },
-    resetTimeline() {
-      sceneRef.current?.resetTimeline();
-    },
-    getLayer(id: string) {
-      return sceneRef.current?.getLayer(id);
-    },
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      get scene() {
+        return sceneRef.current;
+      },
+      renderFrame(time: number) {
+        if (!sceneRef.current) return Promise.resolve();
+        return sceneRef.current.renderFrame(time);
+      },
+      playAnimation(signal: Signal<any>, genOrFactory: any) {
+        sceneRef.current?.playAnimation(signal, genOrFactory);
+      },
+      addAnimation(genOrFactory: any) {
+        sceneRef.current?.addAnimation(genOrFactory);
+      },
+      clearAnimations() {
+        animEntriesRef.current = [];
+        sceneRef.current?.clearAnimations();
+      },
+      resetTimeline() {
+        sceneRef.current?.resetTimeline();
+      },
+      getLayer(id: string) {
+        return sceneRef.current?.getLayer(id);
+      },
+    }),
+    [],
+  );
 
-  const [contextValue, setContextValue] = useState<SceneContextValue>({
-    scene: null,
-    canvas: null,
-    adapter: adapterRef.current,
-  });
-
+  // --- Scene lifecycle ------------------------------------------------------
   useEffect(() => {
     if (!canvasRef.current) return;
-    if (!adapterRef.current) {
-      adapterRef.current = new BrowserCanvasAdapter(canvasRef.current);
-    }
-    const sc = new LazyScene(width, height, { adapter: adapterRef.current, debug });
-    sceneRef.current = sc;
 
-    // Intercept playAnimation/addAnimation on the raw scene so factories are tracked
+    const canvasAdapter = adapter ?? new BrowserCanvasAdapter(canvasRef.current);
+    adapterRef.current = canvasAdapter;
+
+    const sc = new LazyScene(width, height, { adapter: canvasAdapter, debug });
+    sceneRef.current = sc;
+    animEntriesRef.current = [];
+
+    // Record every animation so `animated` loops can replay them from the start.
     const origPlay = sc.playAnimation.bind(sc);
     const origAdd = sc.addAnimation.bind(sc);
     origPlayRef.current = origPlay;
@@ -378,118 +358,115 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
     };
     sc.addAnimation = (genOrFactory: any) => {
       const factory = typeof genOrFactory === "function" ? genOrFactory : () => genOrFactory;
-      animEntriesRef.current.push({ signal: null as any, factory });
+      animEntriesRef.current.push({ signal: null, factory });
       origAdd(factory());
     };
 
-    setContextValue({
-      scene: sc,
-      canvas: sc.lazyCanvas.canvas,
-      adapter: adapterRef.current,
-    });
-    onReady?.(sc, sc.lazyCanvas.canvas);
+    setContextValue({ scene: sc, canvas: sc.lazyCanvas.canvas, adapter: canvasAdapter });
+    setSceneGeneration((g) => g + 1);
+    onReadyRef.current?.(sc, sc.lazyCanvas.canvas);
+
     return () => {
-      sceneRef.current = null;
       sc.clearAnimations();
+      sceneRef.current = null;
     };
-  }, [width, height]);
+  }, [width, height, adapter, debug]);
 
+  // --- Build the layer tree and draw one frame ------------------------------
+  // Depends on `children`, so updating a layer's props from React state
+  // re-renders the canvas.
   useEffect(() => {
-    if (!autoRender) return;
-
     const scene = sceneRef.current;
-    if (!scene) return;
+    if (!scene || !autoRender) return;
 
     let isCancelled = false;
-    let rafId: number | null = null;
 
-    const buildAndRenderTree = async () => {
+    (async () => {
       const layoutManager = scene.lazyCanvas.manager.layout;
-
-      if (layoutManager && layoutManager.ready) {
-        await layoutManager.ready;
-      }
-
+      if (layoutManager?.ready) await layoutManager.ready;
       if (isCancelled) return;
 
       const tree = createElementTree(
-        React.createElement(React.Fragment, null, childrenRef.current),
-        adapterRef.current,
+        React.createElement(React.Fragment, null, children),
+        adapterRef.current as ICanvasAdapter,
       );
 
       scene.lazyCanvas.manager.layers.clear();
 
-      if (tree) {
-        if (Array.isArray(tree)) {
-          for (const layer of tree) {
-            if (layer && typeof layer === "object" && "id" in layer) {
-              scene.load(layer);
-            }
-          }
-        } else if (typeof tree === "object" && "id" in tree) {
-          scene.load(tree);
-        }
+      for (const layer of Array.isArray(tree) ? tree : [tree]) {
+        if (layer && typeof layer === "object" && "id" in layer) scene.load(layer);
       }
 
-      if (scene.lazyCanvas.manager.layers.size() > 0) {
-        try {
-          await scene.renderFrame(0);
-          if (!isCancelled) {
-            onFrame?.(scene);
-          }
-        } catch (err) {
-          console.error("[Scene] renderFrame error:", err);
-        }
+      if (scene.lazyCanvas.manager.layers.size() === 0) return;
+
+      try {
+        await scene.renderFrame(0);
+        if (!isCancelled) onFrameRef.current?.(scene);
+      } catch (err) {
+        console.error("[Scene] renderFrame error:", err);
       }
+    })();
+
+    return () => {
+      isCancelled = true;
     };
+  }, [children, autoRender, sceneGeneration]);
 
-    buildAndRenderTree().then(() => {
+  // --- Animation loop -------------------------------------------------------
+  // Kept separate from the tree build so that re-rendering children does not
+  // restart a running animation.
+  useEffect(() => {
+    if (!autoRender || !animated) return;
+
+    let isCancelled = false;
+    let rafId: number | null = null;
+
+    const maxLoops = typeof animated === "number" ? animated : Infinity;
+    let loopCount = 0;
+    let lastSchedulerEmpty = true;
+    let animStartTime = performance.now();
+
+    const animate = () => {
       if (isCancelled) return;
-      const animOpt = animatedRef.current;
-      if (!animOpt) return;
 
-      const maxLoops = typeof animOpt === "number" ? animOpt : Infinity;
-      let loopCount = 0;
-      let lastSchedulerEmpty = true;
-      let animStartTime = performance.now();
+      const sc = sceneRef.current;
+      if (!sc) return;
 
-      const animate = () => {
-        if (isCancelled) return;
+      const hasThreads = sc.hasActiveAnimations();
 
-        const sc = sceneRef.current;
-        if (!sc) return;
+      // All generators finished — replay them if we still have loops left.
+      if (!hasThreads && !lastSchedulerEmpty && animEntriesRef.current.length > 0) {
+        loopCount++;
+        if (loopCount >= maxLoops) return;
+        flushAnimations();
+        animStartTime = performance.now();
+      }
+      lastSchedulerEmpty = !hasThreads;
 
-        const hasThreads = typeof (sc as any).hasActiveAnimations === "function"
-          ? (sc as any).hasActiveAnimations()
-          : false;
+      if (sc.lazyCanvas.manager.layers.size() === 0) {
+        rafId = requestAnimationFrame(animate);
+        return;
+      }
 
-        // Restart when all generators finish
-        if (!hasThreads && !lastSchedulerEmpty && animEntriesRef.current.length > 0) {
-          loopCount++;
-          if (loopCount >= maxLoops) return;
-          flushAnimations();
-          animStartTime = performance.now();
-        }
-        lastSchedulerEmpty = !hasThreads;
-
-        const elapsed = (performance.now() - animStartTime) / 1000;
-        sc.renderFrame(elapsed).then(() => {
-          if (!isCancelled) {
-            onFrame?.(sc);
-            rafId = requestAnimationFrame(animate);
-          }
-        }).catch(() => {
+      const elapsed = (performance.now() - animStartTime) / 1000;
+      sc.renderFrame(elapsed)
+        .then(() => {
+          if (isCancelled) return;
+          onFrameRef.current?.(sc);
+          rafId = requestAnimationFrame(animate);
+        })
+        .catch(() => {
           if (!isCancelled) rafId = requestAnimationFrame(animate);
         });
-      };
-      rafId = requestAnimationFrame(animate);
-    });
+    };
+
+    rafId = requestAnimationFrame(animate);
 
     return () => {
       isCancelled = true;
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [autoRender, onFrame, animated]);
+  }, [autoRender, animated, sceneGeneration, flushAnimations]);
 
   return (
     <SceneContext.Provider value={contextValue}>
@@ -503,6 +480,7 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
     </SceneContext.Provider>
   );
 });
+
 
 // ---------------------------------------------------------------------------
 // Pre-made wrappers for built-in layers

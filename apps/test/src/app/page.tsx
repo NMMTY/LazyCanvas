@@ -6,6 +6,7 @@ import TestCanvas from "@/components/TestCanvas";
 import SignalSceneTest from "@/components/SignalSceneTest";
 
 const ReactSceneTest = dynamic(() => import("@/components/ReactSceneTest"), { ssr: false });
+const ReactivityTest = dynamic(() => import("@/components/ReactivityTest"), { ssr: false });
 
 const TESTS = [
   { id: "morph", title: "MorphLayer — fill + radius", desc: "Basic filled rectangles with rounded corners" },
@@ -58,6 +59,14 @@ export default function Home() {
             <SignalSceneTest />
           </div>
         </div>
+
+        <div className="card">
+          <div className="card-title">Reactivity — children driven by React state</div>
+          <div style={{ color: "#737373", fontSize: 12, marginBottom: 12 }}>
+            The canvas must repaint when the buttons change a layer prop
+          </div>
+          <ReactivityTest />
+        </div>
       </div>
 
       <div className="section">
@@ -84,10 +93,10 @@ export default function Home() {
                 ["Gradient", "@nmmty/lazycanvas", "ok"],
                 ["Signal + Easing", "@nmmty/lazycanvas", "ok"],
                 ["Scene", "@nmmty/lazycanvas", "ok"],
-                ["BrowserCanvasAdapter", "@nmmty/lazycanvas-adapter-browser", "ok"],
-                ["React <Scene>", "@nmmty/lazycanvas-react", "ok"],
-                ["registerLayer()", "@nmmty/lazycanvas-react", "ok"],
-                ["useScene() hook", "@nmmty/lazycanvas-react", "ok"],
+                ["BrowserCanvasAdapter", "@nmmty/adapter-browser", "ok"],
+                ["React <Scene>", "@nmmty/adapter-react", "ok"],
+                ["registerLayer()", "@nmmty/adapter-react", "ok"],
+                ["useScene() hook", "@nmmty/adapter-react", "ok"],
               ].map(([feat, pkg, status]) => (
                 <tr key={feat} style={{ borderBottom: "1px solid #1a1a1a" }}>
                   <td style={{ padding: "6px 12px" }}>{feat}</td>
