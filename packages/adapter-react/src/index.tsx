@@ -383,6 +383,17 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
     (async () => {
       const layoutManager = scene.lazyCanvas.manager.layout;
       if (layoutManager?.ready) await layoutManager.ready;
+
+      // A canvas can only use a web font once it has finished loading; drawing
+      // earlier silently falls back to the browser's standard (serif) font.
+      if (typeof document !== "undefined" && document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+
+      // Fonts registered through the adapter itself load asynchronously too.
+      const adapterRef_ = adapterRef.current as { fontsReady?: () => Promise<void> } | null;
+      if (typeof adapterRef_?.fontsReady === "function") await adapterRef_.fontsReady();
+
       if (isCancelled) return;
 
       const tree = createElementTree(

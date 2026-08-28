@@ -20,6 +20,7 @@ import {
   DrawUtils,
   LazyError,
   LazyLog,
+  cssFont,
   defaultArg,
   isColor,
   parseFillStyle,
@@ -328,7 +329,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    * @returns {Object} The width and height of the text.
    */
   measureText(ctx: ICanvasRenderingContext2D, canvas: ICanvas): { width: number; height: number } {
-    ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
+    ctx.font = cssFont(this.props.font);
 
     if (this.props?.multiline?.enabled) {
       const w = parseToNormal(this.props.size?.width || "vw", ctx, canvas);
@@ -435,7 +436,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
       for (let fontSize = 1; fontSize <= this.props.font.size; fontSize++) {
         const lineHeight = fontSize * (this.props.multiline.spacing || 1.1);
 
-        ctx.font = `${this.props.font.weight} ${fontSize}px ${this.props.font.family}`;
+        ctx.font = cssFont(this.props.font, fontSize);
 
         const xm = x;
         let ym = y;
@@ -461,7 +462,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         this.drawText(this.props, ctx, fillStyle, line.text, line.x, line.y, w, line.startOffset);
       }
     } else {
-      ctx.font = `${this.props.font.weight} ${this.props.font.size}px ${this.props.font.family}`;
+      ctx.font = cssFont(this.props.font);
       this.drawText(this.props, ctx, fillStyle, unwrap(this.props.text), x, y, w, 0);
     }
     ctx.closePath();

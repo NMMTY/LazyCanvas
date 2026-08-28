@@ -1,5 +1,6 @@
 "use client";
 
+import { GEIST_MONO_FAMILY } from "@/app/fonts";
 import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
 import { FontWeight } from "@nmmty/lazycanvas";
 import { useState } from "react";
@@ -34,7 +35,7 @@ export default function ReactivityTest() {
           <Text
             layout={{ position: "absolute", left: 12, top: 12 }}
             text={`${color} · ${size}px`}
-            font={{ family: "Geist Mono", size: 14, weight: FontWeight.Regular }}
+            font={{ family: GEIST_MONO_FAMILY, size: 14, weight: FontWeight.Regular }}
             color="#e2e8f0"
             align="left"
             baseline="top"

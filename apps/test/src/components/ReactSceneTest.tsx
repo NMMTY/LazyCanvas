@@ -1,5 +1,6 @@
 "use client";
 
+import { GEIST_MONO_FAMILY } from "@/app/fonts";
 import { Group, Image, Morph, Path2D, Polygon, Scene, Text } from "@nmmty/adapter-react";
 import { Filters, FontWeight } from "@nmmty/lazycanvas";
 
@@ -112,7 +113,7 @@ export default function ReactSceneTest() {
                   <Text
                     text={`${data.data.level - 1}`}
                     font={{
-                      family: "Geist Mono",
+                      family: GEIST_MONO_FAMILY,
                       size: 36,
                       weight: FontWeight.Regular,
                     }}
@@ -175,7 +176,7 @@ export default function ReactSceneTest() {
                   <Text
                     text={`${data.data.level}`}
                     font={{
-                      family: "Geist Mono",
+                      family: GEIST_MONO_FAMILY,
                       size: 36,
                       weight: FontWeight.Regular,
                     }}
@@ -192,7 +193,7 @@ export default function ReactSceneTest() {
             <Text
               text={"UP!"}
               font={{
-                family: "Geist Mono",
+                family: GEIST_MONO_FAMILY,
                 size: 36,
                 weight: FontWeight.Regular,
               }}
