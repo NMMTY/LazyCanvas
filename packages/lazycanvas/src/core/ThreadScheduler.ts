@@ -1,4 +1,4 @@
-import { ThreadGenerator } from "./Signal";
+import type { ThreadGenerator } from "./Signal";
 
 /**
  * Thread scheduler for managing animation generators

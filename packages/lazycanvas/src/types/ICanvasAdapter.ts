@@ -8,7 +8,13 @@ export interface ICanvasGradient {
   addColorStop(offset: number, color: string): void;
 }
 
-export interface ICanvasPattern {}
+/**
+ * Handle returned by `createPattern`. Its concrete shape is implementation
+ * specific; it is only ever handed back to the same rendering context.
+ */
+export interface ICanvasPattern {
+  setTransform?(transform?: DOMMatrix2DInit): void;
+}
 
 export interface IImageData {
   data: Uint8ClampedArray;
@@ -49,12 +55,7 @@ export interface ICanvasRenderingContext2D {
   rotate(angle: number): void;
   scale(x: number, y: number): void;
   transform(a: number, b: number, c: number, d: number, e: number, f: number): void;
-  createLinearGradient(
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number,
-  ): ICanvasGradient;
+  createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;
   createRadialGradient(
     x0: number,
     y0: number,
@@ -68,14 +69,7 @@ export interface ICanvasRenderingContext2D {
   getImageData(x: number, y: number, w: number, h: number): IImageData;
   putImageData(imagedata: IImageData, dx: number, dy: number): void;
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void;
-  bezierCurveTo(
-    cp1x: number,
-    cp1y: number,
-    cp2x: number,
-    cp2y: number,
-    x: number,
-    y: number,
-  ): void;
+  bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
   ellipse(
     x: number,
     y: number,

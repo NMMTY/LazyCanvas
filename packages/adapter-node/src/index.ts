@@ -1,10 +1,10 @@
-import { Canvas, GlobalFonts, loadImage as napiLoadImage, Path2D as NapiPath2D } from "@napi-rs/canvas";
-import type {
-  ICanvasAdapter,
-  ICanvas,
-  IFontsAdapter,
-  ImageSource,
-} from "@nmmty/lazycanvas";
+import {
+  Canvas,
+  GlobalFonts,
+  Path2D as NapiPath2D,
+  loadImage as napiLoadImage,
+} from "@napi-rs/canvas";
+import type { ICanvas, ICanvasAdapter, IFontsAdapter, ImageSource } from "@nmmty/lazycanvas";
 
 /**
  * Node.js adapter for LazyCanvas using @napi-rs/canvas.

@@ -11,7 +11,7 @@ export function createElement(type: any, props: any | null, ...children: any[]):
 
   // Flatten and filter children
   const flatChildren = children
-    .flat(Infinity)
+    .flat(Number.POSITIVE_INFINITY)
     .filter((child) => child !== null && child !== undefined && child !== false);
 
   // Extract special props

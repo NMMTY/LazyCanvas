@@ -1,16 +1,24 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-import TestCanvas from "@/components/TestCanvas";
 import SignalSceneTest from "@/components/SignalSceneTest";
+import TestCanvas from "@/components/TestCanvas";
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 
 const ReactSceneTest = dynamic(() => import("@/components/ReactSceneTest"), { ssr: false });
 const ReactivityTest = dynamic(() => import("@/components/ReactivityTest"), { ssr: false });
 
 const TESTS = [
-  { id: "morph", title: "MorphLayer — fill + radius", desc: "Basic filled rectangles with rounded corners" },
-  { id: "morph-stroke", title: "MorphLayer — stroke + dash", desc: "Stroke with dash patterns and line caps" },
+  {
+    id: "morph",
+    title: "MorphLayer — fill + radius",
+    desc: "Basic filled rectangles with rounded corners",
+  },
+  {
+    id: "morph-stroke",
+    title: "MorphLayer — stroke + dash",
+    desc: "Stroke with dash patterns and line caps",
+  },
   { id: "text", title: "TextLayer — alignment", desc: "Left, center, right text alignment" },
   { id: "multiline", title: "TextLayer — multiline", desc: "Word-wrapping multiline text" },
   { id: "line", title: "LineLayer", desc: "Lines with solid and dashed strokes" },
@@ -22,7 +30,11 @@ const TESTS = [
   { id: "shadow", title: "Shadow", desc: "Shadow offsets and blur" },
   { id: "opacity", title: "Opacity", desc: "Transparency levels (1.0, 0.6, 0.3)" },
   { id: "toJSON", title: "toJSON", desc: "Layer serialization to JSON (check console)" },
-  { id: "react-scene", title: "React <Scene> - Signal + Easing", desc: "lazycanvas-react Scene component with registerLayer" },
+  {
+    id: "react-scene",
+    title: "React <Scene> - Signal + Easing",
+    desc: "lazycanvas-react Scene component with registerLayer",
+  },
 ];
 
 export default function Home() {
@@ -33,7 +45,13 @@ export default function Home() {
 
       <div className="section">
         <h2 className="section-title">Components</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(440px, 1fr))", gap: 16 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(440px, 1fr))",
+            gap: 16,
+          }}
+        >
           {TESTS.filter((t) => t.id !== "react-scene").map((t) => (
             <div className="card" key={t.id}>
               <div className="card-title">{t.title}</div>
@@ -42,7 +60,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <Logs/>
+        <Logs />
       </div>
 
       <div className="section">
@@ -52,9 +70,11 @@ export default function Home() {
           <div style={{ color: "#737373", fontSize: 12, marginBottom: 12 }}>
             JSX rendering with registerLayer and useScene hook
           </div>
-          <div  style={{
-            flexDirection: 'row'
-          }}>
+          <div
+            style={{
+              flexDirection: "row",
+            }}
+          >
             <ReactSceneTest />
             <SignalSceneTest />
           </div>
@@ -100,7 +120,9 @@ export default function Home() {
               ].map(([feat, pkg, status]) => (
                 <tr key={feat} style={{ borderBottom: "1px solid #1a1a1a" }}>
                   <td style={{ padding: "6px 12px" }}>{feat}</td>
-                  <td style={{ padding: "6px 12px", color: "#737373" }}><code className="code">{pkg}</code></td>
+                  <td style={{ padding: "6px 12px", color: "#737373" }}>
+                    <code className="code">{pkg}</code>
+                  </td>
                   <td style={{ padding: "6px 12px", color: "#22c55e" }}>{status}</td>
                 </tr>
               ))}
@@ -123,15 +145,19 @@ function Logs() {
       rerender((n) => n + 1);
       origLog(...args);
     };
-    return () => { console.log = origLog; };
+    return () => {
+      console.log = origLog;
+    };
   }, []);
 
   return (
     <div>
       <div className="log">
         {logsRef.current.length === 0 && <div className="log-entry">Waiting for render...</div>}
-        {logsRef.current.map((l, i) => (
-          <div className="log-entry success" key={i}>{l}</div>
+        {logsRef.current.map((l) => (
+          <div className="log-entry success" key={l}>
+            {l}
+          </div>
         ))}
       </div>
     </div>

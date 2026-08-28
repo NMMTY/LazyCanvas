@@ -1,10 +1,10 @@
-import { Div } from "../structures/components";
-import { AnyExport, AnyLayer, Export, ICanvas, ICanvasAdapter } from "../types";
-import { ThreadScheduler } from "./ThreadScheduler";
-import { ThreadGenerator, Signal } from "./Signal";
 import { LazyCanvas } from "../structures/LazyCanvas";
+import type { Div } from "../structures/components";
 import { ModernRenderPipeline } from "../structures/managers";
+import { type AnyExport, type AnyLayer, Export, type ICanvas, type ICanvasAdapter } from "../types";
 import { walkLayers } from "../utils";
+import type { Signal, ThreadGenerator } from "./Signal";
+import { ThreadScheduler } from "./ThreadScheduler";
 
 export class Scene {
   public readonly lazyCanvas: LazyCanvas;
@@ -13,7 +13,11 @@ export class Scene {
   private scheduler: ThreadScheduler = new ThreadScheduler();
   private lastFrameTime = 0;
 
-  constructor(width: number, height: number, opts: { debug?: boolean; adapter?: ICanvasAdapter } = {}) {
+  constructor(
+    width: number,
+    height: number,
+    opts: { debug?: boolean; adapter?: ICanvasAdapter } = {},
+  ) {
     this.lazyCanvas = new LazyCanvas(ModernRenderPipeline, opts).create(width, height);
   }
 
@@ -83,11 +87,7 @@ export class Scene {
     return this.lazyCanvas.manager.render.encode(format);
   }
 
-  public async renderAnimation(
-    startTime: number,
-    endTime: number,
-    fps: number = 30,
-  ): Promise<any[]> {
+  public async renderAnimation(startTime: number, endTime: number, fps = 30): Promise<any[]> {
     const frames: any[] = [];
     const frameDuration = 1 / fps;
 
@@ -107,7 +107,7 @@ export class Scene {
   public async renderAnimationData(
     startTime: number,
     endTime: number,
-    fps: number = 30,
+    fps = 30,
   ): Promise<Uint8ClampedArray[]> {
     const frames: Uint8ClampedArray[] = [];
     const frameDuration = 1 / fps;
@@ -125,12 +125,21 @@ export class Scene {
   }
 
   public addAnimation(generatorOrFactory: ThreadGenerator | (() => ThreadGenerator)): void {
-    const gen = typeof generatorOrFactory === "function" ? (generatorOrFactory as () => ThreadGenerator)() : generatorOrFactory;
+    const gen =
+      typeof generatorOrFactory === "function"
+        ? (generatorOrFactory as () => ThreadGenerator)()
+        : generatorOrFactory;
     this.scheduler.add(gen);
   }
 
-  public playAnimation<T>(signal: Signal<T>, generatorOrFactory: ThreadGenerator | (() => ThreadGenerator)): void {
-    const gen = typeof generatorOrFactory === "function" ? (generatorOrFactory as () => ThreadGenerator)() : generatorOrFactory;
+  public playAnimation<T>(
+    signal: Signal<T>,
+    generatorOrFactory: ThreadGenerator | (() => ThreadGenerator),
+  ): void {
+    const gen =
+      typeof generatorOrFactory === "function"
+        ? (generatorOrFactory as () => ThreadGenerator)()
+        : generatorOrFactory;
     signal.run(gen);
     this.scheduler.add(gen);
   }

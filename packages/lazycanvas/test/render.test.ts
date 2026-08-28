@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import {
   Centring,
   ClassicRenderPipeline,
@@ -11,12 +11,15 @@ import {
   TextLayer,
 } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
-import { NodeCanvasAdapter } from "@nmmty/adapter-node";
+import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
 
 /** Counts pixels matching a predicate over the scene's RGBA buffer. */
-function countPixels(data: Uint8ClampedArray, match: (r: number, g: number, b: number, a: number) => boolean) {
+function countPixels(
+  data: Uint8ClampedArray,
+  match: (r: number, g: number, b: number, a: number) => boolean,
+) {
   let n = 0;
   for (let i = 0; i < data.length; i += 4) {
     if (match(data[i], data[i + 1], data[i + 2], data[i + 3])) n++;

@@ -27,14 +27,7 @@
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git"
   },
-  "keywords": [
-    "canvas",
-    "node-canvas",
-    "browser-canvas",
-    "easy",
-    "simple",
-    "jsx"
-  ],
+  "keywords": ["canvas", "node-canvas", "browser-canvas", "easy", "simple", "jsx"],
   "author": "NMMTY",
   "license": "MIT",
   "bugs": {
@@ -67,13 +60,9 @@
   },
   "typesVersions": {
     "*": {
-      "node": [
-        "./dist/node/index.d.ts"
-      ]
+      "node": ["./dist/node/index.d.ts"]
     }
   },
   "sideEffects": false,
-  "files": [
-    "dist"
-  ]
+  "files": ["dist"]
 }

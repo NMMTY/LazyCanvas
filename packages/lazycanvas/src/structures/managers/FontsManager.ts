@@ -1,7 +1,7 @@
-import { Font, IFonts } from "../helpers";
-import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { Fonts } from "../../helpers/Fonts";
-import { ICanvasAdapter, IFontsAdapter } from "../../types";
+import type { ICanvasAdapter, IFontsAdapter } from "../../types";
+import { LazyError, LazyLog } from "../../utils/LazyUtil";
+import { Font, type IFonts } from "../helpers";
 
 /**
  * Interface representing the FontsManager.
@@ -29,13 +29,11 @@ export class FontsManager implements IFontsManager {
 
   loadFonts(fontList: IFonts): this {
     this.add(
-      ...Object.entries(fontList)
-        .map(([fontFamily, fontWeights]) => {
-          return Object.entries(fontWeights).map(([weight, base64]) => {
-            return new Font().setFamily(fontFamily).setWeight(Number(weight)).setBase64(base64);
-          });
-        })
-        .flat(),
+      ...Object.entries(fontList).flatMap(([fontFamily, fontWeights]) => {
+        return Object.entries(fontWeights).map(([weight, base64]) => {
+          return new Font().setFamily(fontFamily).setWeight(Number(weight)).setBase64(base64);
+        });
+      }),
     );
 
     return this;
@@ -44,7 +42,7 @@ export class FontsManager implements IFontsManager {
   public add(...fonts: Font[]): this {
     if (this.debug) LazyLog.log("info", `Adding fonts...\nlength: ${fonts.length}`);
     for (const font of fonts) {
-      if (this.debug) LazyLog.log("none", `Data:`, font.toJSON());
+      if (this.debug) LazyLog.log("none", "Data:", font.toJSON());
       if (!font.family) throw new LazyError("Family must be provided");
       if (!font.weight) throw new LazyError("Weight must be provided");
       if (!font.path && !font.base64) throw new LazyError("Path or base64 must be provided");
@@ -53,9 +51,10 @@ export class FontsManager implements IFontsManager {
       if (this.adapter) {
         if (font.path) this.adapter.registerFromPath(font.path, font.family);
         if (font.base64) {
-          const base64Str = typeof font.base64 === "string"
-            ? font.base64
-            : (font.base64 as Buffer).toString("base64");
+          const base64Str =
+            typeof font.base64 === "string"
+              ? font.base64
+              : (font.base64 as Buffer).toString("base64");
           this.adapter.register(base64Str, font.family);
         }
       }

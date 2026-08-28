@@ -1,4 +1,4 @@
-import { AnyLinkType, ScaleType, LinkType } from "../../types";
+import { type AnyLinkType, LinkType, type ScaleType } from "../../types";
 
 /**
  * Interface representing a link between layers.

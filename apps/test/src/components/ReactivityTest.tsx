@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Scene, Morph, Text, Group } from "@nmmty/adapter-react";
+import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
 import { FontWeight } from "@nmmty/lazycanvas";
+import { useState } from "react";
 
 const COLORS = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#a855f7"];
 
@@ -43,8 +43,12 @@ export default function ReactivityTest() {
       </Scene>
 
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={() => setIndex((i) => i + 1)}>Next color</button>
-        <button onClick={() => setSize((s) => (s >= 160 ? 60 : s + 20))}>Grow</button>
+        <button type="button" onClick={() => setIndex((i) => i + 1)}>
+          Next color
+        </button>
+        <button type="button" onClick={() => setSize((s) => (s >= 160 ? 60 : s + 20))}>
+          Grow
+        </button>
       </div>
     </div>
   );

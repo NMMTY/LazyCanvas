@@ -1,15 +1,15 @@
-import { Export, AnyExport, JSONLayer } from "../types";
-import { ICanvas, ICanvasRenderingContext2D, ICanvasAdapter } from "../types";
+import { type AnyExport, Export, type JSONLayer } from "../types";
+import type { ICanvas, ICanvasAdapter, ICanvasRenderingContext2D } from "../types";
+import { LazyError, LazyLog, registerPath2D, resize, resizeLayers } from "../utils";
+import type { IDiv } from "./components";
 import {
-  LayersManager,
-  IRenderManager,
-  FontsManager,
-  RenderManagerConstructor,
   ClassicRenderPipeline,
+  FontsManager,
+  type IRenderManager,
+  LayersManager,
+  type RenderManagerConstructor,
 } from "./managers";
 import { LayoutManager } from "./managers/LayoutManager";
-import { IDiv } from "./components";
-import { LazyError, LazyLog, registerPath2D, resizeLayers, resize } from "../utils";
 
 /**
  * Interface representing the LazyCanvas structure.

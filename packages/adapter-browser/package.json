@@ -14,14 +14,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "canvas",
-    "browser",
-    "adapter",
-    "html",
-    "react",
-    "nextjs"
-  ],
+  "keywords": ["canvas", "browser", "adapter", "html", "react", "nextjs"],
   "author": "NMMTY",
   "license": "MIT",
   "peerDependencies": {
@@ -32,9 +25,7 @@
     "@nmmty/lazycanvas": "workspace:*"
   },
   "sideEffects": false,
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git",

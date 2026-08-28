@@ -1,8 +1,8 @@
-import { JSONReader } from "./JSONReader";
 import * as _yaml from "js-yaml";
-import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
-import { ICanvasAdapter } from "../../../types";
+import type { ICanvasAdapter } from "../../../types";
 import { LazyError, LazyLog } from "../../../utils";
+import type { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
+import { JSONReader } from "./JSONReader";
 
 export class YAMLReader {
   /**
@@ -21,8 +21,7 @@ export class YAMLReader {
     }
     if (typeof yamlContent === "object" && yamlContent !== null) {
       return JSONReader.read(yamlContent, opts);
-    } else {
-      throw new LazyError("Invalid YAML content: Expected an object.");
     }
+    throw new LazyError("Invalid YAML content: Expected an object.");
   }
 }

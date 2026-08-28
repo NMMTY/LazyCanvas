@@ -1,6 +1,6 @@
-import { ICanvasRenderingContext2D } from "../types";
-import { Signal, unwrap } from "../core/Signal";
-import { StrokeOptions } from "../types";
+import { type Signal, unwrap } from "../core/Signal";
+import type { ICanvasRenderingContext2D } from "../types";
+import type { StrokeOptions } from "../types";
 
 export class DrawUtils {
   static drawShadow(ctx: ICanvasRenderingContext2D, shadow: any) {

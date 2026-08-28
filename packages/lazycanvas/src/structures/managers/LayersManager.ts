@@ -1,8 +1,8 @@
-import { AnyLayer } from "../../types";
-import { Div } from "../components";
+import type { AnyLayer } from "../../types";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { findLayer } from "../../utils/tree";
 import { LazyCanvas } from "../LazyCanvas";
+import type { Div } from "../components";
 
 /**
  * Interface representing the LayersManager.
@@ -54,7 +54,7 @@ export class LayersManager implements ILayersManager {
     let layersArray = layers.flat();
     layersArray = layersArray.filter((l) => l !== undefined);
     for (const layer of layersArray) {
-      if (this.debug) LazyLog.log("none", `Data:`, "toJSON" in layer ? layer.toJSON() : layer);
+      if (this.debug) LazyLog.log("none", "Data:", "toJSON" in layer ? layer.toJSON() : layer);
       if (this.map.has(layer.id)) throw new LazyError("Layer already exists");
       this.map.set(layer.id, layer);
     }
@@ -89,9 +89,9 @@ export class LayersManager implements ILayersManager {
    * @param {boolean} [cross] - Whether to search within groups for the ID.
    * @returns {AnyLayer | Div | undefined} The retrieved layer or group, or undefined if not found.
    */
-  public get(id: string, cross: boolean = false): AnyLayer | Div | undefined {
+  public get(id: string, cross = false): AnyLayer | Div | undefined {
     if (cross) return this.crossSearch(id);
-    else return this.map.get(id);
+    return this.map.get(id);
   }
 
   /**

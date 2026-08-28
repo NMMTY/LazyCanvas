@@ -14,21 +14,21 @@ function parseColor(color: string): { r: number; g: number; b: number; a: number
   // Handle hex colors
   if (color.startsWith("#")) {
     const hex = color.slice(1);
-    let r: number,
-      g: number,
-      b: number,
-      a = 1;
+    let r: number;
+    let g: number;
+    let b: number;
+    let a = 1;
 
     if (hex.length === 3 || hex.length === 4) {
-      r = parseInt(hex[0] + hex[0], 16);
-      g = parseInt(hex[1] + hex[1], 16);
-      b = parseInt(hex[2] + hex[2], 16);
-      a = hex.length === 4 ? parseInt(hex[3] + hex[3], 16) / 255 : 1;
+      r = Number.parseInt(hex[0] + hex[0], 16);
+      g = Number.parseInt(hex[1] + hex[1], 16);
+      b = Number.parseInt(hex[2] + hex[2], 16);
+      a = hex.length === 4 ? Number.parseInt(hex[3] + hex[3], 16) / 255 : 1;
     } else if (hex.length === 6 || hex.length === 8) {
-      r = parseInt(hex.slice(0, 2), 16);
-      g = parseInt(hex.slice(2, 4), 16);
-      b = parseInt(hex.slice(4, 6), 16);
-      a = hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1;
+      r = Number.parseInt(hex.slice(0, 2), 16);
+      g = Number.parseInt(hex.slice(2, 4), 16);
+      b = Number.parseInt(hex.slice(4, 6), 16);
+      a = hex.length === 8 ? Number.parseInt(hex.slice(6, 8), 16) / 255 : 1;
     } else {
       return null;
     }
@@ -40,20 +40,20 @@ function parseColor(color: string): { r: number; g: number; b: number; a: number
   const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
   if (rgbaMatch) {
     return {
-      r: parseInt(rgbaMatch[1]),
-      g: parseInt(rgbaMatch[2]),
-      b: parseInt(rgbaMatch[3]),
-      a: rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 1,
+      r: Number.parseInt(rgbaMatch[1]),
+      g: Number.parseInt(rgbaMatch[2]),
+      b: Number.parseInt(rgbaMatch[3]),
+      a: rgbaMatch[4] ? Number.parseFloat(rgbaMatch[4]) : 1,
     };
   }
 
   // Handle hsl/hsla
   const hslaMatch = color.match(/hsla?\((\d+),\s*(\d+)%,\s*(\d+)%(?:,\s*([\d.]+))?\)/);
   if (hslaMatch) {
-    const h = parseInt(hslaMatch[1]) / 360;
-    const s = parseInt(hslaMatch[2]) / 100;
-    const l = parseInt(hslaMatch[3]) / 100;
-    const a = hslaMatch[4] ? parseFloat(hslaMatch[4]) : 1;
+    const h = Number.parseInt(hslaMatch[1]) / 360;
+    const s = Number.parseInt(hslaMatch[2]) / 100;
+    const l = Number.parseInt(hslaMatch[3]) / 100;
+    const a = hslaMatch[4] ? Number.parseFloat(hslaMatch[4]) : 1;
 
     // Convert HSL to RGB
     const { r, g, b } = hslToRgb(h, s, l);
@@ -67,7 +67,9 @@ function parseColor(color: string): { r: number; g: number; b: number; a: number
  * Convert HSL to RGB
  */
 function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
-  let r: number, g: number, b: number;
+  let r: number;
+  let g: number;
+  let b: number;
 
   if (s === 0) {
     r = g = b = l;
@@ -105,8 +107,8 @@ function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: n
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  let h = 0,
-    s = 0;
+  let h = 0;
+  let s = 0;
   const l = (max + min) / 2;
 
   if (max !== min) {

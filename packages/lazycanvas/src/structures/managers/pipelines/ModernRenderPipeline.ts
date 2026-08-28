@@ -1,6 +1,6 @@
-import { AnyLayer } from "../../../types";
-import { Div } from "../../components";
+import type { AnyLayer } from "../../../types";
 import { getChildren } from "../../../utils";
+import { Div } from "../../components";
 import { BaseRenderPipeline } from "./BaseRenderPipeline";
 
 /**

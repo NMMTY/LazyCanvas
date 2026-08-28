@@ -1,4 +1,4 @@
-import { FontWeight, AnyWeight } from "../../types";
+import { type AnyWeight, FontWeight } from "../../types";
 
 /**
  * Interface representing a font.

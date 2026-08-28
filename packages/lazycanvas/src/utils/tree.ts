@@ -1,5 +1,5 @@
-import { AnyLayer } from "../types";
 import { Div } from "../structures/components";
+import type { AnyLayer } from "../types";
 
 /**
  * Any node of a layer tree.

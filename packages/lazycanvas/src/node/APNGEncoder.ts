@@ -10,7 +10,7 @@ export class APNGEncoder {
   private height: number;
   private fps: number;
 
-  constructor(width: number, height: number, fps: number = 30) {
+  constructor(width: number, height: number, fps = 30) {
     this.width = width;
     this.height = height;
     this.fps = fps;
@@ -239,7 +239,7 @@ export function createAPNG(
   frames: Uint8ClampedArray[],
   width: number,
   height: number,
-  fps: number = 30,
+  fps = 30,
 ): Buffer {
   const encoder = new APNGEncoder(width, height, fps);
 

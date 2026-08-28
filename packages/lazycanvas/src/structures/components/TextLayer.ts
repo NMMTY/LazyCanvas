@@ -1,34 +1,34 @@
-import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
+import { type Signal, unwrap } from "../../core";
 import {
-  AnyTextAlign,
-  AnyTextBaseline,
-  AnyTextDirection,
-  AnyWeight,
-  ColorType,
+  type AnyTextAlign,
+  type AnyTextBaseline,
+  type AnyTextDirection,
+  type AnyWeight,
+  type ColorType,
   FontWeight,
+  type ICanvas,
+  type ICanvasRenderingContext2D,
   LayerType,
-  LineCap,
-  LineJoin,
-  ScaleType,
-  StrokeOptions,
-  SubStringColor,
+  type LineCap,
+  type LineJoin,
+  type ScaleType,
+  type StrokeOptions,
+  type SubStringColor,
   TextAlign,
-  ICanvas,
-  ICanvasRenderingContext2D,
 } from "../../types";
 import {
-  defaultArg,
+  DrawUtils,
   LazyError,
   LazyLog,
+  defaultArg,
   isColor,
   parseFillStyle,
-  parser,
   parseToNormal,
+  parser,
   transform,
-  DrawUtils,
 } from "../../utils";
-import { LayersManager } from "../managers";
-import {Signal, unwrap} from "../../core";
+import type { LayersManager } from "../managers";
+import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
 /**
  * Interface representing a Text layer.
@@ -338,11 +338,11 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
       let line = "";
       let linesCount = 1;
 
-      for (let word of words) {
-        let linePlus = line + word + " ";
+      for (const word of words) {
+        const linePlus = `${line + word} `;
         if (ctx.measureText(linePlus).width > w) {
           linesCount++;
-          line = word + " ";
+          line = `${word} `;
         } else {
           line = linePlus;
         }
@@ -363,10 +363,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         : 0;
 
       return { width: w, height: fixedHeight || calculatedHeight };
-    } else {
-      let data = ctx.measureText(unwrap(this.props.text));
-      return { width: data.width, height: this.props.font.size };
     }
+    const data = ctx.measureText(unwrap(this.props.text));
+    return { width: data.width, height: this.props.font.size };
   }
 
   /**
@@ -392,7 +391,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     const h = parcer.parse(this.props.size?.height || 0, defaultArg.wh(w), defaultArg.vl(true));
 
-    if (debug) LazyLog.log("none", `TextLayer:`, { x, y, w, h });
+    if (debug) LazyLog.log("none", "TextLayer:", { x, y, w, h });
 
     ctx.save();
     if (this.props.transform) {
@@ -423,7 +422,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     ctx.textBaseline = useLayoutAlignment ? "top" : this.props.baseline || "alphabetic";
     if (this.props.direction) ctx.direction = this.props.direction;
 
-    let fillStyle = await parseFillStyle(ctx, this.props.color, {
+    const fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width: w, height: h, x, y, align: "center" },
       manager,
@@ -434,22 +433,22 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
       let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
 
       for (let fontSize = 1; fontSize <= this.props.font.size; fontSize++) {
-        let lineHeight = fontSize * (this.props.multiline.spacing || 1.1);
+        const lineHeight = fontSize * (this.props.multiline.spacing || 1.1);
 
         ctx.font = `${this.props.font.weight} ${fontSize}px ${this.props.font.family}`;
 
-        let xm = x;
+        const xm = x;
         let ym = y;
         lines = [];
         let line = "";
         let charOffset = 0; // Track position in original text
 
-        for (let word of words) {
-          let linePlus = line + word + " ";
+        for (const word of words) {
+          const linePlus = `${line + word} `;
           if (ctx.measureText(linePlus).width > w) {
             lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
             charOffset += line.length;
-            line = word + " ";
+            line = `${word} `;
             ym += lineHeight;
           } else {
             line = linePlus;
@@ -458,7 +457,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
         if (ym > ym + h) break;
       }
-      for (let line of lines) {
+      for (const line of lines) {
         this.drawText(this.props, ctx, fillStyle, line.text, line.x, line.y, w, line.startOffset);
       }
     } else {
@@ -488,7 +487,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     x: number,
     y: number,
     w: number,
-    textOffset: number = 0,
+    textOffset = 0,
   ) {
     // If no substring colors are defined, draw normally
     if (!props.subStringColors || props.subStringColors.length === 0) {
@@ -608,8 +607,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    * @returns {ITextLayer} The JSON representation of the Text layer.
    */
   public toJSON(): ITextLayer {
-    let data = super.toJSON();
-    let copy: any = { ...this.props };
+    const data = super.toJSON();
+    const copy: any = { ...this.props };
 
     for (const key of ["x", "y", "size.width", "size.height", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

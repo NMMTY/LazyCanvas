@@ -1,16 +1,24 @@
-import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { AnyCentring, ColorType, LayerType, ScaleType, StrokeOptions, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
-  defaultArg,
+  type AnyCentring,
+  type ColorType,
+  type ICanvas,
+  type ICanvasRenderingContext2D,
+  LayerType,
+  type ScaleType,
+  type StrokeOptions,
+} from "../../types";
+import {
+  DrawUtils,
   LazyError,
   LazyLog,
   centring,
+  defaultArg,
   isColor,
   parseFillStyle,
   parser,
-  DrawUtils,
 } from "../../utils";
-import { LayersManager } from "../managers";
+import type { LayersManager } from "../managers";
+import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
 export interface IPolygonLayer extends IBaseLayer {
   /**
@@ -153,15 +161,15 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
 
     const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
 
-    let { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
-    let fillStyle = await parseFillStyle(ctx, this.props.color, {
+    const { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
+    const fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring },
       manager,
     });
 
     if (debug)
-      LazyLog.log("none", `PolygonLayer:`, {
+      LazyLog.log("none", "PolygonLayer:", {
         x,
         y,
         w,
@@ -258,8 +266,8 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
    * @returns {IPolygonLayer} The JSON representation of the Polygon layer.
    */
   toJSON(): IPolygonLayer {
-    let data = super.toJSON();
-    let copy: any = { ...this.props };
+    const data = super.toJSON();
+    const copy: any = { ...this.props };
 
     for (const key of ["x", "y", "size.width", "size.height", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

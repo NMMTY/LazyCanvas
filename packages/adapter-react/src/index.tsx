@@ -1,3 +1,13 @@
+import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
+import {
+  Div,
+  type ICanvas,
+  type ICanvasAdapter,
+  Scene as LazyScene,
+  type Signal,
+  type ThreadGenerator,
+  createElement,
+} from "@nmmty/lazycanvas";
 import React, {
   useRef,
   useEffect,
@@ -11,16 +21,6 @@ import React, {
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
-import {
-  Scene as LazyScene,
-  createElement,
-  Div,
-  Signal,
-  type ThreadGenerator,
-  type ICanvasAdapter,
-  type ICanvas,
-} from "@nmmty/lazycanvas";
-import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
 
 // ---------------------------------------------------------------------------
 // LazyCanvas layer class registry
@@ -147,9 +147,7 @@ function createElementTree(
   if (!element) return null;
 
   if (Array.isArray(element)) {
-    return element
-      .map((el) => createElementTree(el, adapter))
-      .filter(Boolean);
+    return element.map((el) => createElementTree(el, adapter)).filter(Boolean);
   }
 
   if (!React.isValidElement(element)) {
@@ -375,6 +373,7 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
   // --- Build the layer tree and draw one frame ------------------------------
   // Depends on `children`, so updating a layer's props from React state
   // re-renders the canvas.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: sceneGeneration signals that sceneRef holds a new LazyScene, which the rule cannot see.
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene || !autoRender) return;
@@ -415,13 +414,14 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
   // --- Animation loop -------------------------------------------------------
   // Kept separate from the tree build so that re-rendering children does not
   // restart a running animation.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: sceneGeneration signals that sceneRef holds a new LazyScene, which the rule cannot see.
   useEffect(() => {
     if (!autoRender || !animated) return;
 
     let isCancelled = false;
     let rafId: number | null = null;
 
-    const maxLoops = typeof animated === "number" ? animated : Infinity;
+    const maxLoops = typeof animated === "number" ? animated : Number.POSITIVE_INFINITY;
     let loopCount = 0;
     let lastSchedulerEmpty = true;
     let animStartTime = performance.now();
@@ -470,31 +470,24 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
 
   return (
     <SceneContext.Provider value={contextValue}>
-      <canvas
-        ref={canvasRef}
-        width={width}
-        height={height}
-        className={className}
-        style={style}
-      />
+      <canvas ref={canvasRef} width={width} height={height} className={className} style={style} />
     </SceneContext.Provider>
   );
 });
-
 
 // ---------------------------------------------------------------------------
 // Pre-made wrappers for built-in layers
 // ---------------------------------------------------------------------------
 
 import {
-  MorphLayer,
-  TextLayer,
+  BezierLayer,
   ImageLayer,
   LineLayer,
-  BezierLayer,
-  QuadraticLayer,
-  PolygonLayer,
+  MorphLayer,
   Path2DLayer,
+  PolygonLayer,
+  QuadraticLayer,
+  TextLayer,
 } from "@nmmty/lazycanvas";
 
 export const Morph = createLayerComponent(MorphLayer, "MorphLayer");

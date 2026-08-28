@@ -1,10 +1,10 @@
 import * as fs from "node:fs";
 import * as _yaml from "js-yaml";
-import { IOLazyCanvas, LazyCanvas } from "../structures/LazyCanvas";
-import { AnyExport, Export, Extensions } from "../types";
-import { LazyError, generateRandomName } from "../utils";
-import { serializeCanvas } from "../structures/helpers/serialize";
 import { Scene } from "../core";
+import type { IOLazyCanvas, LazyCanvas } from "../structures/LazyCanvas";
+import { serializeCanvas } from "../structures/helpers/serialize";
+import { type AnyExport, Export, type Extensions } from "../types";
+import { LazyError, generateRandomName } from "../utils";
 import { APNGEncoder } from "./APNGEncoder";
 
 /**
@@ -127,7 +127,11 @@ export class Exporter {
         if (!this.scene) {
           throw new LazyError("APNG export requires a Scene instance. Use: new Exporter(scene)");
         }
-        const frames = await this.scene.renderAnimationData(0, opts?.duration ?? 0, opts?.fps ?? 60);
+        const frames = await this.scene.renderAnimationData(
+          0,
+          opts?.duration ?? 0,
+          opts?.fps ?? 60,
+        );
         result = new APNGEncoder(this.scene.width, this.scene.height, opts?.fps ?? 60)
           .addFrames(...frames)
           .encode();
@@ -162,7 +166,7 @@ export class Exporter {
    * @param {AnyExport} [exportType] - Must be `json`.
    * @returns {IOLazyCanvas | void} The serialized canvas.
    */
-  syncExport(exportType: AnyExport): IOLazyCanvas | void {
+  syncExport(exportType: AnyExport): IOLazyCanvas | undefined {
     switch (exportType) {
       case Export.JSON:
       case "json":

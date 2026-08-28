@@ -1,5 +1,13 @@
-import { Div, LineLayer, ImageLayer, MorphLayer, TextLayer } from "../structures/components";
-import { AnyTextAlign, AnyWeight, ColorType, FontWeight, RadiusCorner, ScaleType, TextAlign } from "../types";
+import { Div, ImageLayer, LineLayer, MorphLayer, TextLayer } from "../structures/components";
+import {
+  type AnyTextAlign,
+  type AnyWeight,
+  type ColorType,
+  FontWeight,
+  type RadiusCorner,
+  type ScaleType,
+  TextAlign,
+} from "../types";
 
 const Utils = {
   grid(size: { x: number; y: number }, opts?: gridOptions): Div {
@@ -87,40 +95,40 @@ const Utils = {
     const match = hex.match(/^#?([a-f\d]{3}|[a-f\d]{6})$/i);
     if (!match) return null;
     const h = match[1];
-    const full = h.length === 3
-      ? h[0] + h[0] + h[1] + h[1] + h[2] + h[2]
-      : h;
+    const full = h.length === 3 ? h[0] + h[0] + h[1] + h[1] + h[2] + h[2] : h;
     return {
-      r: parseInt(full.substring(0, 2), 16),
-      g: parseInt(full.substring(2, 4), 16),
-      b: parseInt(full.substring(4, 6), 16),
+      r: Number.parseInt(full.substring(0, 2), 16),
+      g: Number.parseInt(full.substring(2, 4), 16),
+      b: Number.parseInt(full.substring(4, 6), 16),
     };
   },
 
   rgbToHex(r: number, g: number, b: number): string {
-    const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n)))
-      .toString(16)
-      .padStart(2, "0");
+    const toHex = (n: number) =>
+      Math.max(0, Math.min(255, Math.round(n)))
+        .toString(16)
+        .padStart(2, "0");
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   },
 
-  parseColorString(
-    color: string,
-  ): { r: number; g: number; b: number; a: number } | null {
+  parseColorString(color: string): { r: number; g: number; b: number; a: number } | null {
     const hexMatch = color.match(/^#([0-9a-f]{3,8})$/i);
     if (hexMatch) {
       const hex = hexMatch[1];
-      let r: number, g: number, b: number, a = 255;
+      let r: number;
+      let g: number;
+      let b: number;
+      let a = 255;
       if (hex.length === 3 || hex.length === 4) {
-        r = parseInt(hex[0] + hex[0], 16);
-        g = parseInt(hex[1] + hex[1], 16);
-        b = parseInt(hex[2] + hex[2], 16);
-        if (hex.length === 4) a = parseInt(hex[3] + hex[3], 16);
+        r = Number.parseInt(hex[0] + hex[0], 16);
+        g = Number.parseInt(hex[1] + hex[1], 16);
+        b = Number.parseInt(hex[2] + hex[2], 16);
+        if (hex.length === 4) a = Number.parseInt(hex[3] + hex[3], 16);
       } else if (hex.length === 6 || hex.length === 8) {
-        r = parseInt(hex.substring(0, 2), 16);
-        g = parseInt(hex.substring(2, 4), 16);
-        b = parseInt(hex.substring(4, 6), 16);
-        if (hex.length === 8) a = parseInt(hex.substring(6, 8), 16);
+        r = Number.parseInt(hex.substring(0, 2), 16);
+        g = Number.parseInt(hex.substring(2, 4), 16);
+        b = Number.parseInt(hex.substring(4, 6), 16);
+        if (hex.length === 8) a = Number.parseInt(hex.substring(6, 8), 16);
       } else {
         return null;
       }
@@ -132,12 +140,10 @@ const Utils = {
     );
     if (rgbaMatch) {
       return {
-        r: parseInt(rgbaMatch[1]),
-        g: parseInt(rgbaMatch[2]),
-        b: parseInt(rgbaMatch[3]),
-        a: rgbaMatch[4] !== undefined
-          ? Math.round(parseFloat(rgbaMatch[4]) * 255)
-          : 255,
+        r: Number.parseInt(rgbaMatch[1]),
+        g: Number.parseInt(rgbaMatch[2]),
+        b: Number.parseInt(rgbaMatch[3]),
+        a: rgbaMatch[4] !== undefined ? Math.round(Number.parseFloat(rgbaMatch[4]) * 255) : 255,
       };
     }
 
@@ -145,12 +151,14 @@ const Utils = {
       /hsla?\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*(?:,\s*([\d.]+))?\s*\)/,
     );
     if (hslaMatch) {
-      const h = parseInt(hslaMatch[1]) / 360;
-      const s = parseInt(hslaMatch[2]) / 100;
-      const l = parseInt(hslaMatch[3]) / 100;
-      const a = hslaMatch[4] !== undefined ? parseFloat(hslaMatch[4]) : 1;
+      const h = Number.parseInt(hslaMatch[1]) / 360;
+      const s = Number.parseInt(hslaMatch[2]) / 100;
+      const l = Number.parseInt(hslaMatch[3]) / 100;
+      const a = hslaMatch[4] !== undefined ? Number.parseFloat(hslaMatch[4]) : 1;
 
-      let r: number, g: number, b: number;
+      let r: number;
+      let g: number;
+      let b: number;
       if (s === 0) {
         r = g = b = l;
       } else {
@@ -209,7 +217,7 @@ const Utils = {
     return `rgba(${r}, ${g}, ${b}, ${a})`;
   },
 
-  mixColors(color1: string, color2: string, ratio: number = 0.5): string {
+  mixColors(color1: string, color2: string, ratio = 0.5): string {
     const c1 = Utils.parseColorString(color1);
     const c2 = Utils.parseColorString(color2);
     if (!c1 || !c2) return ratio < 0.5 ? color1 : color2;
@@ -221,10 +229,7 @@ const Utils = {
     return `rgba(${r}, ${g}, ${b}, ${a})`;
   },
 
-  distance(
-    p1: { x: number; y: number },
-    p2: { x: number; y: number },
-  ): number {
+  distance(p1: { x: number; y: number }, p2: { x: number; y: number }): number {
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
     return Math.sqrt(dx * dx + dy * dy);
@@ -238,10 +243,7 @@ const Utils = {
     return Math.max(min, Math.min(max, value));
   },
 
-  angleBetween(
-    p1: { x: number; y: number },
-    p2: { x: number; y: number },
-  ): number {
+  angleBetween(p1: { x: number; y: number }, p2: { x: number; y: number }): number {
     return (Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180) / Math.PI;
   },
 
@@ -258,13 +260,7 @@ const Utils = {
     };
   },
 
-  pointOnLine(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-    t: number,
-  ): { x: number; y: number } {
+  pointOnLine(x1: number, y1: number, x2: number, y2: number, t: number): { x: number; y: number } {
     const p = Math.max(0, Math.min(1, t));
     return {
       x: x1 + (x2 - x1) * p,

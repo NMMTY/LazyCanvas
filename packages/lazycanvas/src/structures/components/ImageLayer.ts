@@ -1,18 +1,26 @@
-import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ScaleType, LayerType, RadiusCorner, AnyCentring, ICanvas, ICanvasRenderingContext2D, ICanvasAdapter } from "../../types";
 import {
-  centring,
-  isImageUrlValid,
-  parser,
-  transform,
-  defaultArg,
+  type AnyCentring,
+  type ICanvas,
+  type ICanvasAdapter,
+  type ICanvasRenderingContext2D,
+  LayerType,
+  type RadiusCorner,
+  type ScaleType,
+} from "../../types";
+import {
+  DrawUtils,
   LazyError,
   LazyLog,
-  DrawUtils,
+  centring,
+  defaultArg,
+  isImageUrlValid,
   loadImageFallback,
+  parser,
+  transform,
 } from "../../utils";
-import { LayersManager } from "../managers";
 import { Link } from "../helpers";
+import type { LayersManager } from "../managers";
+import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
 /**
  * Interface representing an Image Layer.
@@ -134,7 +142,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
     });
 
     const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
-    let { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
+    const { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
 
     const rad: { [corner in RadiusCorner]?: number } = {};
     if (typeof this.props.size.radius === "object" && this.props.size.radius !== Link) {
@@ -149,10 +157,10 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
       }
     }
 
-    if (debug) LazyLog.log("none", `ImageLayer:`, { x, y, w, h, rad });
+    if (debug) LazyLog.log("none", "ImageLayer:", { x, y, w, h, rad });
 
     ctx.save();
-    let image = adapter
+    const image = adapter
       ? await adapter.loadImage(this.props.src)
       : await loadImageFallback(this.props.src);
     if (image) {
@@ -189,8 +197,8 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
    * @returns {IImageLayer} The JSON representation of the Image Layer.
    */
   toJSON(): IImageLayer {
-    let data = super.toJSON();
-    let copy: any = { ...this.props };
+    const data = super.toJSON();
+    const copy: any = { ...this.props };
 
     for (const key of ["x", "y", "size.width", "size.height", "size.radius"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

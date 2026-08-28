@@ -1,45 +1,45 @@
-import { Gradient, Link, Pattern } from "../structures/helpers";
 import {
-  MorphLayer,
-  ImageLayer,
-  TextLayer,
+  type Signal,
+  type SignalOptions,
+  type ThreadGenerator,
+  type TweenConfig,
+  isSignal,
+  unwrap,
+} from "../core/Signal";
+import type {
   BezierLayer,
-  QuadraticLayer,
-  LineLayer,
-  Path2DLayer,
-  IMorphLayer,
   IBezierLayer,
   IImageLayer,
-  ITextLayer,
-  IQuadraticLayer,
   ILineLayer,
+  IMorphLayer,
   IPath2DLayer,
   IPolygonLayer,
+  IQuadraticLayer,
+  ITextLayer,
+  ImageLayer,
+  LineLayer,
+  MorphLayer,
+  Path2DLayer,
   PolygonLayer,
+  QuadraticLayer,
+  TextLayer,
 } from "../structures/components";
-import {
+import type { Gradient, Link, Pattern } from "../structures/helpers";
+import type {
+  Centring,
+  ColorSpace,
+  Export,
   FontWeight,
+  GlobalCompositeOperation,
   GradientType,
+  LineCap,
+  LineJoin,
+  LinkType,
+  PatternType,
   TextAlign,
   TextBaseline,
   TextDirection,
-  LineCap,
-  LineJoin,
-  Export,
-  Centring,
-  PatternType,
-  LinkType,
-  GlobalCompositeOperation,
-  ColorSpace,
 } from "./enum";
-import {
-  Signal,
-  ThreadGenerator,
-  SignalOptions,
-  TweenConfig,
-  unwrap,
-  isSignal,
-} from "../core/Signal";
 
 // Utility type for signal-enabled values
 export type Signalable<T> = T | Signal<T>;

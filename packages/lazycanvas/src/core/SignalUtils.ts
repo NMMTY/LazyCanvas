@@ -1,4 +1,4 @@
-import { ThreadGenerator, Signal } from "./Signal";
+import type { Signal, ThreadGenerator } from "./Signal";
 
 /**
  * Metadata for tracking animation duration
@@ -51,7 +51,10 @@ export function* chain(...generators: ThreadGenerator[]): ThreadGenerator {
  * @param generator - Animation generator factory
  * @param times - Number of iterations (Infinity for endless)
  */
-export function* loop(generator: () => ThreadGenerator, times: number = Infinity): ThreadGenerator {
+export function* loop(
+  generator: () => ThreadGenerator,
+  times: number = Number.POSITIVE_INFINITY,
+): ThreadGenerator {
   let count = 0;
 
   while (count < times) {
@@ -173,7 +176,7 @@ export function* repeatWhile(
 export function* every(
   interval: number,
   generator: () => ThreadGenerator,
-  times: number = Infinity,
+  times: number = Number.POSITIVE_INFINITY,
 ): ThreadGenerator {
   let count = 0;
 
@@ -286,9 +289,13 @@ export class Timeline {
   }
 
   /**
-   * Add animation after previous
+   * Add an animation after the previous one.
+   *
+   * Named `after` rather than `then` on purpose: a `then` method would make
+   * Timeline thenable, so `await timeline()` would try to resolve the timeline
+   * as a promise instead of returning it.
    */
-  public then(generator: ThreadGenerator): this {
+  public after(generator: ThreadGenerator): this {
     this.generators.push({ time: this.currentTime, generator });
     return this;
   }
@@ -309,7 +316,7 @@ export class Timeline {
     const sorted = [...this.generators].sort((a, b) => a.time - b.time);
 
     let time = 0;
-    let activeGens: ThreadGenerator[] = [];
+    const activeGens: ThreadGenerator[] = [];
     let nextIndex = 0;
 
     while (nextIndex < sorted.length || activeGens.length > 0) {
@@ -350,7 +357,7 @@ export function timeline(): Timeline {
  */
 export function calculateDuration(
   generatorFactory: () => ThreadGenerator,
-  maxDuration: number = 3600,
+  maxDuration = 3600,
   timestep: number = 1 / 60,
 ): number {
   const gen = generatorFactory();
@@ -381,7 +388,7 @@ export function calculateDuration(
  */
 export function calculateParallelDuration(
   generatorFactories: (() => ThreadGenerator)[],
-  maxDuration: number = 3600,
+  maxDuration = 3600,
   timestep: number = 1 / 60,
 ): number {
   const durations = generatorFactories.map((factory) =>
@@ -396,7 +403,7 @@ export function calculateParallelDuration(
  */
 export function calculateSequentialDuration(
   generatorFactories: (() => ThreadGenerator)[],
-  maxDuration: number = 3600,
+  maxDuration = 3600,
   timestep: number = 1 / 60,
 ): number {
   let totalDuration = 0;

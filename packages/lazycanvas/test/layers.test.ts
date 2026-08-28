@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import {
   Centring,
   Div,
@@ -8,6 +7,7 @@ import {
   getChildren,
   walkLayers,
 } from "@nmmty/lazycanvas";
+import { beforeEach, describe, expect, it } from "vitest";
 
 const morph = (id: string, zIndex = 1) =>
   new MorphLayer(
@@ -33,12 +33,7 @@ describe("tree helpers", () => {
     const inner = new Div({}, { id: "inner" }).add(leaf);
     const outer = new Div({}, { id: "outer" }).add(inner, morph("sibling"));
 
-    expect([...walkLayers(outer)].map((l) => l.id)).toEqual([
-      "outer",
-      "inner",
-      "leaf",
-      "sibling",
-    ]);
+    expect([...walkLayers(outer)].map((l) => l.id)).toEqual(["outer", "inner", "leaf", "sibling"]);
   });
 
   it("findLayer reaches arbitrarily deep nodes", () => {
@@ -76,9 +71,7 @@ describe("LayersManager", () => {
 
   it("get(id, true) finds nested layers at any depth", () => {
     const deep = morph("deep");
-    manager.add(
-      new Div({}, { id: "outer" }).add(new Div({}, { id: "inner" }).add(deep)),
-    );
+    manager.add(new Div({}, { id: "outer" }).add(new Div({}, { id: "inner" }).add(deep)));
     expect(manager.get("deep", true)).toBe(deep);
   });
 

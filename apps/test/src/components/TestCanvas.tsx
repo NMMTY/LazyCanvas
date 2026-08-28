@@ -1,32 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  Scene as LazyScene,
-  MorphLayer,
-  TextLayer,
-  LineLayer,
-  BezierLayer,
-  PolygonLayer,
-  Path2DLayer,
-  Div,
-  Gradient,
-  Signal,
-  Easing,
-  Centring,
-  GradientType,
-  PatternType,
-  FontWeight,
-  FillType,
-} from "@nmmty/lazycanvas";
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
+import {
+  BezierLayer,
+  Centring,
+  Div,
+  Easing,
+  FillType,
+  FontWeight,
+  Gradient,
+  GradientType,
+  Scene as LazyScene,
+  LineLayer,
+  MorphLayer,
+  Path2DLayer,
+  PatternType,
+  PolygonLayer,
+  Signal,
+  TextLayer,
+} from "@nmmty/lazycanvas";
+import { useEffect, useRef, useState } from "react";
 
 const NC = Centring.None;
 
-function createTestScene(
-  canvas: HTMLCanvasElement,
-  test: string,
-): LazyScene {
+function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
   const w = canvas.width;
   const h = canvas.height;
   const adapter = new BrowserCanvasAdapter(canvas);
@@ -52,9 +49,7 @@ function createTestScene(
         position: { x: 120, y: 140 },
         centring: NC,
       });
-      sc.load(
-          new Div().add(r1, r2, r3)
-      )
+      sc.load(new Div().add(r1, r2, r3));
       break;
     }
 
@@ -71,7 +66,14 @@ function createTestScene(
         size: { width: 150, height: 80, radius: { all: 4 } },
         position: { x: 240, y: 40 },
         centring: NC,
-        stroke: { width: 2, cap: "square", join: "bevel", dash: [5, 3], dashOffset: 0, miterLimit: 10 },
+        stroke: {
+          width: 2,
+          cap: "square",
+          join: "bevel",
+          dash: [5, 3],
+          dashOffset: 0,
+          miterLimit: 10,
+        },
       });
       sc.load(new Div().add(s1, s2));
       break;
@@ -133,7 +135,14 @@ function createTestScene(
       const l2 = new LineLayer({
         position: { x: 50, y: 150, endX: 350, endY: 50 },
         color: "#ef4444",
-        stroke: { width: 2, cap: "square", join: "miter", dash: [8, 4], dashOffset: 0, miterLimit: 10 },
+        stroke: {
+          width: 2,
+          cap: "square",
+          join: "miter",
+          dash: [8, 4],
+          dashOffset: 0,
+          miterLimit: 10,
+        },
         filled: false,
       });
       sc.load(new Div().add(l1, l2));
@@ -337,6 +346,7 @@ export default function TestCanvas({ test, width = 420, height = 280 }: TestCanv
   const [status, setStatus] = useState<"idle" | "ok" | "error">("idle");
   const [error, setError] = useState("");
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: width/height are read off the canvas element, so a change must rebuild the scene.
   useEffect(() => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -344,12 +354,14 @@ export default function TestCanvas({ test, width = 420, height = 280 }: TestCanv
     try {
       const sc = createTestScene(canvas, test);
       if (test !== "signal") {
-        sc.renderFrame(0).then(() => {
-          setStatus("ok");
-        }).catch((err) => {
-          setStatus("error");
-          setError(String(err));
-        });
+        sc.renderFrame(0)
+          .then(() => {
+            setStatus("ok");
+          })
+          .catch((err) => {
+            setStatus("error");
+            setError(String(err));
+          });
       } else {
         setStatus("ok");
       }

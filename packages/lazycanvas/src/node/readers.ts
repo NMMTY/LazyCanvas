@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import type { IOLazyCanvas, LazyCanvas } from "../structures/LazyCanvas";
 import { JSONReader, YAMLReader } from "../structures/helpers";
-import { IOLazyCanvas, LazyCanvas } from "../structures/LazyCanvas";
-import { ICanvasAdapter } from "../types";
+import type { ICanvasAdapter } from "../types";
 import { LazyError, LazyLog } from "../utils";
 
 /**

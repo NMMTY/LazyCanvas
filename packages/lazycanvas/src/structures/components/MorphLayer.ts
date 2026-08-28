@@ -1,27 +1,27 @@
-import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
 import {
-  ColorType,
-  ScaleType,
+  type AnyCentring,
+  type ColorType,
+  type ICanvas,
+  type ICanvasRenderingContext2D,
   LayerType,
-  RadiusCorner,
-  AnyCentring,
-  StrokeOptions,
-  ICanvas,
-  ICanvasRenderingContext2D,
+  type RadiusCorner,
+  type ScaleType,
+  type StrokeOptions,
 } from "../../types";
 import {
-  isColor,
-  transform,
-  centring,
-  parseFillStyle,
-  parser,
-  defaultArg,
+  DrawUtils,
   LazyError,
   LazyLog,
-  DrawUtils,
+  centring,
+  defaultArg,
+  isColor,
+  parseFillStyle,
+  parser,
+  transform,
 } from "../../utils";
-import { LayersManager } from "../managers";
 import { Link } from "../helpers";
+import type { LayersManager } from "../managers";
+import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
 /**
  * Interface representing a Morph Layer.
@@ -191,14 +191,14 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
       }
     }
 
-    let { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
-    let fillStyle = await parseFillStyle(ctx, this.props.color, {
+    const { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
+    const fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring },
       manager,
     });
 
-    if (debug) LazyLog.log("none", `MorphLayer:`, { x, y, w, h, rad });
+    if (debug) LazyLog.log("none", "MorphLayer:", { x, y, w, h, rad });
 
     ctx.save();
 
@@ -236,8 +236,8 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
    * @returns {IMorphLayer} The JSON representation of the Morph Layer.
    */
   toJSON(): IMorphLayer {
-    let data = super.toJSON();
-    let copy: any = { ...this.props };
+    const data = super.toJSON();
+    const copy: any = { ...this.props };
 
     for (const key of ["x", "y", "size.width", "size.height", "size.radius", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

@@ -1,23 +1,4 @@
-import {
-  AnyCentring,
-  AnyLayer,
-  AnyTextAlign,
-  Centring,
-  ColorType,
-  LayerType,
-  LinkType,
-  PointNumber,
-  ScaleType,
-  SubStringColor,
-  TextAlign,
-  Transform,
-  ICanvas,
-  ICanvasRenderingContext2D,
-  ICanvasAdapter,
-} from "../types";
-import { Gradient, Link, Pattern } from "../structures/helpers";
-import { defaultArg, LazyError } from "./LazyUtil";
-import { LayersManager } from "../structures/managers";
+import { isSignal, unwrap } from "../core";
 import {
   BezierLayer,
   Div,
@@ -26,22 +7,41 @@ import {
   QuadraticLayer,
   TextLayer,
 } from "../structures/components";
-import { unwrap, isSignal } from "../core";
+import { Gradient, Link, Pattern } from "../structures/helpers";
+import type { LayersManager } from "../structures/managers";
+import {
+  type AnyCentring,
+  type AnyLayer,
+  type AnyTextAlign,
+  Centring,
+  type ColorType,
+  type ICanvas,
+  ICanvasAdapter,
+  type ICanvasRenderingContext2D,
+  LayerType,
+  LinkType,
+  type PointNumber,
+  type ScaleType,
+  type SubStringColor,
+  TextAlign,
+  type Transform,
+} from "../types";
+import { LazyError, defaultArg } from "./LazyUtil";
 
 export function generateID(type: string) {
   return `${type}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-let percentReg = /^(\d+)%$/;
-let pxReg = /^(\d+)px$/;
-let canvasReg = /^(vw|vh|vmin|vmax)$/;
-let linkReg = /^(link-w|link-h|link-x|link-y)-([A-Za-z0-9_]+)-(\d+(.\d+)?)$/;
+const percentReg = /^(\d+)%$/;
+const pxReg = /^(\d+)px$/;
+const canvasReg = /^(vw|vh|vmin|vmax)$/;
+const linkReg = /^(link-w|link-h|link-x|link-y)-([A-Za-z0-9_]+)-(\d+(.\d+)?)$/;
 
-let hexReg = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
-let rgbReg = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
-let rgbaReg = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(0|0?\.\d+|1(\.0)?)\)$/;
-let hslReg = /^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/;
-let hslaReg = /^hsla\((\d+),\s*(\d+)%,\s*(\d+)%,\s*(0|0?\.\d+|1(\.0)?)\)$/;
+const hexReg = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const rgbReg = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
+const rgbaReg = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(0|0?\.\d+|1(\.0)?)\)$/;
+const hslReg = /^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/;
+const hslaReg = /^hsla\((\d+),\s*(\d+)%,\s*(\d+)%,\s*(0|0?\.\d+|1(\.0)?)\)$/;
 
 export function isColor(v: ColorType | SubStringColor) {
   if (isSignal(v)) {
@@ -94,9 +94,9 @@ export function parseToNormal(
         : options.vertical
           ? canvas.height
           : canvas.width;
-      return (parseFloat(v) / 100) * base;
+      return (Number.parseFloat(v) / 100) * base;
     }
-    if (pxReg.test(v)) return parseFloat(v);
+    if (pxReg.test(v)) return Number.parseFloat(v);
 
     if (canvasReg.test(v)) {
       const base = options.layer ? layer : canvas;
@@ -120,7 +120,7 @@ export function parseToNormal(
       if (!anyLayer || anyLayer instanceof Div || anyLayer instanceof Path2DLayer) return 0;
 
       const parserInstance = parser(ctx, canvas, manager);
-      const additionalSpacing = parseInt(match[3]) || 0;
+      const additionalSpacing = Number.parseInt(match[3]) || 0;
 
       switch (match[1]) {
         case "link-w":
@@ -534,10 +534,10 @@ function cubicBezier(
 }
 
 export function getBoundingBoxBezier(points: PointNumber[], steps = 100) {
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
 
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
@@ -574,22 +574,25 @@ export function resize(value: ScaleType, ratio: number): number | string {
 
   if (typeof value === "number") {
     return value * ratio;
-  } else if (typeof value === "string") {
+  }
+  if (typeof value === "string") {
     if (pxReg.test(value)) {
-      return parseFloat(value) * ratio;
-    } else if (linkReg.test(value)) {
-      let match = value.match(linkReg) as RegExpMatchArray;
-      return `${match[1]}-${match[2]}-${parseFloat(match[3]) * ratio}`;
+      return Number.parseFloat(value) * ratio;
+    }
+    if (linkReg.test(value)) {
+      const match = value.match(linkReg) as RegExpMatchArray;
+      return `${match[1]}-${match[2]}-${Number.parseFloat(match[3]) * ratio}`;
     }
     return value;
-  } else if (value instanceof Link) {
+  }
+  if (value instanceof Link) {
     return `${value.type}-${value.source}-${resize(value.additionalSpacing, ratio)}`;
   }
   return 0;
 }
 
 export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
-  let newLayers: Array<AnyLayer | Div> = [];
+  const newLayers: Array<AnyLayer | Div> = [];
   if (layers.length > 0) {
     for (const layer of layers) {
       if (!(layer instanceof Div || layer instanceof Path2DLayer)) {

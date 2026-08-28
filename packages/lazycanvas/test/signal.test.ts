@@ -1,5 +1,5 @@
+import { Easing, Signal, ThreadScheduler, createSignal } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
-import { Easing, Signal, createSignal, ThreadScheduler } from "@nmmty/lazycanvas";
 
 describe("Easing", () => {
   const named = Object.entries(Easing);
@@ -82,7 +82,7 @@ describe("Signal", () => {
 describe("ThreadScheduler", () => {
   it("drops threads once they finish and reports activity", () => {
     const scheduler = new ThreadScheduler();
-    function* short(): Generator<void, void, number | void> {
+    function* short(): Generator<void, void, number | undefined> {
       yield;
     }
     scheduler.add(short());

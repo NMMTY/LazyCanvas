@@ -1,14 +1,14 @@
 import {
-  AnyGlobalCompositeOperation,
-  AnyLayer,
+  type AnyGlobalCompositeOperation,
+  type AnyLayer,
+  type ICanvas,
+  type ICanvasAdapter,
+  type ICanvasRenderingContext2D,
   LayerType,
-  ICanvas,
-  ICanvasRenderingContext2D,
-  ICanvasAdapter
 } from "../../types";
-import { generateID, getChildren, LazyLog } from "../../utils";
-import { LayersManager } from "../managers";
-import { BaseLayer, IBaseLayer, IBaseLayerProps } from "./BaseLayer";
+import { LazyLog, generateID, getChildren } from "../../utils";
+import type { LayersManager } from "../managers";
+import { BaseLayer, type IBaseLayer, type IBaseLayerProps } from "./BaseLayer";
 
 /**
  * Interface representing a group of layer's.
@@ -254,7 +254,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-    adapter?: ICanvasAdapter
+    adapter?: ICanvasAdapter,
   ) {
     ctx.save();
 

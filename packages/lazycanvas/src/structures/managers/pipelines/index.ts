@@ -1,5 +1,5 @@
-import { LazyCanvas } from "../../LazyCanvas";
-import { AnyExport } from "../../../types";
+import type { AnyExport } from "../../../types";
+import type { LazyCanvas } from "../../LazyCanvas";
 
 export interface IRenderManager {
   lazyCanvas: LazyCanvas;

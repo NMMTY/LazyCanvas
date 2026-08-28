@@ -1,7 +1,13 @@
-import { FillType, PatternType, AnyPatternType, ICanvas, ICanvasRenderingContext2D } from "../../types";
+import {
+  type AnyPatternType,
+  FillType,
+  ICanvas,
+  type ICanvasRenderingContext2D,
+  PatternType,
+} from "../../types";
+import { LazyError, loadImageFallback } from "../../utils";
 import { LazyCanvas } from "../LazyCanvas";
 import { serializeCanvas } from "./serialize";
-import { LazyError, loadImageFallback } from "../../utils";
 
 export interface IPattern {
   fillType: FillType;
@@ -37,9 +43,7 @@ export class Pattern implements IPattern {
       return ctx.createPattern(canvas as any, this.type);
     }
 
-    const image = adapter
-      ? await adapter.loadImage(this.src)
-      : await loadImageFallback(this.src);
+    const image = adapter ? await adapter.loadImage(this.src) : await loadImageFallback(this.src);
     return ctx.createPattern(image, this.type);
   }
 

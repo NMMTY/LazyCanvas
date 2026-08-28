@@ -1,8 +1,8 @@
 "use client";
 
+import { Group, Morph, Scene, type SceneRef, Text } from "@nmmty/adapter-react";
+import { Easing, Signal, all } from "@nmmty/lazycanvas";
 import { useRef } from "react";
-import { Scene, Morph, Text, Group, type SceneRef } from "@nmmty/adapter-react";
-import {Signal, Easing, all} from "@nmmty/lazycanvas";
 
 export default function SignalSceneTest() {
   const sceneRef = useRef<SceneRef>(null);
@@ -12,11 +12,11 @@ export default function SignalSceneTest() {
   function* boxAnimation() {
     yield* all(
       s.to(360, 1.5, { easing: Easing.easeInOutCubic }),
-      boxColor.to("#00ff88", 1.0, { easing: Easing.easeInOutCubic })
+      boxColor.to("#00ff88", 1.0, { easing: Easing.easeInOutCubic }),
     );
     yield* all(
       s.to(60, 1.5, { easing: Easing.easeInOutCubic }),
-      boxColor.to("#ff0000", 1.0, { easing: Easing.easeInOutCubic })
+      boxColor.to("#ff0000", 1.0, { easing: Easing.easeInOutCubic }),
     );
   }
 
@@ -33,10 +33,7 @@ export default function SignalSceneTest() {
         }}
       >
         <Group>
-          <Morph
-            color="#1e293b"
-            size={{ width: 420, height: 120, radius: { all: 20 } }}
-          />
+          <Morph color="#1e293b" size={{ width: 420, height: 120, radius: { all: 20 } }} />
           <Morph
             color={boxColor}
             size={{ width: 80, height: 80, radius: { all: 8 } }}

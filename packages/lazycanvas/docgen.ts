@@ -1,5 +1,5 @@
 import { createDocumentation } from "@hitomihiumi/micro-docgen";
-import { version, homepage } from "./package.json";
+import { homepage, version } from "./package.json";
 
 async function main() {
   const docs = await createDocumentation({

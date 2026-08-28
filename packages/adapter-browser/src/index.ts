@@ -1,9 +1,4 @@
-import type {
-  ICanvasAdapter,
-  ICanvas,
-  IFontsAdapter,
-  ImageSource,
-} from "@nmmty/lazycanvas";
+import type { ICanvas, ICanvasAdapter, IFontsAdapter, ImageSource } from "@nmmty/lazycanvas";
 
 /**
  * Converts arbitrary binary input into a Blob the browser can load.

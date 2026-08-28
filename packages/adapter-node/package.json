@@ -14,12 +14,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "canvas",
-    "node",
-    "adapter",
-    "@napi-rs/canvas"
-  ],
+  "keywords": ["canvas", "node", "adapter", "@napi-rs/canvas"],
   "author": "NMMTY",
   "license": "MIT",
   "dependencies": {
@@ -35,9 +30,7 @@
     "@nmmty/lazycanvas": "workspace:*"
   },
   "sideEffects": false,
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git",

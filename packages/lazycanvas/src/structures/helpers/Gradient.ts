@@ -1,15 +1,16 @@
 import {
-  AnyCentring,
-  AnyGradientType,
+  type AnyCentring,
+  type AnyGradientType,
   Centring,
   FillType,
   GradientType,
-  StringColorType,
-  ScaleType,
-  ICanvasRenderingContext2D,
+  type ICanvasGradient,
+  type ICanvasRenderingContext2D,
+  type ScaleType,
+  type StringColorType,
 } from "../../types";
-import { LazyLog, LazyError, defaultArg, parseFillStyle, parser } from "../../utils";
-import { LayersManager } from "../managers";
+import { LazyError, LazyLog, defaultArg, parseFillStyle, parser } from "../../utils";
+import type { LayersManager } from "../managers";
 
 /**
  * Interface representing a gradient.
@@ -205,10 +206,10 @@ export class Gradient implements IGradient {
       canvas?: any;
     } = { debug: false },
   ): any {
-    let gradientData = this.toJSON();
-    let gradient;
+    const gradientData = this.toJSON();
+    let gradient: ICanvasGradient | undefined;
 
-    if (opts.debug) LazyLog.log("none", `Gradient:`, gradientData);
+    if (opts.debug) LazyLog.log("none", "Gradient:", gradientData);
 
     const parse = parser(ctx, opts.canvas, opts.manager);
 
@@ -219,7 +220,7 @@ export class Gradient implements IGradient {
       y1: { v: gradientData.points[1]?.y || 0, options: defaultArg.vl(true) },
     });
 
-    if (opts.debug) LazyLog.log("none", `Gradient points:`, { x0, y0, x1, y1 });
+    if (opts.debug) LazyLog.log("none", "Gradient points:", { x0, y0, x1, y1 });
 
     switch (gradientData.type) {
       case GradientType.Linear:
@@ -235,15 +236,15 @@ export class Gradient implements IGradient {
           const cx = this.getPosition(x, width, align, "x");
           const cy = this.getPosition(y, height, align, "y");
 
-          if (opts.debug) LazyLog.log("none", `Center for angle calculation:`, { cx, cy });
+          if (opts.debug) LazyLog.log("none", "Center for angle calculation:", { cx, cy });
 
           const [p1, p2] = this.getLinearGradientPoints(cx, cy, width, height, gradientData.angle);
 
-          if (opts.debug) LazyLog.log("none", `Linear Gradient Points from angle:`, { p1, p2 });
+          if (opts.debug) LazyLog.log("none", "Linear Gradient Points from angle:", { p1, p2 });
 
           gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
         } else {
-          if (opts.debug) LazyLog.log("none", `Linear Gradient created from points.`);
+          if (opts.debug) LazyLog.log("none", "Linear Gradient created from points.");
 
           gradient = ctx.createLinearGradient(x0, y0, x1 || x0, y1 || y0);
         }
@@ -278,7 +279,7 @@ export class Gradient implements IGradient {
         }
         break;
     }
-    for (let stop of gradientData.stops) {
+    for (const stop of gradientData.stops) {
       gradient.addColorStop(stop.offset, parseFillStyle(ctx, stop.color, opts) as string);
     }
     return gradient;

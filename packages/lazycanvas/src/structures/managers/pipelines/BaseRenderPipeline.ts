@@ -1,8 +1,13 @@
-import { AnyExport, AnyLayer, Export, ICanvasRenderingContext2D } from "../../../types";
-import { LazyCanvas } from "../../LazyCanvas";
-import { Div } from "../../components";
+import {
+  type AnyExport,
+  type AnyLayer,
+  Export,
+  type ICanvasRenderingContext2D,
+} from "../../../types";
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
-import { IRenderManager } from "./index";
+import type { LazyCanvas } from "../../LazyCanvas";
+import type { Div } from "../../components";
+import type { IRenderManager } from "./index";
 
 /**
  * Mime type used by `canvas.toBuffer()` / `canvas.toDataURL()` for every raster

@@ -1,18 +1,22 @@
-import { AnyLayer, ICanvasAdapter, JSONLayer, LayerType } from "../../../types";
+import { Gradient, type IGradient, type IPattern, Pattern } from "../";
+import { isSignal } from "../../../core";
+import { type AnyLayer, type ICanvasAdapter, type JSONLayer, LayerType } from "../../../types";
+import { LazyError, LazyLog } from "../../../utils";
+import { type IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
 import {
   BezierLayer,
   Div,
-  IBaseLayerMisc,
-  IBezierLayerProps,
-  IDiv,
-  IImageLayerProps,
-  ILineLayerProps,
+  type IBaseLayerMisc,
+  type IBezierLayerProps,
+  type IDiv,
+  type IImageLayerProps,
+  type ILineLayerProps,
+  type IMorphLayerProps,
+  type IPath2DLayerProps,
+  type IPolygonLayerProps,
+  type IQuadraticLayerProps,
+  type ITextLayerProps,
   ImageLayer,
-  IMorphLayerProps,
-  IPath2DLayerProps,
-  IPolygonLayerProps,
-  IQuadraticLayerProps,
-  ITextLayerProps,
   LineLayer,
   MorphLayer,
   Path2DLayer,
@@ -20,10 +24,6 @@ import {
   QuadraticLayer,
   TextLayer,
 } from "../../components";
-import { Gradient, IGradient, IPattern, Pattern } from "../";
-import { IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
-import { LazyError, LazyLog } from "../../../utils";
-import { isSignal } from "../../../core";
 import { ClassicRenderPipeline } from "../../managers";
 
 /**
@@ -90,7 +90,7 @@ export class JSONReader {
   ): Array<AnyLayer | Div> {
     return data.map((layer: any) => {
       if (opts?.debug) LazyLog.log("info", `Parsing layer ${layer.id}...\nData:`, layer);
-      return this.layerParse(layer, {
+      return JSONReader.layerParse(layer, {
         id: layer.id,
         zIndex: layer.zIndex,
         visible: layer.visible,
@@ -108,50 +108,49 @@ export class JSONReader {
     if (layer instanceof Div) {
       return new Div(layer.props, misc).add(
         ...(layer.layers.map((l: any) =>
-          this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
+          JSONReader.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
         ) as AnyLayer[]),
       );
-    } else {
-      switch (layer.type) {
-        case LayerType.BezierCurve:
-          return new BezierLayer(layer.props as IBezierLayerProps, misc).setColor(
-            this.fillParse(layer),
-          );
-        case LayerType.QuadraticCurve:
-          return new QuadraticLayer(layer.props as IQuadraticLayerProps, misc).setColor(
-            this.fillParse(layer),
-          );
-        case LayerType.Image:
-          return new ImageLayer(layer.props as IImageLayerProps, misc);
-        case LayerType.Text:
-          return new TextLayer(layer.props as ITextLayerProps, misc).setColor(
-            this.fillParse(layer),
-          );
-        case LayerType.Morph:
-          return new MorphLayer(layer.props as IMorphLayerProps, misc).setColor(
-            this.fillParse(layer),
-          );
-        case LayerType.Line:
-          return new LineLayer(layer.props as ILineLayerProps, misc).setColor(
-            this.fillParse(layer),
-          );
-        case LayerType.Path:
-          return new Path2DLayer(layer.props as IPath2DLayerProps, misc).setColor(
-            this.fillParse(layer),
-          );
-        case LayerType.Polygon:
-          return new PolygonLayer(layer.props as IPolygonLayerProps, misc).setColor(
-            this.fillParse(layer),
-          );
-        case LayerType.Group:
-          return new Div((layer as unknown as IDiv).props, misc).add(
-            ...((layer as unknown as IDiv).layers ?? []).map((l: any) =>
-              this.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
-            ),
-          );
-        default:
-          return layer as AnyLayer;
-      }
+    }
+    switch (layer.type) {
+      case LayerType.BezierCurve:
+        return new BezierLayer(layer.props as IBezierLayerProps, misc).setColor(
+          JSONReader.fillParse(layer),
+        );
+      case LayerType.QuadraticCurve:
+        return new QuadraticLayer(layer.props as IQuadraticLayerProps, misc).setColor(
+          JSONReader.fillParse(layer),
+        );
+      case LayerType.Image:
+        return new ImageLayer(layer.props as IImageLayerProps, misc);
+      case LayerType.Text:
+        return new TextLayer(layer.props as ITextLayerProps, misc).setColor(
+          JSONReader.fillParse(layer),
+        );
+      case LayerType.Morph:
+        return new MorphLayer(layer.props as IMorphLayerProps, misc).setColor(
+          JSONReader.fillParse(layer),
+        );
+      case LayerType.Line:
+        return new LineLayer(layer.props as ILineLayerProps, misc).setColor(
+          JSONReader.fillParse(layer),
+        );
+      case LayerType.Path:
+        return new Path2DLayer(layer.props as IPath2DLayerProps, misc).setColor(
+          JSONReader.fillParse(layer),
+        );
+      case LayerType.Polygon:
+        return new PolygonLayer(layer.props as IPolygonLayerProps, misc).setColor(
+          JSONReader.fillParse(layer),
+        );
+      case LayerType.Group:
+        return new Div((layer as unknown as IDiv).props, misc).add(
+          ...((layer as unknown as IDiv).layers ?? []).map((l: any) =>
+            JSONReader.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
+          ),
+        );
+      default:
+        return layer as AnyLayer;
     }
   }
 
@@ -175,15 +174,14 @@ export class JSONReader {
               .setSrc(
                 typeof (layer.props.color as IPattern).src === "string"
                   ? (layer.props.color as IPattern).src
-                  : this.read((layer.props.color as IPattern).src as unknown as IOLazyCanvas),
+                  : JSONReader.read((layer.props.color as IPattern).src as unknown as IOLazyCanvas),
               );
           default:
             return layer.props.color;
         }
       }
       return layer.props.color || "#000000";
-    } else {
-      return "#000000";
     }
+    return "#000000";
   }
 }

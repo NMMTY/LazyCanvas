@@ -1,6 +1,11 @@
-import { Div, TextLayer } from "../components";
-import { AnyLayer, LayerType, ICanvas, ICanvasRenderingContext2D } from "../../types";
+import {
+  type AnyLayer,
+  type ICanvas,
+  type ICanvasRenderingContext2D,
+  LayerType,
+} from "../../types";
 import { LazyLog } from "../../utils";
+import { Div, type TextLayer } from "../components";
 
 // Define minimal types for Yoga to avoid import issues
 type YogaNode = any;
@@ -395,7 +400,7 @@ export class LayoutManager {
       else node.setHeight(value);
     } else if (typeof value === "string") {
       if (value.endsWith("%")) {
-        const val = parseFloat(value);
+        const val = Number.parseFloat(value);
         if (prop === "width") node.setWidthPercent(val);
         else node.setHeightPercent(val);
       } else if (value === "auto") {

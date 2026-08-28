@@ -1,18 +1,18 @@
-import {
-  ScaleType,
-  AnyCentring,
-  AnyGlobalCompositeOperation,
-  Transform,
-  AnyFilter,
-  Centring,
-  LayerType,
-  ILayoutProps,
-  AnyLayer,
-} from "../../types";
-import { generateID, isColor, LazyError } from "../../utils";
 import { Signal } from "../../core/Signal";
+import {
+  type AnyCentring,
+  type AnyFilter,
+  type AnyGlobalCompositeOperation,
+  type AnyLayer,
+  Centring,
+  type ILayoutProps,
+  type LayerType,
+  type ScaleType,
+  type Transform,
+} from "../../types";
+import { LazyError, generateID, isColor } from "../../utils";
 import { Gradient, Link, Pattern } from "../helpers";
-import { Div } from "./Div";
+import type { Div } from "./Div";
 
 /**
  * Interface representing the base structure of a layer.

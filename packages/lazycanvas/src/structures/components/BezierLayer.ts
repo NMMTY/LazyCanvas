@@ -1,17 +1,26 @@
-import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, Point, ScaleType, Centring, LayerType, StrokeOptions, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
+  Centring,
+  type ColorType,
+  type ICanvas,
+  type ICanvasRenderingContext2D,
+  LayerType,
+  type Point,
+  type ScaleType,
+  type StrokeOptions,
+} from "../../types";
+import {
+  DrawUtils,
+  LazyError,
+  LazyLog,
+  defaultArg,
   getBoundingBoxBezier,
   isColor,
   parseFillStyle,
   parser,
   transform,
-  defaultArg,
-  LazyError,
-  LazyLog,
-  DrawUtils,
 } from "../../utils";
-import { LayersManager } from "../managers";
+import type { LayersManager } from "../managers";
+import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
 /**
  * Interface representing a Bezier layer.
@@ -224,14 +233,14 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
       { x: cp2x, y: cp2y },
       { x: xe, y: ye },
     ]);
-    let fillStyle = await parseFillStyle(ctx, this.props.color, {
+    const fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width, height, x: min.x, y: min.y, align: "none" },
       manager,
     });
 
     if (debug)
-      LazyLog.log("none", `BezierLayer:`, {
+      LazyLog.log("none", "BezierLayer:", {
         xs,
         ys,
         cp1x,
@@ -278,8 +287,8 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
    * @returns {IBezierLayer} The JSON representation of the Bezier layer.
    */
   public toJSON(): IBezierLayer {
-    let data = super.toJSON();
-    let copy: any = { ...this.props };
+    const data = super.toJSON();
+    const copy: any = { ...this.props };
 
     for (const key of ["x", "y", "endPoint.x", "endPoint.y", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

@@ -4,7 +4,7 @@ import "@hitomihiumi/colors.ts";
 
 const fontsDir = path.join(__dirname, "../resources/fonts");
 const fonts: { [key: string]: string } = {};
-let fontWeights: { [key: string]: { [key: number]: string } } = {};
+const fontWeights: { [key: string]: { [key: number]: string } } = {};
 
 fs.readdirSync(fontsDir).forEach((file) => {
   const ext = path.extname(file);
@@ -28,7 +28,7 @@ fs.readdirSync(fontsDir).forEach((file) => {
 
 function getFontWeight(fontName: string) {
   const weight = fontName.split("-")[1];
-  if (!isNaN(Number(fontName))) {
+  if (!Number.isNaN(Number(fontName))) {
     switch (Number(fontName)) {
       case 100:
         return "Thin";
@@ -51,7 +51,8 @@ function getFontWeight(fontName: string) {
       case 950:
         return "ExtraBlack";
     }
-  } else if (isNaN(Number(weight))) {
+  }
+  if (Number.isNaN(Number(weight))) {
     if (weight) {
       switch (weight.toLowerCase()) {
         case "thin":

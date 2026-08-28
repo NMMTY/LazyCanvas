@@ -1,16 +1,24 @@
-import { BaseLayer, IBaseLayer, IBaseLayerMisc, IBaseLayerProps } from "./BaseLayer";
-import { ColorType, ScaleType, Centring, LayerType, StrokeOptions, ICanvas, ICanvasRenderingContext2D } from "../../types";
 import {
-  defaultArg,
+  Centring,
+  type ColorType,
+  type ICanvas,
+  type ICanvasRenderingContext2D,
+  LayerType,
+  type ScaleType,
+  type StrokeOptions,
+} from "../../types";
+import {
+  DrawUtils,
   LazyError,
   LazyLog,
+  defaultArg,
   isColor,
   parseFillStyle,
   parser,
   transform,
-  DrawUtils,
 } from "../../utils";
-import { LayersManager } from "../managers";
+import type { LayersManager } from "../managers";
+import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 /**
  * Interface representing a Line Layer.
  */
@@ -164,8 +172,8 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
       ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
     });
 
-    let width = xe - xs;
-    let height = ye - ys;
+    const width = xe - xs;
+    const height = ye - ys;
     return { xs, ys, xe, ye, width, height };
   }
 
@@ -191,15 +199,15 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
       ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
     });
 
-    let width = Math.abs(xe - xs);
-    let height = Math.abs(ye - ys);
-    let fillStyle = await parseFillStyle(ctx, this.props.color, {
+    const width = Math.abs(xe - xs);
+    const height = Math.abs(ye - ys);
+    const fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width, height, x: Math.min(xs, xe), y: Math.min(ys, ye), align: "none" },
       manager,
     });
 
-    if (debug) LazyLog.log("none", `LineLayer:`, { xs, ys, xe, ye, width, height });
+    if (debug) LazyLog.log("none", "LineLayer:", { xs, ys, xe, ye, width, height });
 
     ctx.save();
 
@@ -225,8 +233,8 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
    * @returns {ILineLayer} The JSON representation of the Line Layer.
    */
   toJSON(): ILineLayer {
-    let data = super.toJSON();
-    let copy: any = { ...this.props };
+    const data = super.toJSON();
+    const copy: any = { ...this.props };
 
     for (const key of ["x", "y", "endPoint.x", "endPoint.y", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

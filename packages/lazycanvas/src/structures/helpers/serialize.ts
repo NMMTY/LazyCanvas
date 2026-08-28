@@ -1,5 +1,5 @@
-import { IOLazyCanvas, LazyCanvas } from "../LazyCanvas";
-import { LayersManager } from "../managers";
+import type { IOLazyCanvas, LazyCanvas } from "../LazyCanvas";
+import type { LayersManager } from "../managers";
 
 /**
  * Serializes every layer of a manager into its plain JSON representation.
