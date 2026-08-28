@@ -2,7 +2,6 @@
 import {
   createElement,
   Scene,
-  Exporter,
   Div,
   MorphLayer,
   TextLayer,
@@ -13,6 +12,8 @@ import {
   PolygonLayer,
   FontWeight,
 } from "../src";
+import { Exporter } from "../src/node";
+import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import { Path2D } from "@napi-rs/canvas";
 
 export async function run() {
@@ -38,7 +39,7 @@ export async function run() {
   };
 
   // Create scene
-  const scene = new Scene(width, height, { debug: true });
+  const scene = new Scene(width, height, { adapter: new NodeCanvasAdapter(), debug: true });
 
   scene.load(
     <MorphLayer

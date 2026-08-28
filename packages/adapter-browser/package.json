@@ -11,7 +11,8 @@
     }
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "canvas",
@@ -27,7 +28,8 @@
     "@nmmty/lazycanvas": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@nmmty/lazycanvas": "workspace:*"
   },
   "sideEffects": false,
   "files": [

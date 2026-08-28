@@ -12,13 +12,14 @@ import {
   chain,
   waitFor,
   calculateSequentialDuration,
-  Exporter,
 } from "../src";
+import { Exporter } from "../src/node";
+import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 
 export async function run() {
   const width = 960;
   const height = 540;
-  const scene = new Scene(width, height, { debug: true });
+  const scene = new Scene(width, height, { adapter: new NodeCanvasAdapter(), debug: true });
 
   // Create signals
   const boxX = createSignal(50);

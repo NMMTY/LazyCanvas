@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "1.0.0"]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build packages
+        run: pnpm build
+
+      # Runs after the build so the packaged entry points are exercised too.
+      - name: Test
+        run: pnpm test
+
+      - name: Verify the browser entry point pulls in no Node built-ins
+        run: |
+          if grep -rlE '"node:(fs|path|zlib)"' \
+              --include='*.js' \
+              --exclude-dir=node \
+              packages/lazycanvas/dist; then
+            echo "::error::Node built-ins leaked into the browser entry point"
+            exit 1
+          fi
+          echo "browser entry point is clean"

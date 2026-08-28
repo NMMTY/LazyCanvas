@@ -11,7 +11,8 @@
     }
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "react",
@@ -30,7 +31,9 @@
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@nmmty/lazycanvas": "workspace:*",
+    "@nmmty/adapter-browser": "workspace:*"
   },
   "sideEffects": false,
   "files": [

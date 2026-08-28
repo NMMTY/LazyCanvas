@@ -1,24 +1,30 @@
 {
   "private": true,
   "name": "lazycanvas-monorepo",
-  "workspaces": [
-    "plugins/*",
-    "packages/*"
-  ],
   "engines": {
     "node": "22.x"
   },
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
-    "tsx": "^4.21.0"
-  },
-  "dependencies": {
-    "lazycanvas-monorepo": "link:"
+    "@biomejs/biome": "1.9.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "pnpm": {
     "overrides": {
       "@types/react": "19.2.3",
       "@types/react-dom": "19.2.3"
     }
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "typecheck": "pnpm -r --filter \"./packages/*\" typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "build:apps": "pnpm -r --filter \"./apps/*\" build"
   }
 }
