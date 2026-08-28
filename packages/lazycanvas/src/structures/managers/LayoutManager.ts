@@ -4,7 +4,14 @@ import {
   type ICanvasRenderingContext2D,
   LayerType,
 } from "../../types";
-import { LazyLog } from "../../utils";
+import {
+  LazyLog,
+  authoredProp,
+  captureAuthoredProps,
+  getChildren,
+  restoreAuthoredProps,
+  walkLayers,
+} from "../../utils";
 import { Div, type TextLayer } from "../components";
 
 // Define minimal types for Yoga to avoid import issues
@@ -41,6 +48,43 @@ export class LayoutManager {
     }
   }
 
+  /**
+   * Children that take part in the Yoga pass.
+   *
+   * A leaf with an explicit `position` and no `layout` is positioned by hand,
+   * so it is left out of the flex flow entirely. `createNode` and `applyLayout`
+   * must agree on this exactly, which is why both call this one function.
+   */
+  private layoutChildren(layer: AnyLayer | Div): Array<AnyLayer | Div> {
+    return getChildren(layer).filter((child) => {
+      const isContainer = child instanceof Div || child.type === LayerType.Group;
+      if (isContainer) return true;
+
+      // Read `position` as the caller wrote it: a previous pass may have
+      // written computed offsets there, which would make every laid-out child
+      // look manually positioned from the second frame onwards.
+      const position = authoredProp(child, "position");
+      const hasExplicitPosition =
+        position && (position.x !== undefined || position.y !== undefined);
+      const childLayout = (child.props as any)?.layout;
+      const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
+
+      return !(hasExplicitPosition && !hasExplicitLayout);
+    });
+  }
+
+  /**
+   * Computes the flexbox layout for a tree and writes the result into the
+   * layers so the render pipeline can draw them.
+   *
+   * Does nothing while yoga-layout is still loading; the next frame picks it up.
+   *
+   * @param {AnyLayer | Div} [root] - Root of the tree to lay out.
+   * @param {number} [width] - Available width.
+   * @param {number} [height] - Available height.
+   * @param {ICanvasRenderingContext2D} [ctx] - Context used to measure text.
+   * @param {ICanvas} [canvas] - Canvas used to measure text.
+   */
   public calculateLayout(
     root: AnyLayer | Div,
     width: number,
@@ -53,17 +97,20 @@ export class LayoutManager {
       return;
     }
 
+    // Remember the caller's input before the first pass overwrites it.
+    for (const layer of walkLayers(root)) {
+      captureAuthoredProps(layer);
+    }
+
     const rootNode = this.createNode(root, ctx, canvas);
     if (!rootNode) return;
 
     rootNode.setWidth(width);
     rootNode.setHeight(height);
-
     rootNode.calculateLayout(width, height, this.yoga.DIRECTION_LTR);
 
     this.applyLayout(rootNode, root);
 
-    // Clean up
     this.freeNode(rootNode);
   }
 
@@ -73,6 +120,12 @@ export class LayoutManager {
     canvas?: ICanvas,
   ): YogaNode | null {
     if (!this.yoga) return null;
+
+    // This layer takes part in the flow, so its geometry is about to be
+    // overwritten: start from the authored values rather than from the previous
+    // frame's output. Layers outside the flow are never touched, which is what
+    // keeps a signal-driven position animating.
+    restoreAuthoredProps(layer);
 
     const node = this.yoga.Node.create();
     const layout = (layer.props as any)?.layout || {};
@@ -168,173 +221,53 @@ export class LayoutManager {
       });
     }
 
-    // Handle children
-    if (layer instanceof Div || (layer.type === "group" && "layers" in layer)) {
-      const children = (layer as Div).layers;
-      let childIndex = 0;
-      children.forEach((child) => {
-        const childLayout = (child.props as any)?.layout;
-        const childPosition = (child.props as any)?.position;
-
-        // IMPORTANT: Logic for deciding if child participates in Yoga layout:
-        // 1. Div/containers always participate (they manage their own children)
-        // 2. If layer has explicit position prop (x or y set), skip Yoga - use position-based positioning
-        // 3. If layer has explicit layout prop, use Yoga layout
-        // 4. Otherwise (no position, no layout), use Yoga layout by default for proper flow
-
-        const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition =
-          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
-        const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
-
-        // Skip Yoga layout if:
-        // - Not a container AND has explicit position set (user wants manual positioning)
-        if (!isContainer && hasExplicitPosition && !hasExplicitLayout) {
-          return; // Skip this child - it will use position-based positioning
-        }
-
-        const childNode = this.createNode(child, ctx, canvas);
-        if (childNode) {
-          node.insertChild(childNode, childIndex++);
-        }
-      });
-    } else if ("children" in layer && Array.isArray((layer as any).children)) {
-      const children = (layer as any).children;
-      let childIndex = 0;
-      children.forEach((child: AnyLayer | Div) => {
-        const childLayout = (child.props as any)?.layout;
-        const childPosition = (child.props as any)?.position;
-
-        const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition =
-          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
-        const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
-
-        if (!isContainer && hasExplicitPosition && !hasExplicitLayout) {
-          return; // Skip this child - it will use position-based positioning
-        }
-
-        const childNode = this.createNode(child, ctx, canvas);
-        if (childNode) {
-          node.insertChild(childNode, childIndex++);
-        }
-      });
-    }
+    this.layoutChildren(layer).forEach((child, index) => {
+      const childNode = this.createNode(child, ctx, canvas);
+      if (childNode) node.insertChild(childNode, index);
+    });
 
     return node;
   }
 
+  /**
+   * Copies Yoga's computed geometry onto the layers.
+   *
+   * Positions are relative to the parent, which matches how the render pipeline
+   * translates the context when descending into a subtree.
+   */
   private applyLayout(node: YogaNode, layer: AnyLayer | Div) {
     const layout = node.getComputedLayout();
 
-    // Debug logging if enabled
     if (this.debug) {
-      console.log(
+      LazyLog.log(
+        "info",
         `[Layout] ${layer.id}: left=${layout.left}, top=${layout.top}, width=${layout.width}, height=${layout.height}`,
       );
     }
 
-    // Apply computed layout to layer props
-    // We need to be careful not to overwrite original props if we want to recalculate
-    // But for rendering, we need the absolute positions.
-    // Maybe we should store computed layout separately or update position?
-
-    // For now, let's update position and size if they are not fixed?
-    // Or better, update a specific 'computedLayout' property if we added one.
-    // Since we didn't add 'computedLayout', let's update position.
-
-    // Note: Yoga calculates relative positions. We might need to convert to absolute if the renderer expects absolute.
-    // But if the renderer handles hierarchy (Div draws children), relative is fine.
-
     if (!layer.props) layer.props = {} as any;
-    if (!(layer.props as any).position) (layer.props as any).position = { x: 0, y: 0 };
+    const props = layer.props as any;
 
-    // Mark that this layer has computed layout from Yoga
-    // This will be used by TextLayer to know it should use top-left alignment
-    (layer.props as any)._computedLayout = true;
+    // Tells TextLayer to align from the top-left, matching Yoga's coordinates.
+    props._computedLayout = true;
 
-    // Update position
-    (layer.props as any).position.x = layout.left;
-    (layer.props as any).position.y = layout.top;
+    props.position = { ...props.position, x: layout.left, y: layout.top };
 
-    // If layout is applied, we should probably force centring to top-left (start-top)
-    // to match Yoga's coordinate system
-    if ("centring" in layer.props) {
-      (layer.props as any).centring = "start-top"; // or "none" depending on implementation
+    if ("centring" in props) props.centring = "start-top";
+
+    if ("size" in props) {
+      props.size = { ...props.size, width: layout.width, height: layout.height };
     }
 
-    // Update size if applicable (e.g. Div or layers that support size)
-    if ("size" in (layer.props as any)) {
-      // @ts-ignore
-      const currentSize = (layer.props as any).size;
-      // @ts-ignore
-      (layer.props as any).size = { ...currentSize, width: layout.width, height: layout.height };
-    } else if (layer instanceof Div) {
-      // Div doesn't have size prop usually, but maybe it should?
-    }
-
-    // Recursively apply to children
-    if (layer instanceof Div || (layer.type === "group" && "layers" in layer)) {
-      const children = (layer as Div).layers;
-      let yogaChildIndex = 0;
-
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i];
-
-        // Check if this child was added to Yoga tree
-        // Must match the logic in createNode
-        const childLayout = (child.props as any)?.layout;
-        const childPosition = (child.props as any)?.position;
-        const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition =
-          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
-        const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
-
-        // Skip if this child wasn't added to Yoga tree
-        if (!isContainer && hasExplicitPosition && !hasExplicitLayout) {
-          continue;
-        }
-
-        const childNode = node.getChild(yogaChildIndex++);
-        if (childNode) {
-          this.applyLayout(childNode, child);
-        }
-      }
-    } else if ("children" in layer && Array.isArray((layer as any).children)) {
-      const children = (layer as any).children;
-      let yogaChildIndex = 0;
-
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i];
-
-        const childLayout = (child.props as any)?.layout;
-        const childPosition = (child.props as any)?.position;
-        const isContainer = child instanceof Div || child.type === "group";
-        const hasExplicitPosition =
-          childPosition && (childPosition.x !== undefined || childPosition.y !== undefined);
-        const hasExplicitLayout = childLayout !== undefined && Object.keys(childLayout).length > 0;
-
-        if (!isContainer && hasExplicitPosition && !hasExplicitLayout) {
-          continue;
-        }
-
-        const childNode = node.getChild(yogaChildIndex++);
-        if (childNode) {
-          this.applyLayout(childNode, child);
-        }
-      }
-    }
+    this.layoutChildren(layer).forEach((child, index) => {
+      const childNode = node.getChild(index);
+      if (childNode) this.applyLayout(childNode, child);
+    });
   }
 
   private freeNode(node: YogaNode) {
-    // Recursively free nodes? Yoga might handle this if we free root?
-    // Yoga JS usually requires manual freeing.
-    // node.freeRecursive(); // if available
-    if (node.freeRecursive) {
-      node.freeRecursive();
-    } else {
-      node.free();
-    }
+    if (node.freeRecursive) node.freeRecursive();
+    else node.free();
   }
 
   // Helpers for Yoga enums

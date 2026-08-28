@@ -279,7 +279,7 @@ export class QuadraticLayer extends BaseLayer<IQuadraticLayerProps> {
    */
   public toJSON(): IQuadraticLayer {
     const data = super.toJSON();
-    const copy: any = { ...this.props };
+    const copy: any = { ...data.props };
 
     for (const key of [
       "x",

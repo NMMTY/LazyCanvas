@@ -17,8 +17,8 @@
       "**/docs/**",
       "apps/docs/**",
       "packages/micro-docgen/**",
-      "packages/lazycanvas/src/helpers/Fonts.ts",
-      "pnpm-lock.yaml"
+      "pnpm-lock.yaml",
+      "packages/lazycanvas/src/fonts/Geist.ts"
     ]
   },
   "formatter": {

@@ -1,4 +1,3 @@
-import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import {
   Centring,
@@ -11,6 +10,7 @@ import {
   Scene,
   TextLayer,
 } from "@nmmty/lazycanvas";
+import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { Exporter } from "@nmmty/lazycanvas/node";
 import { describe, expect, it } from "vitest";
 

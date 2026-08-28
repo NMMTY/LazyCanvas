@@ -1,4 +1,4 @@
-import { Div } from "../structures/components";
+import type { Div } from "../structures/components";
 import type { AnyLayer } from "../types";
 
 /**
@@ -7,19 +7,18 @@ import type { AnyLayer } from "../types";
 export type LayerNode = AnyLayer | Div;
 
 /**
- * Returns the children of a layer, regardless of which container it uses.
+ * Returns the children of a layer.
  *
- * `Div` keeps its children in `layers`, every other layer keeps them in
- * `children`. This helper is the single place that knows about both, so tree
- * traversal never has to branch on the container type.
+ * Every layer stores its subtree in `children` (`Div.layers` is an alias of the
+ * same array). Going through this helper keeps traversal working for plain
+ * objects too, such as layers restored from JSON.
  *
  * @param {LayerNode} [layer] - The layer to read children from.
  * @returns {LayerNode[]} The children, or an empty array when there are none.
  */
 export function getChildren(layer: LayerNode): LayerNode[] {
-  if (layer instanceof Div) return layer.layers;
-  const children = (layer as any).children;
-  return Array.isArray(children) ? children : [];
+  const children = (layer as { children?: unknown }).children;
+  return Array.isArray(children) ? (children as LayerNode[]) : [];
 }
 
 /**

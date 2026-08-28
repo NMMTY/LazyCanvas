@@ -237,7 +237,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
    */
   toJSON(): IMorphLayer {
     const data = super.toJSON();
-    const copy: any = { ...this.props };
+    const copy: any = { ...data.props };
 
     for (const key of ["x", "y", "size.width", "size.height", "size.radius", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

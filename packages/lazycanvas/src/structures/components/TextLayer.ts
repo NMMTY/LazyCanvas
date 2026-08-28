@@ -608,7 +608,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    */
   public toJSON(): ITextLayer {
     const data = super.toJSON();
-    const copy: any = { ...this.props };
+    const copy: any = { ...data.props };
 
     for (const key of ["x", "y", "size.width", "size.height", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

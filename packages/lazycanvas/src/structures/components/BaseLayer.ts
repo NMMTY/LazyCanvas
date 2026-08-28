@@ -10,7 +10,7 @@ import {
   type ScaleType,
   type Transform,
 } from "../../types";
-import { LazyError, generateID, isColor } from "../../utils";
+import { LazyError, authoredProps, generateID, isColor } from "../../utils";
 import { Gradient, Link, Pattern } from "../helpers";
 import type { Div } from "./Div";
 
@@ -453,7 +453,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
       type: this.type,
       zIndex: this.zIndex,
       visible: this.visible,
-      props: this.props,
+      props: authoredProps(this),
     };
   }
 

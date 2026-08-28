@@ -288,7 +288,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
    */
   public toJSON(): IBezierLayer {
     const data = super.toJSON();
-    const copy: any = { ...this.props };
+    const copy: any = { ...data.props };
 
     for (const key of ["x", "y", "endPoint.x", "endPoint.y", "fillStyle"]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {

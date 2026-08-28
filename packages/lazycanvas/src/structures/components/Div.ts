@@ -6,7 +6,7 @@ import {
   type ICanvasRenderingContext2D,
   LayerType,
 } from "../../types";
-import { LazyLog, generateID, getChildren } from "../../utils";
+import { LazyLog, authoredProps, generateID, getChildren } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerProps } from "./BaseLayer";
 
@@ -78,13 +78,23 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    */
   zIndex: number;
 
-  /**
-   * The layer's contained within the group.
-   */
-  layers: Array<AnyLayer | Div>;
-
   props: IDivProps;
   parent?: IBaseLayer | any | null;
+
+  /**
+   * The layers contained within the group.
+   *
+   * Alias of {@link BaseLayer.children}. A group used to keep its subtree in a
+   * second array, so every traversal had to know about both containers; they
+   * are now the same list.
+   */
+  get layers(): Array<AnyLayer | Div> {
+    return this.children;
+  }
+
+  set layers(value: Array<AnyLayer | Div>) {
+    this.children = value;
+  }
 
   /**
    * Constructs a new Group instance.
@@ -104,7 +114,6 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
     this.id = opts?.id || propsId || generateID(LayerType.Group);
     this.visible = opts?.visible ?? propsVisible ?? true;
     this.zIndex = opts?.zIndex ?? propsZIndex ?? 1;
-    this.layers = [];
     this.props = props || ({} as IDivProps);
     this.parent = null;
   }
@@ -140,54 +149,12 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
   }
 
   /**
-   * Adds components to the group.
-   * @param {AnyLayer[] | Div[]} [components] - The components to add to the group.
-   * @returns {this} The current instance for chaining.
-   */
-  add(...components: Array<AnyLayer | Div>): this {
-    let layersArray = components.filter((l) => l !== undefined);
-    layersArray = layersArray.sort((a, b) => a.zIndex - b.zIndex);
-    for (const layer of layersArray) {
-      layer.parent = this;
-    }
-    this.layers.push(...layersArray);
-    return this;
-  }
-
-  /**
-   * Removes a component from the group by its ID.
-   * @param {string} [id] - The unique identifier of the component to remove.
-   * @returns {this} The current instance for chaining.
-   */
-  remove(id: string): this {
-    this.layers = this.layers.filter((c) => c.id !== id);
-    return this;
-  }
-
-  /**
    * Clears all components from the group.
    * @returns {this} The current instance for chaining.
    */
   clear(): this {
-    this.layers = [];
+    this.children = [];
     return this;
-  }
-
-  /**
-   * Retrieves a component from the group by its ID.
-   * @param {string} [id] - The unique identifier of the component to retrieve.
-   * @returns {AnyLayer | Div | undefined} The component with the specified ID, or undefined if not found.
-   */
-  get(id: string): AnyLayer | Div | undefined {
-    return this.layers.find((c) => c.id === id);
-  }
-
-  /**
-   * Retrieves all components from the group.
-   * @returns {AnyLayer[] | Div[]} An array of all components in the group.
-   */
-  getAll(): Array<AnyLayer | Div> {
-    return this.layers;
   }
 
   /**
@@ -284,7 +251,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
       type: this.type,
       visible: this.visible,
       zIndex: this.zIndex,
-      props: this.props,
+      props: authoredProps(this),
       // @ts-ignore
       layers: this.layers.map((c) => c.toJSON()),
     };

@@ -358,13 +358,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
   }
 
   toJSON(): IPath2DLayer {
-    return {
-      id: this.id,
-      type: this.type,
-      zIndex: this.zIndex,
-      visible: this.visible,
-      props: this.props,
-    };
+    return super.toJSON() as IPath2DLayer;
   }
 
   protected validateProps(data: IPath2DLayerProps): IPath2DLayerProps {
