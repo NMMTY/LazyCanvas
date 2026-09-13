@@ -1,3 +1,5 @@
+import { type LayerNode, walkLayers } from "./tree";
+
 /**
  * CSS generic font families. These are keywords, not family names, so they must
  * never be quoted and never need a fallback appended.
@@ -68,4 +70,37 @@ export function cssFont(
 ): string {
   const size = sizeOverride ?? font.size;
   return `${font.weight} ${size}px ${cssFontFamily(font.family)}`;
+}
+
+/**
+ * Collects the `ctx.font` strings a layer tree will actually use.
+ *
+ * A canvas asking for a family does not make the browser download it, and
+ * `document.fonts.ready` only waits for fonts something else already
+ * requested — so a page whose only user of a web font is a canvas must load it
+ * explicitly. This produces the specs to hand to `document.fonts.load()`.
+ *
+ * @param {LayerNode | LayerNode[]} [roots] - Root layer(s) of the tree.
+ * @returns {string[]} Unique font shorthand strings, one per family/size/weight.
+ */
+export function collectFontSpecs(roots: LayerNode | LayerNode[]): string[] {
+  const specs = new Set<string>();
+
+  for (const layer of walkLayers(roots)) {
+    const font = (layer as { props?: { font?: unknown } }).props?.font as
+      | { family?: string; size?: number; weight?: string | number }
+      | undefined;
+
+    if (!font?.family) continue;
+
+    specs.add(
+      cssFont({
+        family: font.family,
+        size: font.size ?? 16,
+        weight: font.weight ?? 400,
+      }),
+    );
+  }
+
+  return [...specs];
 }

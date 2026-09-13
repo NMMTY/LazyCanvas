@@ -159,15 +159,14 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
 
     if (debug) LazyLog.log("none", "ImageLayer:", { x, y, w, h, rad });
 
-    ctx.save();
+    // Load before saving the context: holding a save() across a network fetch
+    // leaves the state stack open for as long as the image takes to arrive.
     const image = adapter
       ? await adapter.loadImage(this.props.src)
       : await loadImageFallback(this.props.src);
-    if (image) {
-      image.width = w;
-      image.height = h;
-    }
     if (!image) throw new LazyError("The image could not be loaded");
+
+    ctx.save();
 
     if (this.props.transform) {
       transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });

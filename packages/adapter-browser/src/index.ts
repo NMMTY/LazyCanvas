@@ -70,6 +70,33 @@ export class BrowserCanvasAdapter implements ICanvasAdapter {
     this.pendingFonts = [];
   }
 
+  /**
+   * Makes sure the given fonts are downloaded and usable by a canvas.
+   *
+   * A `@font-face` declared in CSS is only fetched once something renders with
+   * it, and a canvas does not count: drawing text with an unloaded family
+   * silently falls back. `document.fonts.ready` does not help either — it waits
+   * for fonts already being loaded, not for ones nothing has asked for yet — so
+   * each family has to be requested explicitly through `document.fonts.load()`.
+   *
+   * Firefox shows this most clearly: the first paint uses the fallback font and
+   * only a later reload, once the font is in the HTTP cache, looks right.
+   *
+   * @param {string[]} [specs] - Font shorthand strings, e.g. `400 16px "Geist"`.
+   */
+  async loadFonts(specs: string[]): Promise<void> {
+    if (typeof document === "undefined" || !document.fonts) return;
+
+    await Promise.all(
+      specs.map((spec) =>
+        // An unknown family rejects; that is not fatal, the layer falls back.
+        document.fonts
+          .load(spec)
+          .catch(() => undefined),
+      ),
+    );
+  }
+
   createCanvas(width: number, height: number): ICanvas {
     if (this.existingCanvas) {
       this.existingCanvas.width = width;

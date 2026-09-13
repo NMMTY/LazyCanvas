@@ -6,6 +6,7 @@ import {
   Scene as LazyScene,
   type Signal,
   type ThreadGenerator,
+  collectFontSpecs,
   createElement,
 } from "@nmmty/lazycanvas";
 import React, {
@@ -383,17 +384,6 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
     (async () => {
       const layoutManager = scene.lazyCanvas.manager.layout;
       if (layoutManager?.ready) await layoutManager.ready;
-
-      // A canvas can only use a web font once it has finished loading; drawing
-      // earlier silently falls back to the browser's standard (serif) font.
-      if (typeof document !== "undefined" && document.fonts?.ready) {
-        await document.fonts.ready;
-      }
-
-      // Fonts registered through the adapter itself load asynchronously too.
-      const adapterRef_ = adapterRef.current as { fontsReady?: () => Promise<void> } | null;
-      if (typeof adapterRef_?.fontsReady === "function") await adapterRef_.fontsReady();
-
       if (isCancelled) return;
 
       const tree = createElementTree(
@@ -401,19 +391,36 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
         adapterRef.current as ICanvasAdapter,
       );
 
-      scene.lazyCanvas.manager.layers.clear();
-
+      const roots: any[] = [];
       for (const layer of Array.isArray(tree) ? tree : [tree]) {
-        if (layer && typeof layer === "object" && "id" in layer) scene.load(layer);
+        if (layer && typeof layer === "object" && "id" in layer) roots.push(layer);
       }
+      if (roots.length === 0) return;
 
-      if (scene.lazyCanvas.manager.layers.size() === 0) return;
+      // Load the fonts this tree needs before the first frame. A canvas asking
+      // for a family does not make the browser fetch it, and document.fonts.ready
+      // only waits for fonts something else already requested — so without this
+      // the first paint silently uses a fallback. Fonts must be loaded before
+      // rendering because the flex layout measures text.
+      const adapter_ = adapterRef.current as {
+        fontsReady?: () => Promise<void>;
+        loadFonts?: (specs: string[]) => Promise<void>;
+      } | null;
+
+      if (typeof adapter_?.loadFonts === "function") {
+        await adapter_.loadFonts(collectFontSpecs(roots));
+      }
+      if (typeof adapter_?.fontsReady === "function") await adapter_.fontsReady();
+      if (isCancelled) return;
+
+      scene.lazyCanvas.manager.layers.clear();
+      for (const layer of roots) scene.load(layer);
 
       try {
         await scene.renderFrame(0);
         if (!isCancelled) onFrameRef.current?.(scene);
       } catch (err) {
-        console.error("[Scene] renderFrame error:", err);
+        if (!isCancelled) console.error("[Scene] renderFrame error:", err);
       }
     })();
 

@@ -13,6 +13,15 @@ export class Scene {
   private scheduler: ThreadScheduler = new ThreadScheduler();
   private lastFrameTime = 0;
 
+  /**
+   * Tail of the render queue. Frames share one canvas context, and layers hold
+   * `ctx.save()` across awaits (loading an image, resolving a fill), so two
+   * frames running at once interleave their save/restore pairs: one frame's
+   * `restore()` pops the other's state and clips and transforms leak between
+   * them. Chaining every frame onto this promise keeps them strictly ordered.
+   */
+  private renderQueue: Promise<void> = Promise.resolve();
+
   constructor(
     width: number,
     height: number,
@@ -26,7 +35,28 @@ export class Scene {
     this.allLayers = this.lazyCanvas.manager.layers.toArray();
   }
 
-  public async renderFrame(time: number): Promise<void> {
+  /**
+   * Renders one frame.
+   *
+   * Frames are serialized: calling this again before the previous frame has
+   * finished queues the new frame rather than drawing over a half-finished one.
+   *
+   * @param {number} [time] - Timeline position, in seconds.
+   */
+  public renderFrame(time: number): Promise<void> {
+    const next = this.renderQueue.then(
+      () => this.drawFrame(time),
+      () => this.drawFrame(time),
+    );
+    // Keep the queue alive after a failed frame, but let the caller see the error.
+    this.renderQueue = next.then(
+      () => undefined,
+      () => undefined,
+    );
+    return next;
+  }
+
+  private async drawFrame(time: number): Promise<void> {
     if (this.lazyCanvas.manager.layers.size() === 0) {
       throw new Error("Scene: No root layer loaded. Call scene.load(tree) first.");
     }
