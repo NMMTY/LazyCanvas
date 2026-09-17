@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 const ReactSceneTest = dynamic(() => import("@/components/ReactSceneTest"), { ssr: false });
 const ReactivityTest = dynamic(() => import("@/components/ReactivityTest"), { ssr: false });
+const VerticalTextTest = dynamic(() => import("@/components/VerticalTextTest"), { ssr: false });
 
 const TESTS = [
   {
@@ -86,6 +87,14 @@ export default function Home() {
             The canvas must repaint when the buttons change a layer prop
           </div>
           <ReactivityTest />
+        </div>
+
+        <div className="card">
+          <div className="card-title">Vertical writing directions</div>
+          <div style={{ color: "#737373", fontSize: 12, marginBottom: 12 }}>
+            ttb/btt, whole words vs one character per slot, and column wrapping
+          </div>
+          <VerticalTextTest />
         </div>
       </div>
 

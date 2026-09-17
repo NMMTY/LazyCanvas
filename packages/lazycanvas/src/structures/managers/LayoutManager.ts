@@ -9,6 +9,7 @@ import {
   authoredProp,
   captureAuthoredProps,
   getChildren,
+  isVerticalDirection,
   restoreAuthoredProps,
   walkLayers,
 } from "../../utils";
@@ -199,14 +200,23 @@ export class LayoutManager {
           ? { ...textLayer.props.multiline }
           : undefined;
 
-        // Disable multiline for measurement
-        if (textLayer.props.multiline) {
-          textLayer.props.multiline.enabled = false;
-        }
+        // Vertical text flows down a column and wraps sideways, so its
+        // constrained axis is the height and its free axis is the width. The
+        // relaxations below are the other way round, and applying them would
+        // measure an unwrapped column while `draw` wraps it — the node would be
+        // sized for text that is never drawn that way.
+        const vertical = isVerticalDirection(textLayer.props.direction);
 
-        // Don't set width constraint for natural measurement
-        if (textLayer.props.size) {
-          (textLayer.props.size as any).width = undefined;
+        if (!vertical) {
+          // Disable multiline for measurement
+          if (textLayer.props.multiline) {
+            textLayer.props.multiline.enabled = false;
+          }
+
+          // Don't set width constraint for natural measurement
+          if (textLayer.props.size) {
+            (textLayer.props.size as any).width = undefined;
+          }
         }
 
         const size = textLayer.measureText(ctx, canvas);

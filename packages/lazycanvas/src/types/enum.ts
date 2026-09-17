@@ -62,7 +62,37 @@ export enum TextBaseline {
 export enum TextDirection {
   LeftToRight = "ltr",
   RightToLeft = "rtl",
+  /** Vertical writing, first character at the top. */
+  TopToBottom = "ttb",
+  /** Vertical writing, first character at the bottom. */
+  BottomToTop = "btt",
   Inherit = "inherit",
+}
+
+/**
+ * What gets stacked along the column in a vertical writing direction.
+ */
+export enum VerticalTextMode {
+  /**
+   * Whole words stay horizontal and upright; each word takes one slot down the
+   * column. Suits alphabetic scripts.
+   */
+  Words = "words",
+  /**
+   * One character per slot, upright. This is how CJK text is set vertically —
+   * the equivalent of CSS `text-orientation: upright`.
+   */
+  Ideographs = "ideographs",
+}
+
+/**
+ * Where the next column goes when vertical text wraps.
+ */
+export enum ColumnDirection {
+  /** Each new column to the left of the previous one (CSS `vertical-rl`). */
+  RightToLeft = "rl",
+  /** Each new column to the right of the previous one (CSS `vertical-lr`). */
+  LeftToRight = "lr",
 }
 
 export enum LineCap {

@@ -1,10 +1,13 @@
 import { type Signal, unwrap } from "../../core";
 import {
+  type AnyColumnDirection,
   type AnyTextAlign,
   type AnyTextBaseline,
   type AnyTextDirection,
+  type AnyVerticalTextMode,
   type AnyWeight,
   type ColorType,
+  ColumnDirection,
   FontWeight,
   type ICanvas,
   type ICanvasRenderingContext2D,
@@ -15,14 +18,19 @@ import {
   type StrokeOptions,
   type SubStringColor,
   TextAlign,
+  VerticalTextMode,
 } from "../../types";
 import {
   DrawUtils,
   LazyError,
   LazyLog,
+  type VerticalTextLayout,
+  canvasDirection,
   cssFont,
   defaultArg,
   isColor,
+  isVerticalDirection,
+  layoutVerticalText,
   parseFillStyle,
   parseToNormal,
   parser,
@@ -127,8 +135,39 @@ export interface ITextLayerProps extends IBaseLayerProps {
 
   /**
    * The direction of the text.
+   *
+   * `ltr` and `rtl` lay the text out in rows and are handed to the canvas.
+   * `ttb` and `btt` lay it out in columns, which the layer does itself — see
+   * {@link vertical} for how the column is filled.
    */
   direction?: AnyTextDirection;
+
+  /**
+   * Options for the vertical directions (`ttb` and `btt`). Ignored otherwise.
+   *
+   * Columns wrap only when `multiline.enabled` is set, using `size.height` as
+   * the limit — the same opt-in horizontal text uses. Under the layout engine
+   * the computed box wins, so a stretching flex parent sets the wrap height
+   * just as it sets the wrap width for horizontal multiline text.
+   */
+  vertical?: {
+    /**
+     * What occupies one slot of the column: a whole upright word, or a single
+     * upright character. Defaults to `words`.
+     */
+    mode?: AnyVerticalTextMode;
+
+    /**
+     * Which way the columns advance when the text wraps. Defaults to `rl`,
+     * matching traditional CJK typesetting.
+     */
+    columns?: AnyColumnDirection;
+
+    /**
+     * Space between columns, in pixels. Defaults to 0.
+     */
+    gap?: number;
+  };
 
   /**
    * The spacing between letters.
@@ -274,6 +313,27 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
   }
 
   /**
+   * Configures vertical writing, used when the direction is `ttb` or `btt`.
+   *
+   * @param {AnyVerticalTextMode} [mode] - Stack whole words, or one character per slot.
+   * @param {Object} [opts] - Further options.
+   * @param {AnyColumnDirection} [opts.columns] - Which way columns advance when wrapping.
+   * @param {number} [opts.gap] - Space between columns, in pixels.
+   * @returns {this} The current instance for chaining.
+   */
+  setVertical(
+    mode: AnyVerticalTextMode,
+    opts?: { columns?: AnyColumnDirection; gap?: number },
+  ): this {
+    this.props.vertical = {
+      mode,
+      columns: opts?.columns ?? this.props.vertical?.columns,
+      gap: opts?.gap ?? this.props.vertical?.gap,
+    };
+    return this;
+  }
+
+  /**
    * Configures the stroke properties of the text layer.
    * @param {number} [width] - The width of the stroke.
    * @param {string} [cap] - The cap style of the stroke.
@@ -323,6 +383,76 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
   }
 
   /**
+   * Height of one slot in a column, and of one line in horizontal text.
+   */
+  private get lineHeight(): number {
+    return this.props.font.size * (this.props.multiline?.spacing || 1.1);
+  }
+
+  /**
+   * Lays this layer's text out in columns.
+   *
+   * Columns only wrap when `multiline.enabled` is set, using `size.height` as
+   * the limit — the same opt-in that horizontal text uses for wrapping, which
+   * also lets the layout engine measure the natural, unwrapped size.
+   *
+   * @param {ICanvasRenderingContext2D} [ctx] - Context used to measure text.
+   * @param {ICanvas} [canvas] - Canvas the layer is drawn on.
+   * @returns {VerticalTextLayout} Positioned units and the block's size.
+   */
+  private layoutVertical(ctx: ICanvasRenderingContext2D, canvas: ICanvas): VerticalTextLayout {
+    const wrap = this.props.multiline?.enabled === true;
+    const maxHeight = wrap
+      ? parseToNormal(
+          this.props.size?.height || 0,
+          ctx,
+          canvas,
+          { width: 0, height: 0 },
+          { vertical: true },
+        )
+      : 0;
+
+    return layoutVerticalText({
+      text: unwrap(this.props.text),
+      direction: this.props.direction as AnyTextDirection,
+      mode: this.props.vertical?.mode || VerticalTextMode.Words,
+      columnDirection: this.props.vertical?.columns || ColumnDirection.RightToLeft,
+      lineHeight: this.lineHeight,
+      maxHeight,
+      columnGap: this.props.vertical?.gap ?? 0,
+      measure: (t) => ctx.measureText(t).width,
+    });
+  }
+
+  /**
+   * Top-left corner of a text block anchored at (x, y).
+   *
+   * `align` anchors the block horizontally and `baseline` vertically, so a
+   * vertical block is positioned the same way a horizontal line would be.
+   */
+  private anchorBlock(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): { x: number; y: number } {
+    const align = this.props.align as string;
+    const baseline = (this.props.baseline || "top") as string;
+
+    let left = x;
+    if (align === "center") left = x - width / 2;
+    else if (align === "right" || align === "end") left = x - width;
+
+    let top = y;
+    if (baseline === "middle") top = y - height / 2;
+    else if (baseline === "bottom" || baseline === "ideographic" || baseline === "alphabetic") {
+      top = y - height;
+    }
+
+    return { x: left, y: top };
+  }
+
+  /**
    * Measures the dimensions of the text.
    * @param {SKRSContext2D} [ctx] - The canvas rendering context.
    * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
@@ -330,6 +460,11 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    */
   measureText(ctx: ICanvasRenderingContext2D, canvas: ICanvas): { width: number; height: number } {
     ctx.font = cssFont(this.props.font);
+
+    if (isVerticalDirection(this.props.direction)) {
+      const layout = this.layoutVertical(ctx, canvas);
+      return { width: layout.width, height: layout.height };
+    }
 
     if (this.props?.multiline?.enabled) {
       const w = parseToNormal(this.props.size?.width || "vw", ctx, canvas);
@@ -417,18 +552,44 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     // since Yoga calculates position as top-left corner
     const useLayoutAlignment = (this.props as any)._computedLayout === true;
 
-    ctx.textAlign = useLayoutAlignment ? "left" : this.props.align;
+    // Vertical text positions every unit itself, so the context is pinned to
+    // the top-left of each slot and alignment is applied while laying out.
+    const vertical = isVerticalDirection(this.props.direction);
+
+    ctx.textAlign = vertical || useLayoutAlignment ? "left" : this.props.align;
     if (this.props.letterSpacing) ctx.letterSpacing = `${this.props.letterSpacing}px`;
     if (this.props.wordSpacing) ctx.wordSpacing = `${this.props.wordSpacing}px`;
-    ctx.textBaseline = useLayoutAlignment ? "top" : this.props.baseline || "alphabetic";
-    if (this.props.direction) ctx.direction = this.props.direction;
+    ctx.textBaseline = vertical || useLayoutAlignment ? "top" : this.props.baseline || "alphabetic";
+
+    // ctx.direction only understands ltr/rtl/inherit; ttb and btt are ours.
+    const nativeDirection = canvasDirection(this.props.direction);
+    if (nativeDirection) ctx.direction = nativeDirection;
 
     const fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
       layer: { width: w, height: h, x, y, align: "center" },
       manager,
     });
-    if (this.props?.multiline?.enabled) {
+    if (vertical) {
+      const layout = this.layoutVertical(ctx, canvas);
+      const origin = useLayoutAlignment
+        ? { x, y }
+        : this.anchorBlock(x, y, layout.width, layout.height);
+
+      for (const unit of layout.units) {
+        this.drawText(
+          this.props,
+          ctx,
+          fillStyle,
+          unit.text,
+          origin.x + unit.x,
+          origin.y + unit.y,
+          w,
+          unit.startOffset,
+          "left",
+        );
+      }
+    } else if (this.props?.multiline?.enabled) {
       const words = unwrap(this.props.text).split(" ");
 
       let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
@@ -479,6 +640,8 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    * @param {number} [y] - The y-coordinate of the text.
    * @param {number} [w] - The width of the text area.
    * @param {number} [textOffset] - The offset of this text segment in the original full text (for multiline support).
+   * @param {string} [align] - Alignment this segment is drawn with. Vertical text
+   * passes `left` because the layout has already resolved the final position.
    */
   private drawText(
     props: ITextLayerProps,
@@ -489,6 +652,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     y: number,
     w: number,
     textOffset = 0,
+    align: string = props.align as string,
   ) {
     // If no substring colors are defined, draw normally
     if (!props.subStringColors || props.subStringColors.length === 0) {
@@ -510,7 +674,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     ctx.textAlign = "left";
 
     // Adjust starting X based on text alignment
-    const alignValue = props.align as string;
+    const alignValue = align;
     if (alignValue === TextAlign.Center || alignValue === "center") {
       const totalWidth = ctx.measureText(text).width;
       currentX = x - totalWidth / 2;
@@ -644,6 +808,11 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
         height: data.size?.height || 0,
       },
       align: data.align || TextAlign.Left,
+      vertical: {
+        mode: data.vertical?.mode || VerticalTextMode.Words,
+        columns: data.vertical?.columns || ColumnDirection.RightToLeft,
+        gap: data.vertical?.gap ?? 0,
+      },
     };
   }
 }

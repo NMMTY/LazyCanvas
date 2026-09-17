@@ -28,6 +28,7 @@ import type { Gradient, Link, Pattern } from "../structures/helpers";
 import type {
   Centring,
   ColorSpace,
+  ColumnDirection,
   Export,
   FontWeight,
   GlobalCompositeOperation,
@@ -39,6 +40,7 @@ import type {
   TextAlign,
   TextBaseline,
   TextDirection,
+  VerticalTextMode,
 } from "./enum";
 
 // Utility type for signal-enabled values
@@ -110,7 +112,11 @@ export type AnyTextBaseline =
   | "ideographic"
   | "bottom";
 
-export type AnyTextDirection = TextDirection | "ltr" | "rtl" | "inherit";
+export type AnyTextDirection = TextDirection | "ltr" | "rtl" | "ttb" | "btt" | "inherit";
+
+export type AnyVerticalTextMode = VerticalTextMode | "words" | "ideographs";
+
+export type AnyColumnDirection = ColumnDirection | "rl" | "lr";
 
 export type AnyLineCap = LineCap | "butt" | "round" | "square";
 
