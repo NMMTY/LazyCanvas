@@ -49,6 +49,7 @@ navIcon: "learn"
 
 - `CodeBlock` is imported from `@once-ui-system/core/code` (it needs `prismjs`), and Once UI needs Next.js 15.5 or newer.
 - Use Once UI components rather than raw HTML tags (`Column`/`Row`, `Text`, `Input`, `Select`, `Slider`, `Table`, `SmartLink`, …). The two exceptions are the `<head>` script in `layout.tsx` and the Open Graph image route, which is rendered by Satori and takes plain elements.
+- `Select` (2.0.0) reopens itself right after a choice: closing the dropdown restores focus to the trigger, whose `onFocus` opens it again. The examples use `ToggleButton` rows instead; check the Select again before using it on the site.
 - The `next/font` variable classes are set on `<body>`, not `<html>`: Once UI's `tokens.css` declares `:root { --font-heading: var(--font-heading) }`, which is invalid and leaves the font variables empty if the classes sit on `<html>`.
 
 ## Deployment

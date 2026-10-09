@@ -1,7 +1,7 @@
 "use client";
 
 import { Group, Morph, Scene } from "@nmmty/adapter-react";
-import { Column, Row, Select, Slider } from "@once-ui-system/core";
+import { Column, Row, Slider, Text, ToggleButton } from "@once-ui-system/core";
 import { useState } from "react";
 
 const JUSTIFY = ["flex-start", "center", "flex-end", "space-between", "space-around"] as const;
@@ -14,26 +14,37 @@ export default function Layout() {
 
   return (
     <Column gap="12" horizontal="center">
-      <Row gap="12" wrap fillWidth>
-        <Select
-          id="justify"
-          label="justifyContent"
-          value={justifyContent}
-          options={JUSTIFY.map((value) => ({ label: value, value }))}
-          onSelect={(value) => setJustify(value as (typeof JUSTIFY)[number])}
-        />
-        <Select
-          id="direction"
-          label="flexDirection"
-          value={flexDirection}
-          options={[
-            { label: "row", value: "row" },
-            { label: "column", value: "column" },
-          ]}
-          onSelect={(value) => setDirection(value as "row" | "column")}
-        />
+      <Column gap="8" fillWidth>
+        <Text variant="label-default-s" onBackground="neutral-weak">
+          justifyContent
+        </Text>
+        <Row gap="4" wrap>
+          {JUSTIFY.map((value) => (
+            <ToggleButton
+              key={value}
+              size="s"
+              label={value}
+              selected={justifyContent === value}
+              onClick={() => setJustify(value)}
+            />
+          ))}
+        </Row>
+        <Text variant="label-default-s" onBackground="neutral-weak">
+          flexDirection
+        </Text>
+        <Row gap="4" wrap>
+          {(["row", "column"] as const).map((value) => (
+            <ToggleButton
+              key={value}
+              size="s"
+              label={value}
+              selected={flexDirection === value}
+              onClick={() => setDirection(value)}
+            />
+          ))}
+        </Row>
         <Slider label="gap" showValue min={0} max={40} value={gap} onChange={setGap} />
-      </Row>
+      </Column>
 
       <Scene width={480} height={200} style={{ maxWidth: "100%", height: "auto" }}>
         <Group
