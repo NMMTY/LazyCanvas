@@ -1,4 +1,4 @@
-import { Div, ImageLayer, LineLayer, MorphLayer, TextLayer } from "../structures/components";
+import { Group, ImageLayer, LineLayer, MorphLayer, TextLayer } from "../structures/components";
 import {
   type AnyTextAlign,
   type AnyWeight,
@@ -10,7 +10,7 @@ import {
 } from "../types";
 
 const Utils = {
-  grid(size: { x: number; y: number }, opts?: gridOptions): Div {
+  grid(size: { x: number; y: number }, opts?: gridOptions): Group {
     if (size.x === undefined || size.y === undefined) {
       throw new Error("Size must have x and y properties");
     }
@@ -27,7 +27,7 @@ const Utils = {
       ...opts,
     } as gridOptionsNormalized;
 
-    return new Div()
+    return new Group()
       .setID(
         `grid-${options.cellWith}-${options.cellHeight}-${options.startX}-${options.startY}-${options.endX}-${options.endY}`,
       )
@@ -54,7 +54,7 @@ const Utils = {
         ),
       );
   },
-  box(start: { x: number; y: number }, end: { x: number; y: number }, opts?: options): Div {
+  box(start: { x: number; y: number }, end: { x: number; y: number }, opts?: options): Group {
     if (
       start.x === undefined ||
       start.y === undefined ||
@@ -69,7 +69,7 @@ const Utils = {
     if (opts.color === undefined) opts.color = "rgba(0, 0, 0, 0.5)";
     if (opts.lineWidth === undefined) opts.lineWidth = 1;
 
-    return new Div()
+    return new Group()
       .setID(`box-${start.x}-${start.y}-${end.x}-${end.y}`)
       .add(
         new LineLayer()

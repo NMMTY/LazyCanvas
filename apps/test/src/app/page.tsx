@@ -118,7 +118,7 @@ export default function Home() {
                 ["BezierLayer", "@nmmty/lazycanvas", "ok"],
                 ["PolygonLayer", "@nmmty/lazycanvas", "ok"],
                 ["Path2DLayer", "@nmmty/lazycanvas", "ok"],
-                ["Div (group)", "@nmmty/lazycanvas", "ok"],
+                ["Group (group)", "@nmmty/lazycanvas", "ok"],
                 ["Gradient", "@nmmty/lazycanvas", "ok"],
                 ["Signal + Easing", "@nmmty/lazycanvas", "ok"],
                 ["Scene", "@nmmty/lazycanvas", "ok"],

@@ -15,7 +15,6 @@ Most 0.6 code can be moved over in a few minutes. This guide lists every breakin
 | --- | --- |
 | `@napi-rs/canvas` is a dependency of the core | Not in the core. Install **`@nmmty/adapter-node`** (or `adapter-browser`) and pass `adapter`. |
 | `new LazyCanvas({ debug }).create(w, h)` | `new Scene(w, h, { adapter })`, or `new LazyCanvas(ClassicRenderPipeline, { adapter }).create(w, h)` to keep the old behaviour. |
-| `Group` | **`Div`** |
 | `canvas.manager.layers.add(layer)` | `scene.load(root)` (`manager.layers.add` still works on a `LazyCanvas`). |
 | `Exporter`, `YAMLReader.readFile`, `JSONReader.readFile` from `@nmmty/lazycanvas` | From **`@nmmty/lazycanvas/node`**: `Exporter`, `readJSONFile`, `readYAMLFile`. |
 | GIF export, `AnimationManager` | **Removed.** Animate with signals; export animated **PNG** (`"apng"`). |
@@ -29,7 +28,7 @@ Most 0.6 code can be moved over in a few minutes. This guide lists every breakin
 
 ## Two ways to migrate
 
-**Minimal changes.** Keep your 0.6 code as it is and only fix the plumbing (install an adapter, new imports, `Group` → `Div`). Your layers render exactly as before through `ClassicRenderPipeline`.
+**Minimal changes.** Keep your 0.6 code as it is and only fix the plumbing (install an adapter, new imports). Your layers render exactly as before through `ClassicRenderPipeline`.
 
 **Modern.** Switch to `Scene`, the layout engine, JSX or signals. Do this at your own pace, file by file: both styles work side by side.
 
@@ -78,17 +77,9 @@ Forgetting the adapter throws `A canvas adapter is required` with the fix in the
 
 `ClassicRenderPipeline` draws layers exactly like 0.6 but ignores the new `layout` prop and is deprecated; `ModernRenderPipeline` (always used by `Scene`) supports both. In the browser use `BrowserCanvasAdapter` from `@nmmty/adapter-browser`.
 
-## 3. Rename `Group` to `Div`
+## 3. `Group`
 
-```diff
--import { Group, MorphLayer } from "@nmmty/lazycanvas";
-+import { Div, MorphLayer } from "@nmmty/lazycanvas";
-
--new Group().add(a, b)
-+new Div().add(a, b)
-```
-
-`Div` has the same `add`, `remove`, `setID` and friends. The interfaces `IGroup` and `IGroupProps` became `IDiv` and `IDivProps`.
+`Group` keeps its name and API (`add`, `remove`, `setID`, …), so there is nothing to rename. What is new is that, with `ModernRenderPipeline` (always used by `Scene`), a `Group` is also a flexbox container configured by its `layout` prop — see [Layout](/docs/layout).
 
 ## 4. Move Node.js-only imports
 
@@ -161,7 +152,7 @@ In 1.0 you describe **one** scene whose properties change over time. The propert
 **1.0**
 
 ```ts
-import { Div, Easing, MorphLayer, Scene, all, createSignal } from "@nmmty/lazycanvas";
+import { Group, Easing, MorphLayer, Scene, all, createSignal } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
 
 const pos = createSignal(100);
@@ -170,7 +161,7 @@ const radius = createSignal(100);
 
 const scene = new Scene(400, 400, { adapter });
 scene.load(
-  new Div().add(
+  new Group().add(
     new MorphLayer({
       position: { x: pos, y: pos },
       color: hue,
@@ -224,7 +215,7 @@ Erase a rectangle with an ordinary layer and the `destination-out` blend mode:
 
 You do not have to adopt any of this to migrate, but it is why 1.0 exists:
 
-- **Flexbox layout** for any `Div` — see [Layout](/docs/layout).
+- **Flexbox layout** for any `Group` — see [Layout](/docs/layout).
 - **JSX**, with `jsxImportSource` — see [JSX](/docs/jsx).
 - **Signals and animation** — see [Signals and animation](/docs/animation).
 - **React** — `@nmmty/adapter-react`, see [React](/docs/react).
@@ -236,7 +227,7 @@ You do not have to adopt any of this to migrate, but it is why 1.0 exists:
 
 1. Install `@nmmty/lazycanvas@latest` and `@nmmty/adapter-node` (or `adapter-browser`).
 2. Pass `adapter` to `new LazyCanvas(…)` / `new Scene(…)`; pick `ClassicRenderPipeline` to keep 0.6 rendering.
-3. `Group` → `Div`.
+3. Nothing to rename: `Group` is still `Group`.
 4. Import `Exporter`, `readJSONFile`, `readYAMLFile` from `@nmmty/lazycanvas/node`.
 5. `jpeg` → `jpg`; replace GIF with APNG; drop SVG export.
 6. Load `Fonts` from `@nmmty/lazycanvas/fonts` if you use the bundled Geist fonts.
@@ -250,7 +241,6 @@ You do not have to adopt any of this to migrate, but it is why 1.0 exists:
 | --- | --- |
 | `A canvas adapter is required` | Pass `adapter` — step 1 and 2. |
 | `Module '"@nmmty/lazycanvas"' has no exported member 'Exporter'` | Import it from `@nmmty/lazycanvas/node`. |
-| `has no exported member 'Group'` | It is `Div` now. |
 | `Export type "gif" is not supported` | GIF was removed; use `apng`. |
 | Text renders in a plain font | Load the Geist fonts (step 6), or register your own font before the first render. |
 | `Cannot find module 'node:fs'` in a browser bundle | Something imports `@nmmty/lazycanvas/node` into browser code. |

@@ -11,10 +11,10 @@ Give any layer a `layout` prop and LazyCanvas arranges it with [Yoga](https://ww
 
 ## The container
 
-Layout is configured on a `Div` (`Group` in React). Its children are the flex items.
+Layout is configured on a `Group`. Its children are the flex items.
 
 ```ts
-new Div({
+new Group({
   layout: {
     width: 480,
     height: 200,
@@ -64,7 +64,7 @@ The usual pattern for a card is a container with a background layer positioned a
 
 ## Rules of thumb
 
-- A `Div` **without** `flexDirection` stretches to fill its parent; a flex container (one with `flexDirection`) wraps its content unless you give it a size.
+- A `Group` **without** `flexDirection` stretches to fill its parent; a flex container (one with `flexDirection`) wraps its content unless you give it a size.
 - A child with an explicit `position` and **no** `layout` is *not* part of the flow — it is drawn exactly where you put it. Add any `layout` property to bring it back into the flow.
 - Layout runs again on every frame, so changing a layout prop (or a signal that feeds one) takes effect on the next `renderFrame`.
 - Yoga loads asynchronously the first time. `scene.renderFrame` waits for it, so the first frame is already laid out.

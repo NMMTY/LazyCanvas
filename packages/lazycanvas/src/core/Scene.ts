@@ -1,5 +1,5 @@
 import { LazyCanvas } from "../structures/LazyCanvas";
-import type { Div } from "../structures/components";
+import type { Group } from "../structures/components";
 import { ModernRenderPipeline } from "../structures/managers";
 import { type AnyExport, type AnyLayer, Export, type ICanvas, type ICanvasAdapter } from "../types";
 import { walkLayers } from "../utils";
@@ -22,7 +22,7 @@ import { ThreadScheduler } from "./ThreadScheduler";
 export class Scene {
   public readonly lazyCanvas: LazyCanvas;
 
-  private allLayers: (AnyLayer | Div)[] = [];
+  private allLayers: (AnyLayer | Group)[] = [];
   private scheduler: ThreadScheduler = new ThreadScheduler();
   private lastFrameTime = 0;
 
@@ -52,13 +52,13 @@ export class Scene {
   }
 
   /**
-   * Adds a layer, or a tree of layers under a `Div`, to the scene.
+   * Adds a layer, or a tree of layers under a `Group`, to the scene.
    *
    * Call it once per root layer before rendering.
    *
-   * @param {AnyLayer | Div} tree - The root layer.
+   * @param {AnyLayer | Group} tree - The root layer.
    */
-  public load(tree: AnyLayer | Div): void {
+  public load(tree: AnyLayer | Group): void {
     this.lazyCanvas.manager.layers.add(tree);
     this.allLayers = this.lazyCanvas.manager.layers.toArray();
   }
@@ -210,9 +210,9 @@ export class Scene {
    * Finds a layer by id anywhere in the tree.
    *
    * @param {string} id - The layer id.
-   * @returns {AnyLayer | Div | undefined} The layer, if it exists.
+   * @returns {AnyLayer | Group | undefined} The layer, if it exists.
    */
-  public getLayer(id: string): AnyLayer | Div | undefined {
+  public getLayer(id: string): AnyLayer | Group | undefined {
     return this.lazyCanvas.manager.layers.get(id, true);
   }
 

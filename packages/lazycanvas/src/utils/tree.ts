@@ -1,15 +1,15 @@
-import type { Div } from "../structures/components";
+import type { Group } from "../structures/components";
 import type { AnyLayer } from "../types";
 
 /**
  * Any node of a layer tree.
  */
-export type LayerNode = AnyLayer | Div;
+export type LayerNode = AnyLayer | Group;
 
 /**
  * Returns the children of a layer.
  *
- * Every layer stores its subtree in `children` (`Div.layers` is an alias of the
+ * Every layer stores its subtree in `children` (`Group.layers` is an alias of the
  * same array). Going through this helper keeps traversal working for plain
  * objects too, such as layers restored from JSON.
  *

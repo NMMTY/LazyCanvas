@@ -21,7 +21,7 @@ before upgrading.
   environment: `@nmmty/adapter-node`, `@nmmty/adapter-browser`, or `@nmmty/adapter-react` for React.
 - **`Scene`** as the main entry point: load a layer tree, render any frame, drive animations.
 - **Flexbox layout** through Yoga: a `layout` prop on every layer (`flexDirection`, `gap`,
-  `padding`, `justifyContent`, `alignItems`, absolute positioning, …) and `Div` as the container.
+  `padding`, `justifyContent`, `alignItems`, absolute positioning, …) and `Group` as the container.
 - **JSX**, with both the classic (`/** @jsx createElement */`) and the automatic
   (`jsxImportSource: "@nmmty/lazycanvas"`) runtimes.
 - **Signals and generator-based animation**: `createSignal`, tweens, `Easing`, `all`, `chain`,
@@ -41,7 +41,6 @@ before upgrading.
 - **Breaking:** the bundled Geist fonts moved from the main entry point to
   `@nmmty/lazycanvas/fonts` and are opt-in. They are plain base64 strings, and font data in
   general may be a `string` or a `Uint8Array` — `Buffer` is no longer required.
-- **Breaking:** `Group` was renamed `Div`, and layers are laid out by the `layout` prop.
 - **Breaking:** `ClassicRenderPipeline` is deprecated; `Scene` always uses `ModernRenderPipeline`.
 - The main entry point no longer re-exports internal helpers; only `LazyError`, the font, tree,
   `Path2D` and vertical-text utilities remain.

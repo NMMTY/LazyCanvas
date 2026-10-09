@@ -1,7 +1,7 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import {
   Centring,
-  Div,
+  Group,
   ImageLayer,
   MorphLayer,
   Scene,
@@ -55,7 +55,7 @@ function makeAdapter(delayMs: number, probe: { depth: number; peak: number }) {
 }
 
 const tree = () =>
-  new Div({ layout: { flexDirection: "row", alignItems: "center", padding: 20 } }).add(
+  new Group({ layout: { flexDirection: "row", alignItems: "center", padding: 20 } }).add(
     new MorphLayer({ color: "#1e293b", layout: { width: 120, height: 80 } }, { id: "bg" }),
     new ImageLayer(
       {
@@ -152,14 +152,14 @@ describe("collectFontSpecs", () => {
   it("finds every font used in a tree, deduplicated", () => {
     const scene = new Scene(200, 200, { adapter });
     scene.load(
-      new Div().add(
+      new Group().add(
         new TextLayer({
           text: "a",
           color: "#fff",
           font: { family: "Geist Mono", size: 36, weight: 400 },
           centring: Centring.None,
         }),
-        new Div().add(
+        new Group().add(
           new TextLayer({
             text: "b",
             color: "#fff",
@@ -181,7 +181,7 @@ describe("collectFontSpecs", () => {
   });
 
   it("ignores layers without a font", () => {
-    const root = new Div().add(
+    const root = new Group().add(
       new MorphLayer({ color: "#fff", size: { width: 1, height: 1 } }, { id: "m" }),
     );
     expect(collectFontSpecs(root)).toEqual([]);

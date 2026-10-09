@@ -1,6 +1,6 @@
 import type { AnyLayer } from "../../../types";
 import { getChildren } from "../../../utils";
-import { Div } from "../../components";
+import { Group } from "../../components";
 import { BaseRenderPipeline } from "./BaseRenderPipeline";
 
 /**
@@ -9,14 +9,14 @@ import { BaseRenderPipeline } from "./BaseRenderPipeline";
  * parent's coordinate space before drawing its children.
  */
 export class ModernRenderPipeline extends BaseRenderPipeline {
-  private async renderLayer(layer: AnyLayer | Div): Promise<void> {
+  private async renderLayer(layer: AnyLayer | Group): Promise<void> {
     if (!layer.visible) return;
 
     await this.drawLayer(layer);
 
-    // `Div` draws its own children inside `Div.draw`, so descending here too
+    // `Group` draws its own children inside `Group.draw`, so descending here too
     // would render them twice.
-    const children = layer instanceof Div ? [] : getChildren(layer);
+    const children = layer instanceof Group ? [] : getChildren(layer);
     if (children.length === 0) return;
 
     const ctx = this.lazyCanvas.ctx;

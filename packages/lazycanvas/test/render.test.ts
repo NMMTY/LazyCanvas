@@ -2,7 +2,7 @@ import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import {
   Centring,
   ClassicRenderPipeline,
-  Div,
+  Group,
   JSONReader,
   LazyCanvas,
   MorphLayer,
@@ -46,7 +46,7 @@ describe("Scene rendering in Node", () => {
   it("draws a filled shape", async () => {
     const scene = new Scene(100, 100, { adapter });
     scene.load(
-      new Div().add(
+      new Group().add(
         new MorphLayer({
           color: "#00ff00",
           size: { width: 50, height: 50 },
@@ -64,7 +64,7 @@ describe("Scene rendering in Node", () => {
   it("renders Path2DLayer from an SVG path string", async () => {
     const scene = new Scene(200, 200, { adapter });
     scene.load(
-      new Div().add(
+      new Group().add(
         new Path2DLayer({ color: "#ff0000", centring: Centring.None }).setPath(
           "M 20 20 L 180 20 L 100 180 Z",
         ),
@@ -80,7 +80,7 @@ describe("Scene rendering in Node", () => {
     const scene = new Scene(100, 100, { adapter });
     const layer = new Path2DLayer({ color: "#0000ff", centring: Centring.None });
     layer.rect(10, 10, 50, 50);
-    scene.load(new Div().add(layer));
+    scene.load(new Group().add(layer));
     await scene.renderFrame(0);
 
     const blue = countPixels(scene.getImageData(), (r, _g, b, a) => b > 200 && r < 80 && a > 200);
@@ -93,7 +93,7 @@ describe("Scene rendering in Node", () => {
       { id: "deep" },
     );
     const scene = new Scene(50, 50, { adapter });
-    scene.load(new Div({}, { id: "outer" }).add(new Div({}, { id: "inner" }).add(deep)));
+    scene.load(new Group({}, { id: "outer" }).add(new Group({}, { id: "inner" }).add(deep)));
     expect(scene.getLayer("deep")).toBe(deep);
   });
 
@@ -101,7 +101,7 @@ describe("Scene rendering in Node", () => {
     const a = new MorphLayer({ color: "#111111", layout: { width: 40, height: 40 } }, { id: "a" });
     const b = new MorphLayer({ color: "#222222", layout: { width: 40, height: 40 } }, { id: "b" });
     const scene = new Scene(200, 100, { adapter });
-    scene.load(new Div({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" }).add(a, b));
+    scene.load(new Group({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" }).add(a, b));
     await scene.renderFrame(0);
 
     // Yoga lays the two boxes out in a row separated by the gap.
@@ -114,7 +114,7 @@ describe("Exporter formats", () => {
   const scene = () => {
     const s = new Scene(60, 40, { adapter });
     s.load(
-      new Div().add(
+      new Group().add(
         new MorphLayer({
           color: "#123456",
           size: { width: 60, height: 40 },
@@ -150,7 +150,7 @@ describe("Exporter formats", () => {
 describe("JSON round-trip", () => {
   it("preserves group props and nested layers", async () => {
     const canvas = new LazyCanvas(ClassicRenderPipeline, { adapter }).create(100, 100);
-    const group = new Div(
+    const group = new Group(
       { position: { x: 12, y: 34 }, layout: { flexDirection: "row", gap: 8 } },
       { id: "g1" },
     );
@@ -164,7 +164,7 @@ describe("JSON round-trip", () => {
 
     const json = JSON.parse(await new Exporter(canvas).export("json"));
     const restored = JSONReader.read(json, { adapter });
-    const restoredGroup = restored.manager.layers.get("g1") as Div;
+    const restoredGroup = restored.manager.layers.get("g1") as Group;
 
     expect(restoredGroup).toBeDefined();
     expect(restoredGroup.props.position).toEqual({ x: 12, y: 34 });
@@ -212,7 +212,7 @@ describe("Text rendering", () => {
     scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
     expect(scene.lazyCanvas.manager.fonts.has("Geist")).toBe(true);
     scene.load(
-      new Div().add(
+      new Group().add(
         new TextLayer({
           text: "LazyCanvas",
           color: "#ffffff",
@@ -241,7 +241,7 @@ describe("Pattern fills", () => {
 
     const scene = new Scene(8, 4, { adapter });
     scene.load(
-      new Div().add(
+      new Group().add(
         new MorphLayer({
           color: new Pattern().setSrc(tile.toDataURL("image/png")).setType("repeat"),
           size: { width: 8, height: 4 },

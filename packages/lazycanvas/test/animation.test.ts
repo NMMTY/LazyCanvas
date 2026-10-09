@@ -1,5 +1,5 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Div, Easing, MorphLayer, Scene, Signal } from "@nmmty/lazycanvas";
+import { Easing, Group, MorphLayer, Scene, Signal } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
@@ -17,7 +17,7 @@ describe("signal-driven props", () => {
     );
 
     const scene = new Scene(400, 100, { adapter });
-    scene.load(new Div({}, { id: "root" }).add(box));
+    scene.load(new Group({}, { id: "root" }).add(box));
     scene.playAnimation(x, x.to(360, 1, { easing: Easing.linear }));
 
     await scene.renderFrame(0);

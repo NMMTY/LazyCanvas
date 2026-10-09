@@ -55,11 +55,11 @@ import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
 ```ts
 // Node.js — the same layers, exported to a PNG
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Div, MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Group, MorphLayer, Scene } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
 
 const scene = new Scene(320, 96, { adapter: new NodeCanvasAdapter() });
-scene.load(new Div().add(new MorphLayer({ color: "#7c3aed", size: { width: 320, height: 96 } })));
+scene.load(new Group().add(new MorphLayer({ color: "#7c3aed", size: { width: 320, height: 96 } })));
 await new Exporter(scene).export("png", { name: "badge", saveAsFile: true });
 ```
 

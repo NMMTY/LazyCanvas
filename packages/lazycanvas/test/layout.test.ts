@@ -1,5 +1,5 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Centring, Div, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Centring, Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
@@ -12,7 +12,7 @@ describe("LayoutManager", () => {
     const a = box("a");
     const b = box("b");
     const scene = new Scene(300, 100, { adapter });
-    scene.load(new Div({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" }).add(a, b));
+    scene.load(new Group({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" }).add(a, b));
 
     await scene.renderFrame(0);
 
@@ -25,7 +25,10 @@ describe("LayoutManager", () => {
     const b = box("b");
     const scene = new Scene(300, 100, { adapter });
     scene.load(
-      new Div({ layout: { flexDirection: "row", gap: 20, padding: 10 } }, { id: "row" }).add(a, b),
+      new Group({ layout: { flexDirection: "row", gap: 20, padding: 10 } }, { id: "row" }).add(
+        a,
+        b,
+      ),
     );
 
     await scene.renderFrame(0);
@@ -39,7 +42,7 @@ describe("LayoutManager", () => {
   it("relayouts when a layout prop changes after the first frame", async () => {
     const a = new MorphLayer({ color: "#fff", size: { width: 40, height: 40 } }, { id: "a" });
     const b = new MorphLayer({ color: "#fff", size: { width: 40, height: 40 } }, { id: "b" });
-    const row = new Div({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" });
+    const row = new Group({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" });
     row.add(a, b);
 
     const scene = new Scene(300, 100, { adapter });
@@ -72,7 +75,7 @@ describe("LayoutManager", () => {
 
     const scene = new Scene(300, 100, { adapter });
     scene.load(
-      new Div({ layout: { flexDirection: "row", gap: 5 } }, { id: "row" }).add(flowed, manual),
+      new Group({ layout: { flexDirection: "row", gap: 5 } }, { id: "row" }).add(flowed, manual),
     );
     await scene.renderFrame(0);
 
@@ -92,7 +95,7 @@ describe("LayoutManager", () => {
     const after = box("after");
 
     const scene = new Scene(600, 100, { adapter });
-    scene.load(new Div({ layout: { flexDirection: "row" } }, { id: "row" }).add(label, after));
+    scene.load(new Group({ layout: { flexDirection: "row" } }, { id: "row" }).add(label, after));
     await scene.renderFrame(0);
 
     // The box must start past the measured width of the text.
@@ -114,7 +117,7 @@ describe("toJSON after layout", () => {
 
     const scene = new Scene(300, 100, { adapter });
     scene.load(
-      new Div({ layout: { flexDirection: "row", padding: 25 } }, { id: "row" }).add(layer),
+      new Group({ layout: { flexDirection: "row", padding: 25 } }, { id: "row" }).add(layer),
     );
     await scene.renderFrame(0);
 
@@ -129,10 +132,10 @@ describe("toJSON after layout", () => {
   });
 });
 
-describe("Div/BaseLayer tree", () => {
-  it("Div.layers and children are the same array", () => {
+describe("Group/BaseLayer tree", () => {
+  it("Group.layers and children are the same array", () => {
     const child = box("child");
-    const div = new Div({}, { id: "div" }).add(child);
+    const div = new Group({}, { id: "div" }).add(child);
 
     expect(div.layers).toBe(div.children);
     expect(div.layers).toEqual([child]);
@@ -142,7 +145,7 @@ describe("Div/BaseLayer tree", () => {
   });
 
   it("add() sets the parent and sorts by zIndex", () => {
-    const div = new Div({}, { id: "div" });
+    const div = new Group({}, { id: "div" });
     div.add(box("c", { zIndex: 3 }), box("a", { zIndex: 1 }));
     expect(div.layers.every((l) => l.parent === div)).toBe(true);
   });

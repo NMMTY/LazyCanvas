@@ -1,8 +1,8 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import {
   Centring,
-  Div,
   FontsManager,
+  Group,
   Scene,
   TextLayer,
   cssFont,
@@ -101,7 +101,7 @@ describe("text rendering falls back predictably", () => {
     const scene = new Scene(300, 80, { adapter });
     scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
     scene.load(
-      new Div().add(
+      new Group().add(
         new TextLayer({
           text: "Geist Mono",
           color: "#ffffff",

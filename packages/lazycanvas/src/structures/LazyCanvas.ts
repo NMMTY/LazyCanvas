@@ -1,7 +1,7 @@
 import { type AnyExport, Export, type JSONLayer } from "../types";
 import type { ICanvas, ICanvasAdapter, ICanvasRenderingContext2D } from "../types";
 import { LazyError, LazyLog, registerPath2D, resize, resizeLayers } from "../utils";
-import type { IDiv } from "./components";
+import type { IGroup } from "./components";
 import {
   ClassicRenderPipeline,
   FontsManager,
@@ -42,7 +42,7 @@ export interface ILazyCanvasOptions {
  */
 export interface IOLazyCanvas {
   options: ILazyCanvasOptions;
-  layers: Array<JSONLayer | IDiv>;
+  layers: Array<JSONLayer | IGroup>;
 }
 
 /**

@@ -1,7 +1,7 @@
 import { isSignal, unwrap } from "../core";
 import {
   BezierLayer,
-  Div,
+  Group,
   LineLayer,
   Path2DLayer,
   QuadraticLayer,
@@ -117,7 +117,7 @@ export function parseToNormal(
       if (!manager) return 0;
 
       const anyLayer = manager.get(match[2], true);
-      if (!anyLayer || anyLayer instanceof Div || anyLayer instanceof Path2DLayer) return 0;
+      if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
 
       const parserInstance = parser(ctx, canvas, manager);
       const additionalSpacing = Number.parseInt(match[3]) || 0;
@@ -139,7 +139,7 @@ export function parseToNormal(
     if (!manager) return 0;
 
     const anyLayer = manager.get(v.source, true);
-    if (!anyLayer || anyLayer instanceof Div || anyLayer instanceof Path2DLayer) return 0;
+    if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
 
     const parserInstance = parser(ctx, canvas, manager);
     const additionalSpacing =
@@ -591,11 +591,11 @@ export function resize(value: ScaleType, ratio: number): number | string {
   return 0;
 }
 
-export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
-  const newLayers: Array<AnyLayer | Div> = [];
+export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
+  const newLayers: Array<AnyLayer | Group> = [];
   if (layers.length > 0) {
     for (const layer of layers) {
-      if (!(layer instanceof Div || layer instanceof Path2DLayer)) {
+      if (!(layer instanceof Group || layer instanceof Path2DLayer)) {
         if (layer.props.position) {
           layer.props.position.x = resize(layer.props.position.x, ratio) as ScaleType;
           layer.props.position.y = resize(layer.props.position.y, ratio) as ScaleType;
@@ -660,7 +660,7 @@ export function resizeLayers(layers: Array<AnyLayer | Div>, ratio: number) {
             layer.props.transform.scale.y = resize(layer.props.transform.scale.y, ratio) as number;
           }
         }
-      } else if (layer instanceof Div) {
+      } else if (layer instanceof Group) {
         layer.layers = resizeLayers(layer.layers, ratio);
       }
       newLayers.push(layer);

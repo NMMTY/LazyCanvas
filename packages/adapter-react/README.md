@@ -51,7 +51,7 @@ export function Badge({ name }: { name: string }) {
 | `Line`, `Bezier`, `Quadratic` | `LineLayer`, `BezierLayer`, `QuadraticLayer` |
 | `Polygon` | `PolygonLayer` |
 | `Path2D` | `Path2DLayer` |
-| `Group` | `Div` — a flexbox container for other layers |
+| `Group` | The core `Group` — a flexbox container for other layers |
 
 Layer props are the same as the props accepted by the layer classes in `@nmmty/lazycanvas`. Only these components, fragments and `registerLayer`/`createLayerComponent` wrappers are drawn; arbitrary React components and DOM elements among the children are ignored.
 

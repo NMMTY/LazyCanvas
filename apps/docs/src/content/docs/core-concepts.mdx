@@ -11,7 +11,7 @@ A `Scene` is a canvas plus a tree of layers plus a timeline.
 
 ```ts
 const scene = new Scene(width, height, { adapter });
-scene.load(root);            // add a root layer (usually a Div)
+scene.load(root);            // add a root layer (usually a Group)
 await scene.renderFrame(0);  // draw the frame at t = 0 seconds
 ```
 
@@ -31,7 +31,7 @@ Everything you draw is a layer.
 | `LineLayer`, `QuadraticLayer`, `BezierLayer` | Straight and curved lines. |
 | `PolygonLayer` | A regular polygon. |
 | `Path2DLayer` | An arbitrary path, from an SVG path string or built with `moveTo`/`lineTo`/… |
-| `Div` | A container. Holds other layers and lays them out. |
+| `Group` | A container. Holds other layers and lays them out. |
 
 Layers take a **props object**:
 
@@ -56,13 +56,13 @@ A second constructor argument carries the layer's identity: `new MorphLayer(prop
 
 ### Trees
 
-`Div` holds children. `add` takes any number of layers and returns the container:
+`Group` holds children. `add` takes any number of layers and returns the container:
 
 ```ts
-new Div({ layout: { flexDirection: "row", gap: 8 } }).add(a, b, c);
+new Group({ layout: { flexDirection: "row", gap: 8 } }).add(a, b, c);
 ```
 
-Children are drawn in order, lower `zIndex` first. A `Div` itself draws nothing — it exists to group and arrange.
+Children are drawn in order, lower `zIndex` first. A `Group` itself draws nothing — it exists to group and arrange.
 
 ## Coordinates and units
 
@@ -78,7 +78,7 @@ Children are drawn in order, lower `zIndex` first. A `Div` itself draws nothing 
 
 ### Centring
 
-By default `MorphLayer`, `ImageLayer`, `PolygonLayer` and `Div` are **centred** on their `position`: `{ x: 100, y: 60 }` is where the *middle* of the shape goes. Set `centring: "none"` to use the top-left corner instead, or pick `start`, `end`, `center-top`, `end-bottom`, … for finer control.
+By default `MorphLayer`, `ImageLayer`, `PolygonLayer` and `Group` are **centred** on their `position`: `{ x: 100, y: 60 }` is where the *middle* of the shape goes. Set `centring: "none"` to use the top-left corner instead, or pick `start`, `end`, `center-top`, `end-bottom`, … for finer control.
 
 Lines and curves default to `none`. Text is anchored by its `align` and `baseline` instead (see [Text](/docs/text)).
 
@@ -86,7 +86,7 @@ Lines and curves default to `none`. Text is anchored by its `align` and `baselin
 
 ## Layout or manual positioning
 
-Inside a `Div` with a `layout`, children are placed by the flexbox engine ([Layout](/docs/layout)). A child that has an explicit `position` and no `layout` of its own is placed by hand instead and does not take part in the flow — handy for backgrounds and animated elements.
+Inside a `Group` with a `layout`, children are placed by the flexbox engine ([Layout](/docs/layout)). A child that has an explicit `position` and no `layout` of its own is placed by hand instead and does not take part in the flow — handy for backgrounds and animated elements.
 
 ## Render pipelines
 

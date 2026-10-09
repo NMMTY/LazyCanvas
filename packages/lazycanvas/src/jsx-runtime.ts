@@ -1,4 +1,4 @@
-import { Div } from "./structures/components";
+import { Group } from "./structures/components";
 import { BaseLayer } from "./structures/components";
 
 /**
@@ -64,10 +64,10 @@ export function createElement(type: any, props: any | null, ...children: any[]):
 /**
  * Create a Group instance
  */
-function createGroupInstance(props: any, children: any[]): Div {
+function createGroupInstance(props: any, children: any[]): Group {
   const { id, visible, zIndex, ...otherProps } = props;
 
-  const group = new Div(otherProps, {
+  const group = new Group(otherProps, {
     id,
     visible,
     zIndex,

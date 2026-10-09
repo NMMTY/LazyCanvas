@@ -1,6 +1,6 @@
 /** @jsxImportSource @nmmty/lazycanvas */
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Div, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
@@ -18,9 +18,9 @@ describe("jsxImportSource", () => {
   it("renders a JSX tree to pixels", async () => {
     const scene = new Scene(40, 40, { adapter });
     scene.load(
-      <Div>
+      <Group>
         <MorphLayer color="#00ff00" size={{ width: 40, height: 40 }} />
-      </Div>,
+      </Group>,
     );
     await scene.renderFrame(0);
     const { data } = scene.lazyCanvas.ctx.getImageData(0, 0, 40, 40);
@@ -29,14 +29,14 @@ describe("jsxImportSource", () => {
 
   it("flattens fragments and drops falsy children", () => {
     const row = (
-      <Div>
+      <Group>
         <>
           <MorphLayer id="a" />
           {false}
           {null}
         </>
         <MorphLayer id="b" />
-      </Div>
+      </Group>
     );
     expect(row.children?.map((c: { id: string }) => c.id)).toEqual(["a", "b"]);
   });
@@ -45,7 +45,7 @@ describe("jsxImportSource", () => {
     let seen: unknown[] = [];
     const Probe = (props: { children: unknown[] }) => {
       seen = props.children;
-      return new Div();
+      return new Group();
     };
     <Probe>
       {0}

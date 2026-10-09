@@ -6,7 +6,7 @@ import {
 } from "../../../types";
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
 import type { LazyCanvas } from "../../LazyCanvas";
-import type { Div } from "../../components";
+import type { Group } from "../../components";
 import type { IRenderManager } from "./index";
 
 /**
@@ -42,7 +42,7 @@ export abstract class BaseRenderPipeline implements IRenderManager {
   /**
    * Draws a single layer. Shared by every pipeline.
    */
-  protected async drawLayer(layer: AnyLayer | Div): Promise<ICanvasRenderingContext2D> {
+  protected async drawLayer(layer: AnyLayer | Group): Promise<ICanvasRenderingContext2D> {
     if (this.debug) LazyLog.log("info", `Rendering ${layer.id}...\nData:`, layer.toJSON());
     if (layer.visible) {
       this.lazyCanvas.ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";

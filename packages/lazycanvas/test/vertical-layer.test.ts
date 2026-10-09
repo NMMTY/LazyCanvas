@@ -1,5 +1,5 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Centring, Div, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Centring, Group, Scene, TextLayer } from "@nmmty/lazycanvas";
 import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { describe, expect, it } from "vitest";
 
@@ -8,7 +8,7 @@ const adapter = new NodeCanvasAdapter();
 function sceneWith(layer: TextLayer, w = 400, h = 300) {
   const scene = new Scene(w, h, { adapter });
   scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
-  scene.load(new Div().add(layer));
+  scene.load(new Group().add(layer));
   return scene;
 }
 
@@ -215,7 +215,7 @@ describe("vertical text in a flex layout", () => {
 
     const scene = new Scene(400, 300, { adapter });
     scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
-    scene.load(new Div({ layout: { flexDirection: "row" } }, { id: "row" }).add(vertical, after));
+    scene.load(new Group({ layout: { flexDirection: "row" } }, { id: "row" }).add(vertical, after));
     await scene.renderFrame(0);
 
     // The block is only as wide as its widest word, so the box after it starts
@@ -276,7 +276,7 @@ describe("vertical text under the layout engine", () => {
     scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
     // flex-start, so the row does not stretch the text to its own height.
     scene.load(
-      new Div({ layout: { flexDirection: "row", alignItems: "flex-start" } }, { id: "row" }).add(
+      new Group({ layout: { flexDirection: "row", alignItems: "flex-start" } }, { id: "row" }).add(
         layer,
       ),
     );
@@ -307,7 +307,7 @@ describe("vertical text under the layout engine", () => {
 
     const scene = new Scene(400, 300, { adapter });
     scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
-    scene.load(new Div({ layout: { flexDirection: "row" } }, { id: "row" }).add(layer));
+    scene.load(new Group({ layout: { flexDirection: "row" } }, { id: "row" }).add(layer));
     await scene.renderFrame(0);
 
     expect(layer.props.size?.height).toBeCloseTo(300, 0);

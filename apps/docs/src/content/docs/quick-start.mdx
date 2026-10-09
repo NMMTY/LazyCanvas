@@ -11,13 +11,13 @@ Every environment follows the same three steps: **create a scene** with an adapt
 
 ```ts
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Div, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
 
 const scene = new Scene(600, 300, { adapter: new NodeCanvasAdapter() });
 
 scene.load(
-  new Div({
+  new Group({
     layout: { width: 600, height: 300, justifyContent: "center", alignItems: "center" },
   }).add(
     new MorphLayer({
@@ -43,13 +43,13 @@ This writes `hello.png`. Without `saveAsFile`, `export` resolves to a `Buffer` y
 
 ```ts
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
-import { Div, MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Group, MorphLayer, Scene } from "@nmmty/lazycanvas";
 
 const canvas = document.querySelector("canvas")!;
 const scene = new Scene(400, 200, { adapter: new BrowserCanvasAdapter(canvas) });
 
 scene.load(
-  new Div().add(new MorphLayer({ color: "#22c55e", size: { width: 400, height: 200 } })),
+  new Group().add(new MorphLayer({ color: "#22c55e", size: { width: 400, height: 200 } })),
 );
 
 await scene.renderFrame(0);
@@ -90,7 +90,7 @@ export function Hello() {
 ## What just happened
 
 - A **`Scene`** owns a canvas (made by the adapter) and a tree of layers.
-- **`Div`** (`Group` in React) is a container. Together with the `layout` prop it positions its children with flexbox.
+- **`Group`** is a container. Together with the `layout` prop it positions its children with flexbox.
 - **`MorphLayer`** draws a (rounded) rectangle; **`TextLayer`** draws text. Their props are plain objects, so a scene is easy to generate from data.
 
 Continue with [Core concepts](/docs/core-concepts).

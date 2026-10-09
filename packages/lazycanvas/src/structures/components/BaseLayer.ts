@@ -12,7 +12,7 @@ import {
 } from "../../types";
 import { LazyError, authoredProps, generateID, isColor } from "../../utils";
 import { Gradient, Link, Pattern } from "../helpers";
-import type { Div } from "./Div";
+import type { Group } from "./Group";
 
 /**
  * Interface representing the base structure of a layer.
@@ -31,7 +31,7 @@ export interface IBaseLayer {
   /**
    * The children of the layer.
    */
-  children?: Array<AnyLayer | Div>;
+  children?: Array<AnyLayer | Group>;
 
   /**
    * The type of the layer.
@@ -174,7 +174,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
   visible: boolean;
   props: T;
   parent?: IBaseLayer | any | null;
-  children: Array<AnyLayer | Div> = [];
+  children: Array<AnyLayer | Group> = [];
   private _signals: Map<string, Signal<any>> = new Map();
 
   constructor(type: LayerType, props: T, misc?: IBaseLayerMisc) {
@@ -195,10 +195,10 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
 
   /**
    * Adds components to the layer.
-   * @param {AnyLayer[] | Div[]} [components] - The components to add to the layer.
+   * @param {AnyLayer[] | Group[]} [components] - The components to add to the layer.
    * @returns {this} The current instance for chaining.
    */
-  add(...components: Array<AnyLayer | Div>): this {
+  add(...components: Array<AnyLayer | Group>): this {
     let layersArray = components.filter((l) => l !== undefined);
     layersArray = layersArray.sort((a, b) => a.zIndex - b.zIndex);
     for (const layer of layersArray) {
@@ -221,17 +221,17 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
   /**
    * Retrieves a component from the layer by its ID.
    * @param {string} [id] - The unique identifier of the component to retrieve.
-   * @returns {AnyLayer | Div | undefined} The component with the specified ID, or undefined if not found.
+   * @returns {AnyLayer | Group | undefined} The component with the specified ID, or undefined if not found.
    */
-  get(id: string): AnyLayer | Div | undefined {
+  get(id: string): AnyLayer | Group | undefined {
     return this.children.find((c) => c.id === id);
   }
 
   /**
    * Retrieves all components from the layer.
-   * @returns {AnyLayer[] | Div[]} An array of all components in the layer.
+   * @returns {AnyLayer[] | Group[]} An array of all components in the layer.
    */
-  getAll(): Array<AnyLayer | Div> {
+  getAll(): Array<AnyLayer | Group> {
     return this.children;
   }
 

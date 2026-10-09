@@ -4,12 +4,12 @@ import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
 import {
   BezierLayer,
   Centring,
-  Div,
   Easing,
   FillType,
   FontWeight,
   Gradient,
   GradientType,
+  Group,
   Scene as LazyScene,
   LineLayer,
   MorphLayer,
@@ -49,7 +49,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         position: { x: 120, y: 140 },
         centring: NC,
       });
-      sc.load(new Div().add(r1, r2, r3));
+      sc.load(new Group().add(r1, r2, r3));
       break;
     }
 
@@ -75,7 +75,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
           miterLimit: 10,
         },
       });
-      sc.load(new Div().add(s1, s2));
+      sc.load(new Group().add(s1, s2));
       break;
     }
 
@@ -106,7 +106,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         size: { width: "vw", height: 0 },
         centring: NC,
       });
-      sc.load(new Div().add(t1, t2, t3));
+      sc.load(new Group().add(t1, t2, t3));
       break;
     }
 
@@ -121,7 +121,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         position: { x: 20, y: 20 },
         centring: NC,
       });
-      sc.load(new Div().add(ml));
+      sc.load(new Group().add(ml));
       break;
     }
 
@@ -145,7 +145,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         },
         filled: false,
       });
-      sc.load(new Div().add(l1, l2));
+      sc.load(new Group().add(l1, l2));
       break;
     }
 
@@ -159,7 +159,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         color: "#8b5cf6",
         stroke: { width: 3, cap: "round", join: "round", dash: [], dashOffset: 0, miterLimit: 10 },
       });
-      sc.load(new Div().add(b1));
+      sc.load(new Group().add(b1));
       break;
     }
 
@@ -182,7 +182,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         position: { x: 80, y: 110 },
         centring: NC,
       });
-      sc.load(new Div().add(p1, p2, p3));
+      sc.load(new Group().add(p1, p2, p3));
       break;
     }
 
@@ -203,7 +203,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
       circle.setPath(c);
       circle.props.position = { x: 180, y: 50 };
 
-      sc.load(new Div().add(path, circle));
+      sc.load(new Group().add(path, circle));
       break;
     }
 
@@ -246,7 +246,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         position: { x: 210, y: 10 },
         centring: NC,
       });
-      sc.load(new Div().add(g1, g2));
+      sc.load(new Group().add(g1, g2));
       break;
     }
 
@@ -269,7 +269,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         position: { x: 300, y: 200 },
         centring: Centring.End,
       });
-      sc.load(new Div().add(c1, c2, c3));
+      sc.load(new Group().add(c1, c2, c3));
       break;
     }
 
@@ -288,7 +288,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         centring: NC,
         shadow: { offsetX: -4, offsetY: 6, blur: 20, color: "rgba(239,68,68,0.4)" },
       });
-      sc.load(new Div().add(sh1, sh2));
+      sc.load(new Group().add(sh1, sh2));
       break;
     }
 
@@ -314,7 +314,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         centring: NC,
         opacity: 0.3,
       });
-      sc.load(new Div().add(o1, o2, o3));
+      sc.load(new Group().add(o1, o2, o3));
       break;
     }
 
@@ -327,7 +327,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
       });
       const json = tj.toJSON();
       console.log("[toJSON]", JSON.stringify(json, null, 2));
-      sc.load(new Div().add(tj));
+      sc.load(new Group().add(tj));
       break;
     }
   }

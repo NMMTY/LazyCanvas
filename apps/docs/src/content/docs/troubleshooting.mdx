@@ -23,7 +23,7 @@ Use `BrowserCanvasAdapter` from `@nmmty/adapter-browser` in the browser.
 
 ## Nothing is drawn, or text is missing
 
-- **A layer has no size.** Shapes need `size` (or a `layout` width and height). A `Div` itself draws nothing.
+- **A layer has no size.** Shapes need `size` (or a `layout` width and height). A `Group` itself draws nothing.
 - **Everything is stacked at the top-left.** Layers inside a flex container are laid out by Yoga; give the container a size and `justifyContent` / `alignItems`.
 - **The layer is off-canvas.** Remember that most layers are *centred* on their `position` — see [Core concepts](/docs/core-concepts#centring).
 - **Text is cut off at the top.** `position.y` is the baseline by default; add `baseline: "top"`.

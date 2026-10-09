@@ -1,6 +1,6 @@
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
 import {
-  Div,
+  Group as GroupLayer,
   type ICanvas,
   type ICanvasAdapter,
   Scene as LazyScene,
@@ -541,5 +541,5 @@ export const Quadratic = createLayerComponent(QuadraticLayer, "QuadraticLayer");
 export const Polygon = createLayerComponent(PolygonLayer, "PolygonLayer");
 /** `Path2DLayer` as a React component. */
 export const Path2D = createLayerComponent(Path2DLayer, "Path2DLayer");
-/** `Div`, the flexbox container, as a React component. */
-export const Group = createLayerComponent(Div, "Group");
+/** `Group`, the flexbox container layer, as a React component. */
+export const Group = createLayerComponent(GroupLayer, "Group");

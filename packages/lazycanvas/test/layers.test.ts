@@ -1,6 +1,6 @@
 import {
   Centring,
-  Div,
+  Group,
   LayersManager,
   MorphLayer,
   findLayer,
@@ -16,9 +16,9 @@ const morph = (id: string, zIndex = 1) =>
   );
 
 describe("tree helpers", () => {
-  it("getChildren reads Div.layers and a layer's children alike", () => {
+  it("getChildren reads Group.layers and a layer's children alike", () => {
     const child = morph("child");
-    const div = new Div({}, { id: "div" }).add(child);
+    const div = new Group({}, { id: "div" }).add(child);
     expect(getChildren(div)).toEqual([child]);
 
     const parent = morph("parent");
@@ -30,16 +30,16 @@ describe("tree helpers", () => {
 
   it("walkLayers visits parents before children, depth first", () => {
     const leaf = morph("leaf");
-    const inner = new Div({}, { id: "inner" }).add(leaf);
-    const outer = new Div({}, { id: "outer" }).add(inner, morph("sibling"));
+    const inner = new Group({}, { id: "inner" }).add(leaf);
+    const outer = new Group({}, { id: "outer" }).add(inner, morph("sibling"));
 
     expect([...walkLayers(outer)].map((l) => l.id)).toEqual(["outer", "inner", "leaf", "sibling"]);
   });
 
   it("findLayer reaches arbitrarily deep nodes", () => {
     const deep = morph("deep");
-    const tree = new Div({}, { id: "a" }).add(
-      new Div({}, { id: "b" }).add(new Div({}, { id: "c" }).add(deep)),
+    const tree = new Group({}, { id: "a" }).add(
+      new Group({}, { id: "b" }).add(new Group({}, { id: "c" }).add(deep)),
     );
     expect(findLayer(tree, "deep")).toBe(deep);
     expect(findLayer(tree, "nope")).toBeUndefined();
@@ -65,13 +65,13 @@ describe("LayersManager", () => {
 
   it("get() without cross search only sees the top level", () => {
     const deep = morph("deep");
-    manager.add(new Div({}, { id: "group" }).add(deep));
+    manager.add(new Group({}, { id: "group" }).add(deep));
     expect(manager.get("deep")).toBeUndefined();
   });
 
   it("get(id, true) finds nested layers at any depth", () => {
     const deep = morph("deep");
-    manager.add(new Div({}, { id: "outer" }).add(new Div({}, { id: "inner" }).add(deep)));
+    manager.add(new Group({}, { id: "outer" }).add(new Group({}, { id: "inner" }).add(deep)));
     expect(manager.get("deep", true)).toBe(deep);
   });
 

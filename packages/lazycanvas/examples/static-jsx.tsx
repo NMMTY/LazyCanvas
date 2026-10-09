@@ -2,7 +2,7 @@
 import {
   createElement,
   Scene,
-  Div,
+  Group,
   MorphLayer,
   TextLayer,
   FontsList,
@@ -55,7 +55,7 @@ export async function run() {
       color={data.displayOptions.solid.bg_color}
     >
       {/* Background patterns - absolute positioned */}
-      <Div layout={{ position: "absolute", width: "100%", height: "100%" }}>
+      <Group layout={{ position: "absolute", width: "100%", height: "100%" }}>
         <Path2DLayer
           path2D={
             new Path2D(
@@ -94,10 +94,10 @@ export async function run() {
           }}
           filter={Filters.blur(80)}
         />
-      </Div>
+      </Group>
 
       {/* Content Container */}
-      <Div
+      <Group
         layout={{
           flexDirection: "row",
           alignItems: "center",
@@ -109,9 +109,9 @@ export async function run() {
         }}
       >
         {/* Left Stats */}
-        <Div layout={{ flexDirection: "row", gap: 20, alignItems: "center" }}>
+        <Group layout={{ flexDirection: "row", gap: 20, alignItems: "center" }}>
           {/* Level */}
-          <Div
+          <Group
             layout={{
               flexDirection: "row",
               gap: 50,
@@ -119,7 +119,7 @@ export async function run() {
               justifyContent: "center",
             }}
           >
-            <Div layout={{ width: 80, height: 80, alignItems: "center", justifyContent: "center" }}>
+            <Group layout={{ width: 80, height: 80, alignItems: "center", justifyContent: "center" }}>
               <PolygonLayer
                 layout={{ position: "absolute", width: 80, height: 80 }}
                 size={{ width: 80, height: 80, radius: 10, count: 6 }}
@@ -138,9 +138,9 @@ export async function run() {
                 baseline={"middle"}
                 shadow={{ color: "#000000", blur: 2 }}
               />
-            </Div>
+            </Group>
 
-            <Div
+            <Group
               layout={{
                 position: "absolute",
               }}
@@ -178,10 +178,10 @@ export async function run() {
                 }}
                 color={data.displayOptions.solid.third_component}
               />
-            </Div>
+            </Group>
 
             {/* Rank */}
-            <Div
+            <Group
               layout={{
                 width: 80,
                 height: 80,
@@ -207,9 +207,9 @@ export async function run() {
                 baseline={"middle"}
                 shadow={{ color: "#000000", blur: 2 }}
               />
-            </Div>
-          </Div>
-        </Div>
+            </Group>
+          </Group>
+        </Group>
 
         {/* UP Text */}
         <TextLayer
@@ -226,7 +226,7 @@ export async function run() {
         />
 
         {/* Right Avatar */}
-        <Div
+        <Group
           layout={{
             width: 82,
             height: 82,
@@ -246,8 +246,8 @@ export async function run() {
             size={{ width: 80, height: 80, radius: { all: 40 } }}
             src={data.avatar}
           />
-        </Div>
-      </Div>
+        </Group>
+      </Group>
 
       {/* Border Overlay */}
       <MorphLayer

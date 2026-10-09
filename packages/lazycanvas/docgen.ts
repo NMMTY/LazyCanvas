@@ -1,7 +1,11 @@
+import { rmSync } from "node:fs";
 import { createDocumentation } from "@hitomihiumi/micro-docgen";
 import { homepage, version } from "./package.json";
 
 async function main() {
+  // The generator only overwrites: pages of removed or renamed symbols would linger.
+  rmSync("public", { recursive: true, force: true });
+
   const docs = await createDocumentation({
     name: "reference",
     version,
@@ -18,7 +22,7 @@ async function main() {
         Core: ["Scene", "LazyCanvas", "LayersManager", "FontsManager", "LayoutManager"],
         Layers: [
           "BaseLayer",
-          "Div",
+          "Group",
           "MorphLayer",
           "TextLayer",
           "ImageLayer",

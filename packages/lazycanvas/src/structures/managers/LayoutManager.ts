@@ -13,7 +13,7 @@ import {
   restoreAuthoredProps,
   walkLayers,
 } from "../../utils";
-import { Div, type TextLayer } from "../components";
+import { Group, type TextLayer } from "../components";
 
 // Define minimal types for Yoga to avoid import issues
 type YogaNode = any;
@@ -56,9 +56,9 @@ export class LayoutManager {
    * so it is left out of the flex flow entirely. `createNode` and `applyLayout`
    * must agree on this exactly, which is why both call this one function.
    */
-  private layoutChildren(layer: AnyLayer | Div): Array<AnyLayer | Div> {
+  private layoutChildren(layer: AnyLayer | Group): Array<AnyLayer | Group> {
     return getChildren(layer).filter((child) => {
-      const isContainer = child instanceof Div || child.type === LayerType.Group;
+      const isContainer = child instanceof Group || child.type === LayerType.Group;
       if (isContainer) return true;
 
       // Read `position` as the caller wrote it: a previous pass may have
@@ -80,14 +80,14 @@ export class LayoutManager {
    *
    * Does nothing while yoga-layout is still loading; the next frame picks it up.
    *
-   * @param {AnyLayer | Div} [root] - Root of the tree to lay out.
+   * @param {AnyLayer | Group} [root] - Root of the tree to lay out.
    * @param {number} [width] - Available width.
    * @param {number} [height] - Available height.
    * @param {ICanvasRenderingContext2D} [ctx] - Context used to measure text.
    * @param {ICanvas} [canvas] - Canvas used to measure text.
    */
   public calculateLayout(
-    root: AnyLayer | Div,
+    root: AnyLayer | Group,
     width: number,
     height: number,
     ctx?: ICanvasRenderingContext2D,
@@ -116,7 +116,7 @@ export class LayoutManager {
   }
 
   private createNode(
-    layer: AnyLayer | Div,
+    layer: AnyLayer | Group,
     ctx?: ICanvasRenderingContext2D,
     canvas?: ICanvas,
   ): YogaNode | null {
@@ -138,8 +138,8 @@ export class LayoutManager {
     } else if (size.width !== undefined && layer.type !== LayerType.Text) {
       // For TextLayer, skip size.width to allow measureFunc to work
       this.setDimension(node, "width", size.width);
-    } else if ((layer instanceof Div || layer.type === "group") && !layout.flexDirection) {
-      // For Div without explicit width and not a flex container, stretch to parent
+    } else if ((layer instanceof Group || layer.type === "group") && !layout.flexDirection) {
+      // For Group without explicit width and not a flex container, stretch to parent
       // Flex containers should shrink-wrap their content by default
       node.setWidthPercent(100);
     }
@@ -149,8 +149,8 @@ export class LayoutManager {
     } else if (size.height !== undefined && layer.type !== LayerType.Text) {
       // For TextLayer, skip size.height to allow measureFunc to work
       this.setDimension(node, "height", size.height);
-    } else if ((layer instanceof Div || layer.type === "group") && !layout.flexDirection) {
-      // For Div without explicit height and not a flex container, stretch to parent
+    } else if ((layer instanceof Group || layer.type === "group") && !layout.flexDirection) {
+      // For Group without explicit height and not a flex container, stretch to parent
       // Flex containers should shrink-wrap their content by default
       node.setHeightPercent(100);
     }
@@ -245,7 +245,7 @@ export class LayoutManager {
    * Positions are relative to the parent, which matches how the render pipeline
    * translates the context when descending into a subtree.
    */
-  private applyLayout(node: YogaNode, layer: AnyLayer | Div) {
+  private applyLayout(node: YogaNode, layer: AnyLayer | Group) {
     const layout = node.getComputedLayout();
 
     if (this.debug) {

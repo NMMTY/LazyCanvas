@@ -5,10 +5,10 @@ import { LazyError, LazyLog } from "../../../utils";
 import { type IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
 import {
   BezierLayer,
-  Div,
+  Group,
   type IBaseLayerMisc,
   type IBezierLayerProps,
-  type IDiv,
+  type IGroup,
   type IImageLayerProps,
   type ILineLayerProps,
   type IMorphLayerProps,
@@ -79,15 +79,15 @@ export class JSONReader {
 
   /**
    * Parses an array of JSON layers into an array of AnyLayer or Group instances.
-   * @param {Array<JSONLayer | Div>} [data] - The array of JSON layers to parse.
+   * @param {Array<JSONLayer | Group>} [data] - The array of JSON layers to parse.
    * @param {Object} [opts] - Optional settings.
    * @param {boolean} [opts.debug] - Whether to enable debug logging.
-   * @returns {Array<AnyLayer | Div>} The parsed layers.
+   * @returns {Array<AnyLayer | Group>} The parsed layers.
    */
   private static layersParse(
-    data: Array<JSONLayer | IDiv>,
+    data: Array<JSONLayer | IGroup>,
     opts?: { debug?: boolean },
-  ): Array<AnyLayer | Div> {
+  ): Array<AnyLayer | Group> {
     return data.map((layer: any) => {
       if (opts?.debug) LazyLog.log("info", `Parsing layer ${layer.id}...\nData:`, layer);
       return JSONReader.layerParse(layer, {
@@ -100,13 +100,16 @@ export class JSONReader {
 
   /**
    * Parses a single JSON layer into an AnyLayer or Group instance.
-   * @param {JSONLayer | IDiv | Div} [layer] - The JSON layer to parse.
+   * @param {JSONLayer | IGroup | Group} [layer] - The JSON layer to parse.
    * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
-   * @returns {AnyLayer | Div} The parsed layer.
+   * @returns {AnyLayer | Group} The parsed layer.
    */
-  private static layerParse(layer: JSONLayer | IDiv | Div, misc?: IBaseLayerMisc): AnyLayer | Div {
-    if (layer instanceof Div) {
-      return new Div(layer.props, misc).add(
+  private static layerParse(
+    layer: JSONLayer | IGroup | Group,
+    misc?: IBaseLayerMisc,
+  ): AnyLayer | Group {
+    if (layer instanceof Group) {
+      return new Group(layer.props, misc).add(
         ...(layer.layers.map((l: any) =>
           JSONReader.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
         ) as AnyLayer[]),
@@ -144,8 +147,8 @@ export class JSONReader {
           JSONReader.fillParse(layer),
         );
       case LayerType.Group:
-        return new Div((layer as unknown as IDiv).props, misc).add(
-          ...((layer as unknown as IDiv).layers ?? []).map((l: any) =>
+        return new Group((layer as unknown as IGroup).props, misc).add(
+          ...((layer as unknown as IGroup).layers ?? []).map((l: any) =>
             JSONReader.layerParse(l, { id: l.id, zIndex: l.zIndex, visible: l.visible }),
           ),
         );

@@ -3,7 +3,7 @@ export * from "./BezierLayer";
 export * from "./ImageLayer";
 export * from "./TextLayer";
 export * from "./MorphLayer";
-export * from "./Div";
+export * from "./Group";
 export * from "./LineLayer";
 export * from "./QuadraticLayer";
 export * from "./Path2DLayer";

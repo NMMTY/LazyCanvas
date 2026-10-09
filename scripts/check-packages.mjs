@@ -137,7 +137,7 @@ ${load("lc", "@nmmty/lazycanvas")}
 ${load("node", "@nmmty/lazycanvas/node")}
 ${load("an", "@nmmty/adapter-node")}
 const scene = new lc.Scene(40, 40, { adapter: new an.NodeCanvasAdapter() });
-scene.load(new lc.Div().add(new lc.MorphLayer({ color: "#ff0000", size: { width: 40, height: 40 } })));
+scene.load(new lc.Group().add(new lc.MorphLayer({ color: "#ff0000", size: { width: 40, height: 40 } })));
 const png = await new node.Exporter(scene).export("png");
 if (!(png && png.length > 50)) throw new Error("Exporter produced no PNG");
 console.log("render ok");`;

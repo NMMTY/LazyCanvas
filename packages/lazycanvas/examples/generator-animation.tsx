@@ -4,7 +4,7 @@ import {
   Scene,
   MorphLayer,
   TextLayer,
-  Div,
+  Group,
   createSignal,
   Easing,
   resetSignals,
@@ -71,7 +71,7 @@ export async function run() {
 
   // Load scene
   scene.load(
-    <Div
+    <Group
       layout={{
         width: "100%",
         height: "100%",
@@ -105,7 +105,7 @@ export async function run() {
         }}
         align="center"
       />
-    </Div>,
+    </Group>,
   );
 
   const duration = calculateSequentialDuration([() => boxAnimation(), () => textAnimation()]);

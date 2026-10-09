@@ -13,7 +13,7 @@ import { BaseLayer, type IBaseLayer, type IBaseLayerProps } from "./BaseLayer";
 /**
  * Interface representing a group of layer's.
  */
-export interface IDiv extends IBaseLayer {
+export interface IGroup extends IBaseLayer {
   /**
    * The unique identifier of the group.
    */
@@ -37,15 +37,15 @@ export interface IDiv extends IBaseLayer {
   /**
    * The layer's contained within the group.
    */
-  layers: Array<AnyLayer | Div>;
+  layers: Array<AnyLayer | Group>;
 
   /**
-   * The properties specific to the Div group.
+   * The properties specific to the Group group.
    */
-  props: IDivProps;
+  props: IGroupProps;
 }
 
-export interface IDivProps extends IBaseLayerProps {
+export interface IGroupProps extends IBaseLayerProps {
   /**
    * Don't use, this is just for compatibility.
    */
@@ -57,7 +57,7 @@ export interface IDivProps extends IBaseLayerProps {
 /**
  * Class representing a group of layer's.
  */
-export class Div extends BaseLayer<IDivProps> implements IDiv {
+export class Group extends BaseLayer<IGroupProps> implements IGroup {
   /**
    * The unique identifier of the group.
    */
@@ -78,7 +78,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    */
   zIndex: number;
 
-  props: IDivProps;
+  props: IGroupProps;
   parent?: IBaseLayer | any | null;
 
   /**
@@ -88,23 +88,23 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    * second array, so every traversal had to know about both containers; they
    * are now the same list.
    */
-  get layers(): Array<AnyLayer | Div> {
+  get layers(): Array<AnyLayer | Group> {
     return this.children;
   }
 
-  set layers(value: Array<AnyLayer | Div>) {
+  set layers(value: Array<AnyLayer | Group>) {
     this.children = value;
   }
 
   /**
    * Constructs a new Group instance.
-   * @param {IDivProps} [props] - The properties of the Div.
+   * @param {IGroupProps} [props] - The properties of the Group.
    * @param {string} [opts.id] - The unique identifier of the group.
    * @param {boolean} [opts.visible] - The visibility of the group.
    * @param {number} [opts.zIndex] - The z-index of the group.
    */
-  constructor(props?: IDivProps, opts?: { id?: string; visible?: boolean; zIndex?: number }) {
-    super(LayerType.Group, props || ({} as IDivProps), opts);
+  constructor(props?: IGroupProps, opts?: { id?: string; visible?: boolean; zIndex?: number }) {
+    super(LayerType.Group, props || ({} as IGroupProps), opts);
 
     // Extract id, visible, zIndex from props if provided (for JSX support)
     const propsId = props?.id;
@@ -114,7 +114,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
     this.id = opts?.id || propsId || generateID(LayerType.Group);
     this.visible = opts?.visible ?? propsVisible ?? true;
     this.zIndex = opts?.zIndex ?? propsZIndex ?? 1;
-    this.props = props || ({} as IDivProps);
+    this.props = props || ({} as IGroupProps);
     this.parent = null;
   }
 
@@ -167,7 +167,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
 
   /**
    * Renders a layer and, unless it manages its own children, its subtree.
-   * @param {AnyLayer | Div} [layer] - The layer or group to render.
+   * @param {AnyLayer | Group} [layer] - The layer or group to render.
    * @param {ICanvasRenderingContext2D} [ctx] - The canvas rendering context.
    * @param {ICanvas} [canvas] - The canvas instance.
    * @param {LayersManager} [manager] - The layer's manager.
@@ -176,7 +176,7 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
    * @returns {Promise<ICanvasRenderingContext2D>} The context after rendering.
    */
   private async renderLayer(
-    layer: AnyLayer | Div,
+    layer: AnyLayer | Group,
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
@@ -190,9 +190,9 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
 
     await layer.draw(ctx, canvas, manager, debug, adapter);
 
-    // A Div renders its own subtree inside `draw`, so descending into it here
+    // A Group renders its own subtree inside `draw`, so descending into it here
     // would draw every descendant twice.
-    const children = layer instanceof Div ? [] : getChildren(layer);
+    const children = layer instanceof Group ? [] : getChildren(layer);
     if (children.length > 0) {
       ctx.save();
 
@@ -243,9 +243,9 @@ export class Div extends BaseLayer<IDivProps> implements IDiv {
 
   /**
    * Converts the group to a JSON representation.
-   * @returns {IDiv} The JSON representation of the group.
+   * @returns {IGroup} The JSON representation of the group.
    */
-  toJSON(): IDiv {
+  toJSON(): IGroup {
     return {
       id: this.id,
       type: this.type,
