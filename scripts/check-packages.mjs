@@ -13,9 +13,9 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { PACKAGES } from "./packages.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const PACKAGES = ["lazycanvas", "adapter-node", "adapter-browser", "adapter-react"];
 const bin = (name) => join(root, "node_modules", ".bin", name);
 
 const failures = [];
@@ -157,35 +157,33 @@ console.log("render ok");`;
     }
   }
 
-  // 5. The browser entry points must not pull in Node built-ins ---------
+  // 5. The browser-reachable entry points must not pull in Node built-ins.
+  //    Everything is bundled, yoga-layout and react included, so a built-in
+  //    imported by a dependency is caught too.
   console.log("Browser bundle");
-  const esbuild = run("sh", [
-    "-c",
-    `ls -d ${root}/node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild | head -1`,
-  ]).trim();
   writeFileSync(
     join(smoke, "browser.mjs"),
-    `import { Scene, MorphLayer } from "@nmmty/lazycanvas";
-import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
-console.log(Scene, MorphLayer, BrowserCanvasAdapter);`,
+    `import * as core from "@nmmty/lazycanvas";
+import * as fonts from "@nmmty/lazycanvas/fonts";
+import * as jsx from "@nmmty/lazycanvas/jsx-runtime";
+import * as browser from "@nmmty/adapter-browser";
+import * as react from "@nmmty/adapter-react";
+console.log(core, fonts, jsx, browser, react);`,
   );
   try {
-    const meta = join(smoke, "meta.json");
     run(
-      esbuild,
+      bin("esbuild"),
       [
         "browser.mjs",
         "--bundle",
         "--platform=browser",
         "--format=esm",
-        "--external:yoga-layout",
-        `--metafile=${meta}`,
         `--outfile=${join(smoke, "out.js")}`,
       ],
       { cwd: smoke },
     );
     const bundle = readFileSync(join(smoke, "out.js"), "utf8");
-    const leaked = [...new Set(bundle.match(/"node:[a-z/_]+"/g) ?? [])];
+    const leaked = [...new Set(bundle.match(/["']node:[a-z/_]+["']/g) ?? [])];
     if (leaked.length) fail(`browser bundle references Node built-ins: ${leaked.join(", ")}`);
     else ok("no node: built-ins in the browser bundle");
   } catch (e) {

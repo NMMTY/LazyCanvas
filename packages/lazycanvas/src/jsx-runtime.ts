@@ -24,7 +24,7 @@ export function createElement(type: any, props: any | null, ...children: any[]):
   // arrive as nested arrays, so flatten before dropping empty values.
   const allChildren = [propsChildren, ...flatChildren]
     .flat(Number.POSITIVE_INFINITY)
-    .filter(Boolean);
+    .filter((child) => child !== null && child !== undefined && child !== false && child !== true);
 
   let instance: any;
 

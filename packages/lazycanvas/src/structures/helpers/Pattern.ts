@@ -64,11 +64,11 @@ export class Pattern implements IPattern {
    * Resolves the pattern into a fill style for `ctx`.
    *
    * @param {ICanvasRenderingContext2D} ctx - The target context.
-   * @param {object} [opts] - Where to find the adapter used to load the image: `adapter`, or the layers `manager` that carries it.
+   * @param {object} [opts] - Where to find the adapter used to load the image: `adapter`, or the layers `manager` that carries it. An adapter itself is accepted too.
    */
   async draw(
     ctx: ICanvasRenderingContext2D,
-    opts?: { adapter?: ICanvasAdapter; manager?: { adapter?: ICanvasAdapter } },
+    opts?: ICanvasAdapter | { adapter?: ICanvasAdapter; manager?: { adapter?: ICanvasAdapter } },
   ): Promise<any> {
     if (!this.src) throw new LazyError("Pattern source is not set");
 
@@ -77,7 +77,7 @@ export class Pattern implements IPattern {
       return ctx.createPattern(canvas as any, this.type);
     }
 
-    const adapter = opts?.adapter ?? opts?.manager?.adapter;
+    const adapter = opts && "loadImage" in opts ? opts : (opts?.adapter ?? opts?.manager?.adapter);
     const image = adapter ? await adapter.loadImage(this.src) : await loadImageFallback(this.src);
     return ctx.createPattern(image, this.type);
   }

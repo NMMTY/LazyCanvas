@@ -9,6 +9,10 @@ import { Font, type FontData, type IFonts } from "../helpers";
 function toBase64(data: FontData): string {
   if (typeof data === "string") return data;
   if (typeof Buffer !== "undefined" && Buffer.isBuffer(data)) return data.toString("base64");
+  if (!(data instanceof Uint8Array)) {
+    // e.g. font data that went through JSON and came back as a plain object
+    throw new LazyError("Font data must be a base64 string or a Uint8Array");
+  }
   let binary = "";
   const chunk = 0x8000;
   for (let i = 0; i < data.length; i += chunk) {

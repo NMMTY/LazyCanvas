@@ -40,4 +40,18 @@ describe("jsxImportSource", () => {
     );
     expect(row.children?.map((c: { id: string }) => c.id)).toEqual(["a", "b"]);
   });
+
+  it("keeps falsy-but-meaningful children such as 0 for components", () => {
+    let seen: unknown[] = [];
+    const Probe = (props: { children: unknown[] }) => {
+      seen = props.children;
+      return new Div();
+    };
+    <Probe>
+      {0}
+      {""}
+      {false}
+    </Probe>;
+    expect(seen).toEqual([0, ""]);
+  });
 });

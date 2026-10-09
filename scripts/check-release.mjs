@@ -11,9 +11,9 @@
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { PACKAGES } from "./packages.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const PACKAGES = ["lazycanvas", "adapter-node", "adapter-browser", "adapter-react"];
 
 const versions = PACKAGES.map((dir) => {
   const manifest = JSON.parse(readFileSync(join(root, "packages", dir, "package.json"), "utf8"));

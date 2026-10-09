@@ -140,4 +140,11 @@ describe("font data", () => {
     manager.loadFonts({ Raw: { 400: bytes }, Text: { 400: "AQID" } });
     expect(registered).toEqual([Buffer.from(bytes).toString("base64"), "AQID"]);
   });
+
+  it("rejects data that is neither a string nor bytes", () => {
+    const manager = new FontsManager({ adapter });
+    expect(() => manager.loadFonts({ Broken: { 400: { 0: 1, 1: 2 } as never } })).toThrow(
+      /base64 string or a Uint8Array/,
+    );
+  });
 });
