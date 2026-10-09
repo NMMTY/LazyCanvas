@@ -5,7 +5,8 @@
     "dev": "next dev",
     "build": "rimraf .next/cache && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docs:build": "pnpm --workspace-root run docs:build"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.0",
