@@ -97,6 +97,7 @@ export class BrowserCanvasAdapter implements ICanvasAdapter {
     );
   }
 
+  /** Returns the element given to the constructor (resized), or a new detached `<canvas>`. */
   createCanvas(width: number, height: number): ICanvas {
     if (this.existingCanvas) {
       this.existingCanvas.width = width;

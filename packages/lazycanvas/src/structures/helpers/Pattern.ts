@@ -9,12 +9,24 @@ import { LazyError, loadImageFallback } from "../../utils";
 import { LazyCanvas } from "../LazyCanvas";
 import { serializeCanvas } from "./serialize";
 
+/** Interface representing a pattern. */
 export interface IPattern {
   fillType: FillType;
   type: AnyPatternType;
   src: string | LazyCanvas;
 }
 
+/**
+ * A repeating image fill, usable wherever a color is accepted.
+ *
+ * @example
+ * ```ts
+ * new MorphLayer({
+ *   color: new Pattern().setSrc("https://example.com/tile.png").setType("repeat"),
+ *   size: { width: 200, height: 200 },
+ * });
+ * ```
+ */
 export class Pattern implements IPattern {
   fillType: FillType = FillType.Pattern;
   type: AnyPatternType;
@@ -25,16 +37,34 @@ export class Pattern implements IPattern {
     this.src = opts?.props?.src || "";
   }
 
+  /**
+   * Sets the repetition mode.
+   *
+   * @param {AnyPatternType} type - `repeat`, `repeat-x`, `repeat-y` or `no-repeat`.
+   * @returns {this} The current instance for chaining.
+   */
   setType(type: AnyPatternType): this {
     this.type = type;
     return this;
   }
 
+  /**
+   * Sets the pattern source.
+   *
+   * @param {string | LazyCanvas} src - An image URL, or another canvas to tile.
+   * @returns {this} The current instance for chaining.
+   */
   setSrc(src: string | LazyCanvas): this {
     this.src = src;
     return this;
   }
 
+  /**
+   * Resolves the pattern into a fill style for `ctx`.
+   *
+   * @param {ICanvasRenderingContext2D} ctx - The target context.
+   * @param {any} [adapter] - The adapter used to load the image.
+   */
   async draw(ctx: ICanvasRenderingContext2D, adapter?: any): Promise<any> {
     if (!this.src) throw new LazyError("Pattern source is not set");
 
@@ -47,6 +77,7 @@ export class Pattern implements IPattern {
     return ctx.createPattern(image, this.type);
   }
 
+  /** Serialises the pattern. */
   toJSON(): IPattern {
     let src = this.src;
     if (this.src instanceof LazyCanvas) {

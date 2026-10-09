@@ -37,7 +37,7 @@ const LAYER_REGISTRY: Record<string, LayerMeta> = {};
 /**
  * Marker symbol to identify wrapper components created by `layerComponent`.
  */
-const LAZY_LAYER_CLASS = Symbol.for("@nmmty/lazycanvas-react:layerClass");
+const LAZY_LAYER_CLASS = Symbol.for("@nmmty/adapter-react:layerClass");
 
 /**
  * Register a LazyCanvas layer class for use in JSX.
@@ -45,7 +45,7 @@ const LAZY_LAYER_CLASS = Symbol.for("@nmmty/lazycanvas-react:layerClass");
  *
  * @example
  * ```tsx
- * import { registerLayer } from "@nmmty/lazycanvas-react";
+ * import { registerLayer } from "@nmmty/adapter-react";
  * import { MorphLayer, TextLayer } from "@nmmty/lazycanvas";
  *
  * const Morph = registerLayer("MorphLayer", MorphLayer);
@@ -73,10 +73,10 @@ export function registerLayer<T extends Record<string, any>>(
  *
  * @example
  * ```tsx
- * import { layerComponent } from "@nmmty/lazycanvas-react";
+ * import { createLayerComponent } from "@nmmty/adapter-react";
  * import { MorphLayer } from "@nmmty/lazycanvas";
  *
- * const Morph = layerComponent(MorphLayer);
+ * const Morph = createLayerComponent(MorphLayer);
  *
  * // Use in JSX:
  * <Morph color="#ff0000" size={{ width: 200, height: 100 }} />
@@ -118,6 +118,7 @@ function getLayerClass(type: any): any {
 // Scene context
 // ---------------------------------------------------------------------------
 
+/** The value of the scene context: the live scene, its canvas and the adapter. */
 export interface SceneContextValue {
   scene: LazyScene | null;
   canvas: ICanvas | null;
@@ -220,8 +221,10 @@ function instantiateLayer(
 // Scene component
 // ---------------------------------------------------------------------------
 
+/** A function that returns a fresh animation generator, so a looping scene can replay it. */
 export type AnimationFactory = () => ThreadGenerator;
 
+/** The imperative handle exposed through `<Scene ref>`. */
 export interface SceneRef {
   renderFrame(time: number): Promise<void>;
   playAnimation(signal: Signal<any>, generatorOrFactory: any): void;
@@ -232,6 +235,7 @@ export interface SceneRef {
   readonly scene: LazyScene | null;
 }
 
+/** Props of {@link Scene}. */
 export interface SceneProps {
   width: number;
   height: number;
@@ -247,6 +251,19 @@ export interface SceneProps {
   debug?: boolean;
 }
 
+/**
+ * Renders a LazyCanvas scene onto a `<canvas>` element.
+ *
+ * The children are layer components (`Morph`, `Text`, `Group`, ...), not DOM:
+ * they are converted into LazyCanvas layers and redrawn whenever they change.
+ *
+ * @example
+ * ```tsx
+ * <Scene width={320} height={96}>
+ *   <Morph color="#7c3aed" size={{ width: 320, height: 96 }} />
+ * </Scene>
+ * ```
+ */
 export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
   {
     width,
@@ -508,12 +525,21 @@ import {
   TextLayer,
 } from "@nmmty/lazycanvas";
 
+/** `MorphLayer` as a React component. */
 export const Morph = createLayerComponent(MorphLayer, "MorphLayer");
+/** `TextLayer` as a React component. */
 export const Text = createLayerComponent(TextLayer, "TextLayer");
+/** `ImageLayer` as a React component. */
 export const Image = createLayerComponent(ImageLayer, "ImageLayer");
+/** `LineLayer` as a React component. */
 export const Line = createLayerComponent(LineLayer, "LineLayer");
+/** `BezierLayer` as a React component. */
 export const Bezier = createLayerComponent(BezierLayer, "BezierLayer");
+/** `QuadraticLayer` as a React component. */
 export const Quadratic = createLayerComponent(QuadraticLayer, "QuadraticLayer");
+/** `PolygonLayer` as a React component. */
 export const Polygon = createLayerComponent(PolygonLayer, "PolygonLayer");
+/** `Path2DLayer` as a React component. */
 export const Path2D = createLayerComponent(Path2DLayer, "Path2DLayer");
+/** `Div`, the flexbox container, as a React component. */
 export const Group = createLayerComponent(Div, "Group");

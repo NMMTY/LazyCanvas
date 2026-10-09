@@ -35,6 +35,7 @@ export class NodeCanvasAdapter implements ICanvasAdapter {
     },
   };
 
+  /** Creates an `@napi-rs/canvas` canvas. */
   createCanvas(width: number, height: number): ICanvas {
     return new Canvas(width, height) as unknown as ICanvas;
   }

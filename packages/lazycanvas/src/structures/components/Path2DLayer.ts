@@ -33,6 +33,10 @@ export interface IPath2DLayerProps extends IBaseLayerProps {
   clipPath?: boolean;
 }
 
+/**
+ * A layer that draws a `Path2D`: build it from an SVG path string or with the
+ * path-building methods (`moveTo`, `lineTo`, `rect`, ...).
+ */
 export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
   id: string;
   type: LayerType.Path = LayerType.Path;
@@ -49,6 +53,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     this.props = this.validateProps(this.props);
   }
 
+  /** Sets the fill color. */
   setColor(color: ColorType): this {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
@@ -56,6 +61,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     return this;
   }
 
+  /** Sets the path from an SVG path string or an existing `Path2D`. */
   setPath(path: any | string): this {
     // Strings are kept as-is and turned into a Path2D on first use, so the
     // layer can be built before an adapter (and therefore a Path2D) exists.
@@ -82,11 +88,13 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     return this;
   }
 
+  /** Clips to the path instead of filling it. */
   setClipPath(clipPath: boolean): this {
     this.props.clipPath = clipPath;
     return this;
   }
 
+  /** The path as an SVG path string (empty when the adapter's `Path2D` cannot export one). */
   toSVGString(): string {
     const path = this.ensurePath();
     if (path && typeof path.toSVGString === "function") {
@@ -95,6 +103,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     return "";
   }
 
+  /** Appends another path, optionally transformed. */
   addPath(path: any, transform?: DOMMatrix2DInit | undefined): this {
     const self = this.ensurePath();
     if (self && typeof self.addPath === "function") {
@@ -198,6 +207,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     return this;
   }
 
+  /** Strokes the underlying `Path2D` (a no-op when the adapter's `Path2D` has no `stroke`). */
   stroke(stroke?: any): this {
     const path = this.ensurePath();
     if (path && typeof path.stroke === "function") {
@@ -357,6 +367,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     ctx.closePath();
   }
 
+  /** Serialises the layer. */
   toJSON(): IPath2DLayer {
     return super.toJSON() as IPath2DLayer;
   }

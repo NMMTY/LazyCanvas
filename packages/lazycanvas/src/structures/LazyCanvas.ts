@@ -93,6 +93,12 @@ export class LazyCanvas implements ILazyCanvas {
     if (opts?.debug) LazyLog.log("info", "LazyCanvas initialized with settings:", opts.settings);
   }
 
+  /**
+   * Sets the export type and recreates the underlying canvas.
+   *
+   * @param {AnyExport} type - The target format.
+   * @returns {this} The current instance for chaining.
+   */
   public setExportType(type: AnyExport): this {
     this.options.exportType = type;
     this.canvas = this.adapter.createCanvas(this.options.width, this.options.height);
@@ -100,11 +106,23 @@ export class LazyCanvas implements ILazyCanvas {
     return this;
   }
 
+  /**
+   * Marks the canvas as animated.
+   *
+   * @returns {this} The current instance for chaining.
+   */
   animated(): this {
     this.options.animated = true;
     return this;
   }
 
+  /**
+   * Scales the canvas and every layer on it by `ratio`.
+   *
+   * @param {number} ratio - The scale factor, e.g. `2` doubles the size.
+   * @returns {this} The current instance for chaining.
+   * @throws {Error} If the canvas dimensions are not set yet.
+   */
   resize(ratio: number): this {
     if (this.options.width <= 0 || this.options.height <= 0) {
       throw new Error("Canvas dimensions are not set.");
@@ -118,6 +136,13 @@ export class LazyCanvas implements ILazyCanvas {
     return this;
   }
 
+  /**
+   * Creates the canvas through the adapter and clears the layer tree.
+   *
+   * @param {number} width - The canvas width in pixels.
+   * @param {number} height - The canvas height in pixels.
+   * @returns {this} The current instance for chaining.
+   */
   create(width: number, height: number): this {
     this.options.width = width;
     this.options.height = height;

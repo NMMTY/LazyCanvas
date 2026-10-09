@@ -66,6 +66,13 @@ export class FontsManager implements IFontsManager {
     return this;
   }
 
+  /**
+   * Registers fonts and, when an adapter is present, hands them to it.
+   *
+   * @param {...Font} fonts - The fonts to add.
+   * @returns {this} The current instance for chaining.
+   * @throws {LazyError} If a font has no family, weight or source, or is already registered.
+   */
   public add(...fonts: Font[]): this {
     if (this.debug) LazyLog.log("info", `Adding fonts...\nlength: ${fonts.length}`);
     for (const font of fonts) {
@@ -85,6 +92,12 @@ export class FontsManager implements IFontsManager {
     return this;
   }
 
+  /**
+   * Forgets fonts. The underlying adapter keeps any font it already registered.
+   *
+   * @param {...{ family: string; weight: string }} array - The fonts to remove.
+   * @returns {this} The current instance for chaining.
+   */
   public remove(...array: Array<{ family: string; weight: string }>): this {
     for (const font of array) {
       this.map.delete(`${font.family}_${font.weight}`);
@@ -92,33 +105,50 @@ export class FontsManager implements IFontsManager {
     return this;
   }
 
+  /**
+   * Forgets every font.
+   *
+   * @returns {this} The current instance for chaining.
+   */
   public clear(): this {
     this.map.clear();
     return this;
   }
 
+  /**
+   * Looks fonts up.
+   *
+   * @param {string} family - The font family.
+   * @param {string} [weight] - A weight; without it every font of the family is returned.
+   * @returns {Font | Font[] | undefined} A single font when a weight is given, otherwise an array.
+   */
   public get(family: string, weight?: string): Font | Font[] | undefined {
     if (weight) return this.map.get(`${family}_${weight}`);
     return Array.from(this.map.values()).filter((font) => font.family === family);
   }
 
+  /** Whether a family (optionally at a given weight) is registered. */
   public has(family: string, weight?: string): boolean {
     if (weight) return this.map.has(`${family}_${weight}`);
     return Array.from(this.map.values()).some((font) => font.family === family);
   }
 
+  /** The number of registered fonts. */
   public size(): number {
     return this.map.size;
   }
 
+  /** Iterates over the registered fonts. */
   public values(): IterableIterator<Font> {
     return this.map.values();
   }
 
+  /** Iterates over the `family_weight` keys. */
   public keys(): IterableIterator<string> {
     return this.map.keys();
   }
 
+  /** Iterates over `[key, font]` pairs. */
   public entries(): IterableIterator<[string, Font]> {
     return this.map.entries();
   }
@@ -131,19 +161,23 @@ export class FontsManager implements IFontsManager {
     return this;
   }
 
+  /** Serialises the registered fonts. */
   public toJSON(): object {
     return Object.fromEntries(this.map);
   }
 
+  /** Replaces the registered fonts with serialised ones. */
   public fromJSON(json: object): this {
     this.map = new Map(Object.entries(json));
     return this;
   }
 
+  /** The registered fonts as an array. */
   public toArray(): Font[] {
     return Array.from(this.map.values());
   }
 
+  /** Replaces the registered fonts with the given array. */
   public fromArray(array: Font[]): this {
     for (const font of array) {
       this.map.set(`${font.family}_${font.weight}`, font);

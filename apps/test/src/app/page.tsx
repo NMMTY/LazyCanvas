@@ -34,7 +34,7 @@ const TESTS = [
   {
     id: "react-scene",
     title: "React <Scene> - Signal + Easing",
-    desc: "lazycanvas-react Scene component with registerLayer",
+    desc: "adapter-react Scene component with registerLayer",
   },
 ];
 
@@ -67,7 +67,7 @@ export default function Home() {
       <div className="section">
         <h2 className="section-title">React Integration</h2>
         <div className="card">
-          <div className="card-title">lazycanvas-react &lt;Scene&gt;</div>
+          <div className="card-title">adapter-react &lt;Scene&gt;</div>
           <div style={{ color: "#737373", fontSize: 12, marginBottom: 12 }}>
             JSX rendering with registerLayer and useScene hook
           </div>

@@ -4,6 +4,7 @@
  * and native HTMLCanvasElement (Browser/React/Next.js).
  */
 
+/** The gradient handle returned by `createLinearGradient` and friends. */
 export interface ICanvasGradient {
   addColorStop(offset: number, color: string): void;
 }
@@ -16,12 +17,17 @@ export interface ICanvasPattern {
   setTransform?(transform?: DOMMatrix2DInit): void;
 }
 
+/** Raw pixel data: RGBA, one byte per channel. */
 export interface IImageData {
   data: Uint8ClampedArray;
   width: number;
   height: number;
 }
 
+/**
+ * The subset of `CanvasRenderingContext2D` that LazyCanvas draws with. Both
+ * `@napi-rs/canvas` and the browser's context satisfy it.
+ */
 export interface ICanvasRenderingContext2D {
   save(): void;
   restore(): void;
@@ -109,12 +115,19 @@ export interface ICanvasRenderingContext2D {
   fontKerning: string;
 }
 
+/** A canvas surface, as created by an adapter. */
 export interface ICanvas {
   width: number;
   height: number;
   getContext(contextId: "2d"): ICanvasRenderingContext2D;
 }
 
+/**
+ * Font registration, implemented per environment.
+ *
+ * `register` takes base64 font data and `registerFromPath` a file path. Both
+ * return whether the font was registered, and must not throw.
+ */
 export interface IFontsAdapter {
   registerFromPath(path: string, family: string): boolean;
   register(source: string, family: string): boolean;
@@ -122,8 +135,16 @@ export interface IFontsAdapter {
   families: string[];
 }
 
+/** Anything an adapter's `loadImage` has to accept: a URL or path, or encoded bytes. */
 export type ImageSource = string | ArrayBuffer | Uint8Array;
 
+/**
+ * Everything LazyCanvas needs from a concrete canvas implementation.
+ *
+ * Use `NodeCanvasAdapter` from `@nmmty/adapter-node` or `BrowserCanvasAdapter`
+ * from `@nmmty/adapter-browser`, or implement this interface for another
+ * environment.
+ */
 export interface ICanvasAdapter {
   createCanvas(width: number, height: number): ICanvas;
   fonts: IFontsAdapter;
