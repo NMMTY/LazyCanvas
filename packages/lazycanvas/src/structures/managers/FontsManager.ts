@@ -1,6 +1,21 @@
 import type { ICanvasAdapter, IFontsAdapter } from "../../types";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
-import { Font, type IFonts } from "../helpers";
+import { Font, type FontData, type IFonts } from "../helpers";
+
+/**
+ * Normalises font data to the base64 string that adapters register.
+ * Works without Node's `Buffer`, so it is safe in the browser.
+ */
+function toBase64(data: FontData): string {
+  if (typeof data === "string") return data;
+  if (typeof Buffer !== "undefined" && Buffer.isBuffer(data)) return data.toString("base64");
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < data.length; i += chunk) {
+    binary += String.fromCharCode(...data.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
 
 /**
  * Interface representing the FontsManager.
@@ -63,11 +78,7 @@ export class FontsManager implements IFontsManager {
       if (this.adapter) {
         if (font.path) this.adapter.registerFromPath(font.path, font.family);
         if (font.base64) {
-          const base64Str =
-            typeof font.base64 === "string"
-              ? font.base64
-              : (font.base64 as Buffer).toString("base64");
-          this.adapter.register(base64Str, font.family);
+          this.adapter.register(toBase64(font.base64), font.family);
         }
       }
     }

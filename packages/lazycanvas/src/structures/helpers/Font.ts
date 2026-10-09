@@ -1,6 +1,11 @@
 import { type AnyWeight, FontWeight } from "../../types";
 
 /**
+ * Font file contents: a base64 string, or the raw bytes (a `Buffer` is fine).
+ */
+export type FontData = string | Uint8Array;
+
+/**
  * Interface representing a font.
  */
 export interface IFont {
@@ -22,7 +27,7 @@ export interface IFont {
   /**
    * The base64 representation of the font (optional).
    */
-  base64?: Buffer;
+  base64?: FontData;
 }
 
 /**
@@ -30,7 +35,7 @@ export interface IFont {
  * Each font family maps to a record of font weights and their corresponding buffers.
  */
 export interface IFonts {
-  [family: string]: Record<number, Buffer>;
+  [family: string]: Record<number, FontData>;
 }
 
 /**
@@ -55,7 +60,7 @@ export class Font implements IFont {
   /**
    * The base64 representation of the font (optional).
    */
-  base64?: Buffer;
+  base64?: FontData;
 
   /**
    * Constructs a new Font instance with default values.
@@ -103,11 +108,11 @@ export class Font implements IFont {
 
   /**
    * Sets the base64 representation of the font.
-   * @param {Buffer} [base64] - The `base64` of the font.
+   * @param {FontData} [base64] - The `base64` of the font.
    * @returns {this} The current instance for chaining.
    * @throws {Error} If the base64 is not provided.
    */
-  setBase64(base64: Buffer): this {
+  setBase64(base64: FontData): this {
     if (!base64) throw new Error("Base64 must be provided");
     this.base64 = base64;
     return this;

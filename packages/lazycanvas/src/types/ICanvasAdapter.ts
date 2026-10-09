@@ -122,7 +122,7 @@ export interface IFontsAdapter {
   families: string[];
 }
 
-export type ImageSource = string | ArrayBuffer | Uint8Array | Buffer;
+export type ImageSource = string | ArrayBuffer | Uint8Array;
 
 export interface ICanvasAdapter {
   createCanvas(width: number, height: number): ICanvas;

@@ -44,16 +44,21 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@nmmty/lazycanvas": "workspace:^",
     "@nmmty/adapter-browser": "workspace:^",
+    "@nmmty/lazycanvas": "workspace:^",
     "react": ">=18.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.2",
-    "tsup": "8.5.0",
-    "@nmmty/lazycanvas": "workspace:^",
+    "@napi-rs/canvas": "^1.0.0",
     "@nmmty/adapter-browser": "workspace:^",
+    "@nmmty/adapter-node": "workspace:^",
+    "@nmmty/lazycanvas": "workspace:^",
     "@types/react": "^19.0.0",
-    "react": "^19.0.0"
+    "@types/react-dom": "^19.2.3",
+    "happy-dom": "^18.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.2.3",
+    "tsup": "8.5.0",
+    "typescript": "^5.9.2"
   }
 }

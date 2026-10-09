@@ -1,5 +1,13 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Centring, Div, Scene, TextLayer, cssFont, cssFontFamily } from "@nmmty/lazycanvas";
+import {
+  Centring,
+  Div,
+  FontsManager,
+  Scene,
+  TextLayer,
+  cssFont,
+  cssFontFamily,
+} from "@nmmty/lazycanvas";
 import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { describe, expect, it } from "vitest";
 
@@ -109,5 +117,27 @@ describe("text rendering falls back predictably", () => {
     let lit = 0;
     for (let i = 3; i < data.length; i += 4) if (data[i] > 128) lit++;
     expect(lit).toBeGreaterThan(200);
+  });
+});
+
+describe("font data", () => {
+  it("accepts base64 strings and raw bytes alike", () => {
+    const registered: string[] = [];
+    const adapter = {
+      ...new NodeCanvasAdapter(),
+      fonts: {
+        registerFromPath: () => true,
+        register: (source: string) => {
+          registered.push(source);
+          return true;
+        },
+        has: () => false,
+        families: [],
+      },
+    } as never;
+    const manager = new FontsManager({ adapter });
+    const bytes = new Uint8Array([1, 2, 3, 250, 251, 252]);
+    manager.loadFonts({ Raw: { 400: bytes }, Text: { 400: "AQID" } });
+    expect(registered).toEqual([Buffer.from(bytes).toString("base64"), "AQID"]);
   });
 });

@@ -107,7 +107,7 @@ for (const fontName in fonts) {
 for (const family in fontWeights) {
   str += `    ${family}: {\n`;
   for (const weight in fontWeights[family]) {
-    str += `        ${weight}: 'Buffer.from(${fontWeights[family][weight]}, "base64")',\n`;
+    str += `        ${weight}: '${fontWeights[family][weight]}',\n`;
     str2 += `    ${family}_${getFontWeight(weight)}(size: number) {\n`;
     str2 += `        return { family: '${family}', size, weight: FontWeight.${getFontWeight(weight)} } \n`;
     str2 += "    },\n";

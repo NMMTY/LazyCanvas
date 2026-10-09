@@ -17,11 +17,11 @@ export function createElement(type: any, props: any | null, ...children: any[]):
   // Extract special props
   const { ref, children: propsChildren, ...restProps } = allProps;
 
-  // Merge children from props and arguments
-  const allChildren = [
-    ...(Array.isArray(propsChildren) ? propsChildren : propsChildren ? [propsChildren] : []),
-    ...flatChildren,
-  ].filter(Boolean);
+  // Merge children from props and arguments. Fragments and `.map()` results
+  // arrive as nested arrays, so flatten before dropping empty values.
+  const allChildren = [propsChildren, ...flatChildren]
+    .flat(Number.POSITIVE_INFINITY)
+    .filter(Boolean);
 
   let instance: any;
 
@@ -110,8 +110,27 @@ export function Fragment(props: { children: any[] }): any[] {
 }
 
 /**
- * Export for compatibility with some JSX runtimes
+ * Entry points of the automatic JSX runtime (`jsxImportSource`).
+ *
+ * The automatic runtime passes children inside `props` and appends extra
+ * arguments (`key`, `isStaticChildren`, source info), so these must not simply
+ * alias {@link createElement}, whose trailing parameters are children.
  */
-export const jsx = createElement;
-export const jsxs = createElement;
-export const jsxDEV = createElement;
+export function jsx(type: any, props: any | null, _key?: unknown): any {
+  return createElement(type, props);
+}
+
+/** Same as {@link jsx}; the automatic runtime uses it when children are static. */
+export const jsxs = jsx;
+
+/** Development variant of {@link jsx}, also receives source locations from the compiler. */
+export function jsxDEV(
+  type: any,
+  props: any | null,
+  _key?: unknown,
+  _isStaticChildren?: boolean,
+  _source?: unknown,
+  _self?: unknown,
+): any {
+  return createElement(type, props);
+}
