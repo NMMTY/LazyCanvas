@@ -83,30 +83,6 @@ export function Header() {
     }
   ];
   
-  if (routes['/changelog']) {
-    navigationKbarItems.push({
-      id: "changelog",
-      name: "Changelog",
-      section: "Navigation",
-      shortcut: [],
-      keywords: "changelog, changelog page",
-      href: "/changelog",
-      icon: "changelog",
-    });
-  }
-  
-  if (routes['/roadmap']) {
-    navigationKbarItems.push({
-      id: "roadmap",
-      name: "Roadmap",
-      section: "Navigation",
-      shortcut: [],
-      keywords: "roadmap, roadmap page",
-      href: "/roadmap",
-      icon: "roadmap",
-    });
-  }
-
   const kbar = [
     ...navigationKbarItems,
     ...docsItems,

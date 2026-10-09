@@ -1,5 +1,6 @@
-{ 
+{
   "pages": {
-    "LazyCanvas": 1
+    "docs": 1,
+    "reference": 2
   }
 }

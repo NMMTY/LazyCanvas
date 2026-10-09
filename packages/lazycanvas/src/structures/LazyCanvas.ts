@@ -77,7 +77,7 @@ export class LazyCanvas implements ILazyCanvas {
     this.canvas = this.adapter.createCanvas(0, 0);
     this.ctx = this.canvas.getContext("2d");
     this.manager = {
-      layers: new LayersManager({ debug: opts?.debug }),
+      layers: new LayersManager({ debug: opts?.debug, adapter: opts?.adapter }),
       render: new renderPipline(this, { debug: opts?.debug }),
       fonts: new FontsManager({ debug: opts?.debug, adapter: opts?.adapter }),
       layout: new LayoutManager({ debug: opts?.debug }),
@@ -148,7 +148,10 @@ export class LazyCanvas implements ILazyCanvas {
     this.options.height = height;
     this.canvas = this.adapter.createCanvas(width, height);
     this.ctx = this.canvas.getContext("2d");
-    this.manager.layers = new LayersManager({ debug: this.manager.layers.debug });
+    this.manager.layers = new LayersManager({
+      debug: this.manager.layers.debug,
+      adapter: this.adapter,
+    });
     return this;
   }
 }

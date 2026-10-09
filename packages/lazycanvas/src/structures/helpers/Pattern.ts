@@ -2,6 +2,7 @@ import {
   type AnyPatternType,
   FillType,
   ICanvas,
+  type ICanvasAdapter,
   type ICanvasRenderingContext2D,
   PatternType,
 } from "../../types";
@@ -63,9 +64,12 @@ export class Pattern implements IPattern {
    * Resolves the pattern into a fill style for `ctx`.
    *
    * @param {ICanvasRenderingContext2D} ctx - The target context.
-   * @param {any} [adapter] - The adapter used to load the image.
+   * @param {object} [opts] - Where to find the adapter used to load the image: `adapter`, or the layers `manager` that carries it.
    */
-  async draw(ctx: ICanvasRenderingContext2D, adapter?: any): Promise<any> {
+  async draw(
+    ctx: ICanvasRenderingContext2D,
+    opts?: { adapter?: ICanvasAdapter; manager?: { adapter?: ICanvasAdapter } },
+  ): Promise<any> {
     if (!this.src) throw new LazyError("Pattern source is not set");
 
     if (this.src instanceof LazyCanvas) {
@@ -73,6 +77,7 @@ export class Pattern implements IPattern {
       return ctx.createPattern(canvas as any, this.type);
     }
 
+    const adapter = opts?.adapter ?? opts?.manager?.adapter;
     const image = adapter ? await adapter.loadImage(this.src) : await loadImageFallback(this.src);
     return ctx.createPattern(image, this.type);
   }

@@ -7,6 +7,7 @@ import {
   LazyCanvas,
   MorphLayer,
   Path2DLayer,
+  Pattern,
   Scene,
   TextLayer,
 } from "@nmmty/lazycanvas";
@@ -225,5 +226,36 @@ describe("Text rendering", () => {
 
     const lit = countPixels(scene.getImageData(), (_r, _g, _b, a) => a > 128);
     expect(lit).toBeGreaterThan(200);
+  });
+});
+
+describe("Pattern fills", () => {
+  it("loads the pattern image through the scene's adapter", async () => {
+    // A 2x2 tile: one red pixel block and one green, encoded as a data URL.
+    const tile = adapter.createCanvas(2, 1) as any;
+    const tctx = tile.getContext("2d");
+    tctx.fillStyle = "#ff0000";
+    tctx.fillRect(0, 0, 1, 1);
+    tctx.fillStyle = "#00ff00";
+    tctx.fillRect(1, 0, 1, 1);
+
+    const scene = new Scene(8, 4, { adapter });
+    scene.load(
+      new Div().add(
+        new MorphLayer({
+          color: new Pattern().setSrc(tile.toDataURL("image/png")).setType("repeat"),
+          size: { width: 8, height: 4 },
+          position: { x: 0, y: 0 },
+          centring: "none",
+        }),
+      ),
+    );
+    await scene.renderFrame(0);
+
+    const data = scene.getImageData();
+    const red = countPixels(data, (r, g, b) => r > 200 && g < 50 && b < 50);
+    const green = countPixels(data, (r, g, b) => g > 200 && r < 50 && b < 50);
+    expect(red).toBe(16);
+    expect(green).toBe(16);
   });
 });

@@ -34,7 +34,7 @@ import {
 
 import { RiVisaLine } from "react-icons/ri";
 
-import { FaDiscord, FaGithub, FaGoogle, FaLinkedin, FaMailchimp, FaThreads } from "react-icons/fa6";
+import { FaDiscord, FaGithub, FaNpm, FaGoogle, FaLinkedin, FaMailchimp, FaThreads } from "react-icons/fa6";
 
 import { VscSymbolClass, VscSymbolVariable, VscSymbolMethod, VscSymbolEnum, VscSymbolInterface, VscGroupByRefType  } from "react-icons/vsc";
 
@@ -43,6 +43,7 @@ export const iconLibrary: Record<string, IconType> = {
   discord: FaDiscord,
   google: FaGoogle,
   github: FaGithub,
+  npm: FaNpm,
   arrowUpRight: HiArrowUpRight,
   minus: HiMiniMinus,
   plus: HiMiniPlus,

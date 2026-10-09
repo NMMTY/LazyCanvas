@@ -23,10 +23,6 @@ const RouteGuard: React.FC<RouteGuardProps> = ({ children }) => {
             const checkRouteEnabled = () => {
                 if (!pathname) return true;
                 
-                if (pathname === '/changelog' || pathname === '/roadmap') {
-                    return routes[pathname as keyof typeof routes] === true;
-                }
-                
                 return true;
             };
 

@@ -1,4 +1,4 @@
-import type { AnyLayer } from "../../types";
+import type { AnyLayer, ICanvasAdapter } from "../../types";
 import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { findLayer } from "../../utils/tree";
 import { LazyCanvas } from "../LazyCanvas";
@@ -34,13 +34,21 @@ export class LayersManager implements ILayersManager {
   debug: boolean;
 
   /**
+   * The adapter of the canvas these layers are drawn on. Fills that need to
+   * load images (patterns) reach it through the manager.
+   */
+  adapter?: ICanvasAdapter;
+
+  /**
    * Constructs a new LayersManager instance.
    * @param {Object} [opts] - Optional settings for the LayersManager.
    * @param {boolean} [opts.debug] - Whether debugging is enabled.
+   * @param {ICanvasAdapter} [opts.adapter] - The canvas adapter.
    */
-  constructor(opts?: { debug?: boolean }) {
+  constructor(opts?: { debug?: boolean; adapter?: ICanvasAdapter }) {
     this.map = new Map();
     this.debug = opts?.debug || false;
+    this.adapter = opts?.adapter;
   }
 
   /**

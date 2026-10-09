@@ -1,4 +1,5 @@
 import { MDXRemote, MDXRemoteProps } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import React, { ReactNode } from "react";
 
 import { 
@@ -25,6 +26,7 @@ import {
   ListItem,
   Line,
 } from "@once-ui-system/core";
+import { Example } from "./Example";
 import { PageList } from "./PageList";
 import {CustomTable} from "@/product/CustomTable";
 
@@ -98,7 +100,17 @@ function createImage({ alt, src, ...props }: MediaProps & { src: string }) {
   );
 }
 
-function slugify(str: string): string {
+// Headings can contain inline code or emphasis, so children are not always a string.
+function textOf(node: ReactNode): string {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(textOf).join("");
+  if (React.isValidElement(node)) return textOf((node.props as { children?: ReactNode }).children);
+  return "";
+}
+
+function slugify(input: ReactNode): string {
+  const str = textOf(input);
   return str
     .toLowerCase()
     .replace(/\s+/g, "-") // Replace spaces with -
@@ -129,7 +141,7 @@ function createListItem({ children }: { children: ReactNode }) {
 function createHeading(as: "h1" | "h2" | "h3" | "h4" | "h5" | "h6") {
   // Use HeadingLinkProps to ensure type compatibility
   const CustomHeading = ({ children, ...props }: Omit<React.ComponentProps<typeof HeadingLink>, 'as' | 'id'>) => {
-    const slug = slugify(children as string);
+    const slug = slugify(children);
     return (
       <HeadingLink
         marginTop="24"
@@ -215,7 +227,13 @@ const components = {
   ol: createList as any,
   li: createListItem as any,
   hr: createHR as any,
+  table: ((props: any) => (
+    <div className="md-table-wrap">
+      <table className="md-table" {...props} />
+    </div>
+  )) as any,
   PageList,
+  Example,
   ...onceUIComponents,
   Table: CustomTable
 };
@@ -228,7 +246,11 @@ export function CustomMDX(props: CustomMDXProps) {
   // Add a try-catch block to handle any errors during MDX rendering
   try {
     return (
-      <MDXRemote {...props} components={{ ...components, ...(props.components || {}) }} />
+      <MDXRemote
+        {...props}
+        options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+        components={{ ...components, ...(props.components || {}) }}
+      />
     );
   } catch (error) {
     console.error('Error rendering MDX content:', error);

@@ -1,0 +1,70 @@
+---
+title: "Layout"
+summary: "Arrange layers with flexbox: direction, gap, padding, alignment and absolute positioning."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "components"
+---
+
+Give any layer a `layout` prop and LazyCanvas arranges it with [Yoga](https://www.yogalayout.dev/), the flexbox engine behind React Native. If you know CSS flexbox you already know most of this.
+
+<Example name="layout" caption="Change the controls: the whole scene is laid out again." />
+
+## The container
+
+Layout is configured on a `Div` (`Group` in React). Its children are the flex items.
+
+```ts
+new Div({
+  layout: {
+    width: 480,
+    height: 200,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    gap: 12,
+  },
+}).add(a, b, c);
+```
+
+| Property | Values |
+| --- | --- |
+| `width`, `height` | A number, `"50%"`, `"vw"`, … |
+| `flexDirection` | `column` (default), `row`, `row-reverse`, `column-reverse` |
+| `justifyContent` | `flex-start`, `center`, `flex-end`, `space-between`, `space-around`, `space-evenly` |
+| `alignItems` | `flex-start`, `center`, `flex-end`, `stretch`, `baseline` |
+| `gap` | Space between items, in pixels |
+| `padding`, `margin` | A number, or an array of numbers (CSS shorthand) |
+
+## The items
+
+Items size themselves with `layout.width` / `layout.height` (or their `size`), and can grow and shrink:
+
+| Property | Meaning |
+| --- | --- |
+| `flexGrow`, `flexShrink`, `flexBasis` | As in CSS. |
+| `position: "absolute"` with `top`, `left`, `right`, `bottom` | Take the item out of the flow and place it relative to the container. |
+
+A text layer is measured with the current font, so it takes exactly the room its text needs.
+
+### A background that fills the container
+
+The usual pattern for a card is a container with a background layer positioned absolutely behind the content:
+
+```tsx
+<Group layout={{ width: 320, height: 96, justifyContent: "center", alignItems: "center" }}>
+  <Morph
+    color="#7c3aed"
+    size={{ width: 320, height: 96, radius: { all: 20 } }}
+    layout={{ position: "absolute", top: 0, left: 0 }}
+  />
+  <Text text="Centred" color="#fff" font={{ family: "sans-serif", size: 28, weight: 700 }} align="center" />
+</Group>
+```
+
+## Rules of thumb
+
+- A `Div` **without** `flexDirection` stretches to fill its parent; a flex container (one with `flexDirection`) wraps its content unless you give it a size.
+- A child with an explicit `position` and **no** `layout` is *not* part of the flow — it is drawn exactly where you put it. Add any `layout` property to bring it back into the flow.
+- Layout runs again on every frame, so changing a layout prop (or a signal that feeds one) takes effect on the next `renderFrame`.
+- Yoga loads asynchronously the first time. `scene.renderFrame` waits for it, so the first frame is already laid out.

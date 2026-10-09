@@ -3,7 +3,7 @@ import { homepage, version } from "./package.json";
 
 async function main() {
   const docs = await createDocumentation({
-    name: "LazyCanvas",
+    name: "reference",
     version,
     github: homepage,
     tsconfigPath: "./tsconfig.json",
@@ -13,43 +13,26 @@ async function main() {
     jsonName: "docs.json",
     clean: true,
     omitTypeLinkerExtension: true,
-    custom: [
-      {
-        name: "QuickStart",
-        category: "",
-        path: "./resources/QuickStart.mdx",
-      },
-      {
-        name: "BasicUsage",
-        category: "",
-        path: "./resources/BasicUsage.mdx",
-      },
-    ],
     customOrder: {
-      0: ["QuickStart", "BasicUsage"],
       Classes: {
-        General: [
-          "LazyCanvas",
-          "PluginManager",
-          "FontsManager",
-          "LayersManager",
-          "RenderManager",
-          "AnimationManager",
-        ],
-        Components: [
+        Core: ["Scene", "LazyCanvas", "LayersManager", "FontsManager", "LayoutManager"],
+        Layers: [
           "BaseLayer",
-          "Group",
-          "ImageLayer",
-          "TextLayer",
-          "LineLayer",
+          "Div",
           "MorphLayer",
-          "PolygonLayer",
-          "Path2DLayer",
+          "TextLayer",
+          "ImageLayer",
+          "LineLayer",
           "QuadraticLayer",
           "BezierLayer",
-          "ClearLayer",
+          "PolygonLayer",
+          "Path2DLayer",
         ],
-        Helpers: ["Font", "Pattern", "Gradient", "Link", "Exporter", "JSONReader", "YAMLReader"],
+        Animation: ["Signal", "Timeline", "ThreadScheduler"],
+        Rendering: ["ModernRenderPipeline", "ClassicRenderPipeline", "BaseRenderPipeline"],
+        Helpers: ["Font", "Pattern", "Gradient", "Link", "JSONReader", "YAMLReader"],
+        "Node.js": ["Exporter", "APNGEncoder"],
+        Errors: ["LazyError"],
       },
     },
   });

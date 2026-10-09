@@ -15,3 +15,35 @@
     --scheme-accent-1100: #ffd3d0;
     --scheme-accent-1200: #ffd3d0;
 }
+
+/* Markdown (GFM) tables */
+.md-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 8px 0 20px;
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.md-table th,
+.md-table td {
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--neutral-alpha-medium);
+}
+
+.md-table th {
+  font-weight: 600;
+  color: var(--neutral-on-background-strong);
+  border-bottom-color: var(--neutral-alpha-strong);
+}
+
+.md-table td {
+  color: var(--neutral-on-background-medium);
+}

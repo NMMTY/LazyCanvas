@@ -1,0 +1,106 @@
+---
+title: "Core concepts"
+summary: "Scenes, layers, coordinates, units and how a frame is drawn."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "learn"
+---
+
+## Scene
+
+A `Scene` is a canvas plus a tree of layers plus a timeline.
+
+```ts
+const scene = new Scene(width, height, { adapter });
+scene.load(root);            // add a root layer (usually a Div)
+await scene.renderFrame(0);  // draw the frame at t = 0 seconds
+```
+
+- The `adapter` is **required**; it tells LazyCanvas how to create canvases, load images and register fonts in your environment. Without it the constructor throws an error that tells you what to install.
+- `renderFrame(time)` draws one frame. Frames are queued: calling it again before the previous frame finishes waits for it, so frames never interleave on the shared canvas.
+- `scene.getImageData()` returns the pixels, `scene.getLayer(id)` finds a layer by id, `scene.width` / `scene.height` give the size.
+
+## Layers
+
+Everything you draw is a layer.
+
+| Layer | Draws |
+| --- | --- |
+| `MorphLayer` | A rectangle with per-corner radii: rectangles, rounded rectangles, circles. |
+| `TextLayer` | Text — single or multi-line, horizontal or vertical. |
+| `ImageLayer` | A bitmap from a URL or bytes, optionally with rounded corners. |
+| `LineLayer`, `QuadraticLayer`, `BezierLayer` | Straight and curved lines. |
+| `PolygonLayer` | A regular polygon. |
+| `Path2DLayer` | An arbitrary path, from an SVG path string or built with `moveTo`/`lineTo`/… |
+| `Div` | A container. Holds other layers and lays them out. |
+
+Layers take a **props object**:
+
+```ts
+new MorphLayer({
+  color: "#22c55e",
+  size: { width: 200, height: 100, radius: { all: 16 } },
+  position: { x: 100, y: 60 },
+});
+```
+
+and, if you prefer chaining, also have fluent setters that return the layer:
+
+```ts
+new MorphLayer()
+  .setColor("#22c55e")
+  .setSize(200, 100, { all: 16 })
+  .setPosition(100, 60);
+```
+
+A second constructor argument carries the layer's identity: `new MorphLayer(props, { id: "hero", visible: true, zIndex: 2 })`. Give a layer an `id` to find it later with `scene.getLayer("hero")`.
+
+### Trees
+
+`Div` holds children. `add` takes any number of layers and returns the container:
+
+```ts
+new Div({ layout: { flexDirection: "row", gap: 8 } }).add(a, b, c);
+```
+
+Children are drawn in order, lower `zIndex` first. A `Div` itself draws nothing — it exists to group and arrange.
+
+## Coordinates and units
+
+`position` is `{ x, y }` in canvas pixels, origin at the top-left. Any size or coordinate (a `ScaleType`) accepts:
+
+| Value | Meaning |
+| --- | --- |
+| `120` | Pixels. |
+| `"50%"` | A percentage of the canvas (or of the layer, where a layer-relative value makes sense, such as a corner radius). |
+| `"vw"`, `"vh"`, `"vmin"`, `"vmax"` | The canvas width, height, smaller or larger side. |
+| `"link-w-<layerId>-<spacing>"`, `new Link()` | Tied to another layer's width, height, x or y, plus optional spacing. |
+| a `Signal<number>` | An animated value — see [Animation](/docs/animation). |
+
+### Centring
+
+By default `MorphLayer`, `ImageLayer`, `PolygonLayer` and `Div` are **centred** on their `position`: `{ x: 100, y: 60 }` is where the *middle* of the shape goes. Set `centring: "none"` to use the top-left corner instead, or pick `start`, `end`, `center-top`, `end-bottom`, … for finer control.
+
+Lines and curves default to `none`. Text is anchored by its `align` and `baseline` instead (see [Text](/docs/text)).
+
+<Example name="shapes" caption="centring: none puts the top-left corner at position." />
+
+## Layout or manual positioning
+
+Inside a `Div` with a `layout`, children are placed by the flexbox engine ([Layout](/docs/layout)). A child that has an explicit `position` and no `layout` of its own is placed by hand instead and does not take part in the flow — handy for backgrounds and animated elements.
+
+## Render pipelines
+
+Behind `Scene` is a `LazyCanvas` that draws through a *render pipeline*. `Scene` always uses `ModernRenderPipeline`, which understands `layout`. The `ClassicRenderPipeline` (the default of the lower-level `LazyCanvas` class) ignores `layout` and is deprecated; it is kept for code migrating from 0.6. New code should use `Scene`.
+
+## The lower-level LazyCanvas class
+
+`Scene` is a thin convenience over `LazyCanvas`, which you can use directly:
+
+```ts
+import { LazyCanvas, ModernRenderPipeline } from "@nmmty/lazycanvas";
+
+const canvas = new LazyCanvas(ModernRenderPipeline, { adapter }).create(400, 200);
+canvas.manager.layers.add(layer);
+```
+
+You need it for the JSON/YAML scene readers, `Pattern` sources made from another canvas, and for the managers (`canvas.manager.layers`, `.fonts`, `.layout`, `.render`).

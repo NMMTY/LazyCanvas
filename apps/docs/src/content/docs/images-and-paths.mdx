@@ -1,0 +1,81 @@
+---
+title: "Images, lines and paths"
+summary: "ImageLayer, lines and curves, polygons and Path2DLayer."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "components"
+---
+
+## Images
+
+```ts
+new ImageLayer({
+  src: "https://example.com/photo.jpg", // URL, data URL — or bytes
+  size: { width: 200, height: 200, radius: { all: 100 } }, // a circle
+  position: { x: 120, y: 120 },
+});
+```
+
+`src` is loaded through the scene's adapter:
+
+| Environment | Accepted sources |
+| --- | --- |
+| Node.js | URLs, file paths, data URLs, `Buffer` / `Uint8Array` |
+| Browser | URLs, data URLs, `ArrayBuffer` / typed arrays |
+
+The layer is drawn stretched to `size`; `radius` rounds the corners, so a square with a radius of half its side crops the image to a circle.
+
+In the browser, images are requested with `crossOrigin = "anonymous"`. Remote hosts must send CORS headers, otherwise the load fails (and a canvas that drew a cross-origin image without CORS cannot be exported).
+
+## Lines and curves
+
+These layers are positioned by their end points. They default to `centring: "none"` and take a `stroke`.
+
+```ts
+new LineLayer({
+  position: { x: 20, y: 150, endX: 240, endY: 200 },
+  filled: false,
+  color: "#38bdf8",
+  stroke: { width: 4, cap: "round" },
+});
+
+new BezierLayer({
+  position: { x: 260, y: 200, endX: 500, endY: 200 },
+  controlPoints: [{ x: 320, y: 120 }, { x: 440, y: 280 }], // two control points: cubic
+  color: "#f472b6",
+  stroke: { width: 4 },
+});
+
+new QuadraticLayer({
+  position: { x: 20, y: 20, endX: 200, endY: 20 },
+  controlPoints: [{ x: 110, y: 100 }],                       // one control point
+  filled: false,
+  color: "#facc15",
+  stroke: { width: 3 },
+});
+```
+
+## Polygons
+
+`PolygonLayer` draws a regular polygon with `count` sides on a circle of `radius`:
+
+```ts
+new PolygonLayer({
+  color: "#22c55e",
+  size: { width: 100, height: 100, radius: 50, count: 6 },
+  position: { x: 310, y: 70 },
+});
+```
+
+## Paths
+
+`Path2DLayer` draws any path. Give it an SVG path string, or a `Path2D` object, or build one with the same methods as `Path2D`:
+
+```ts
+new Path2DLayer({ path2D: "M10 10 L50 10 L30 50 Z", color: "#ef4444" });
+
+new Path2DLayer({ color: "#ef4444" }).moveTo(10, 10).lineTo(50, 10).lineTo(30, 50).closePath();
+```
+
+Set `clipPath: true` to use the path as a clip region for what is drawn afterwards instead of filling it.
+
+<Example name="shapes" caption="Rounded and stroked rectangles, a circle, a polygon, a line and a Bézier curve." />

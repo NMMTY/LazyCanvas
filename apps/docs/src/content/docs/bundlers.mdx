@@ -1,0 +1,55 @@
+---
+title: "Bundlers and SSR"
+summary: "Settings for webpack, Next.js, Vite and esbuild, and what to know about server-side rendering."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "rocket"
+---
+
+## Top-level await in Yoga
+
+The layout engine, `yoga-layout`, loads its WebAssembly with a top-level `await`. Modern runtimes and bundlers understand that; some need a switch.
+
+| Tool | What to do |
+| --- | --- |
+| Node.js 18+ | Nothing. |
+| esbuild (ESM output) | Nothing. |
+| Vite | `build: { target: "esnext" }`. If the dev server complains about top-level await, also set `optimizeDeps.esbuildOptions.target: "esnext"`. |
+| webpack / Next.js | Enable `experiments.topLevelAwait` and `output.environment.asyncFunction`, as below. |
+
+```js
+// next.config.mjs
+export default {
+  transpilePackages: ["@nmmty/lazycanvas", "@nmmty/adapter-browser", "@nmmty/adapter-react"],
+  webpack: (config) => {
+    config.experiments = { ...config.experiments, topLevelAwait: true };
+    config.output.environment = { ...config.output.environment, asyncFunction: true };
+    return config;
+  },
+};
+```
+
+If you render on the Node.js side of a Next.js app, also keep the native module out of the bundle:
+
+```js
+serverExternalPackages: ["@napi-rs/canvas"],
+```
+
+## No Node.js built-ins in the browser
+
+`@nmmty/lazycanvas` (the main entry point), `@nmmty/adapter-browser` and `@nmmty/adapter-react` never import `node:fs`, `node:path` or `node:zlib`, so there is nothing to polyfill or stub. Everything that needs them — `Exporter`, `APNGEncoder`, the file readers — is in `@nmmty/lazycanvas/node`. If a browser bundle complains about `node:` modules, something is importing that entry point.
+
+## Server-side rendering
+
+- `<Scene>` creates its canvas in an effect, so it renders an empty `<canvas>` on the server and draws after hydration.
+- To produce an image on the server, use the Node.js adapter and `Exporter` in a route handler or API route — see [Exporting](/docs/exporting).
+- `@napi-rs/canvas` is a native module: keep it on the server, and on serverless platforms make sure the binary for the platform ends up in the deployment.
+
+## Module formats
+
+All packages ship ESM and CommonJS builds with matching type declarations; `import` and `require` pick the right one through `exports`. The two builds are separate files, so a process that loads the *same package* both ways ends up with two copies of its classes and `instanceof` checks between them fail. In practice this only happens when you mix `import` and `require` of one package in a single process — pick one style.
+
+Within one format, the entry points (`@nmmty/lazycanvas`, `/node`, `/fonts`) share their code, so `new Exporter(scene)` recognises a `Scene` created from the main entry point.
+
+## Bundle size
+
+`@nmmty/lazycanvas` has `sideEffects: false`, so unused layers are tree-shaken. The bundled Geist fonts (about 2.7 MB) are a separate entry point, `@nmmty/lazycanvas/fonts`, and are only included if you import them.

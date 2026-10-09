@@ -1,0 +1,87 @@
+---
+title: "Exporting"
+summary: "Export a scene to PNG, JPEG, WebP, APNG, JSON or YAML on Node.js, and encode frames in the browser."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "rocket"
+---
+
+## Node.js: `Exporter`
+
+`Exporter` lives in the Node.js-only entry point, so browser bundles never pull in `node:fs`.
+
+```ts
+import { Exporter } from "@nmmty/lazycanvas/node";
+
+const exporter = new Exporter(scene);
+
+const png = await exporter.export("png");                         // Buffer
+await exporter.export("jpg", { name: "photo", saveAsFile: true }); // writes photo.jpg
+```
+
+| Format | Result | Notes |
+| --- | --- | --- |
+| `"png"`, `"jpg"`, `"webp"` | `Buffer` | Renders frame `0` first. |
+| `"buffer"` | `Buffer` (PNG) | Same as `"png"`. |
+| `"apng"` | `Buffer` | Animated PNG. Needs a `Scene`, plus `duration` and optionally `fps`. |
+| `"json"`, `"yaml"` | `string` | The scene as a description you can store and load again. |
+| `"ctx"`, `"canvas"` | The raw context / canvas | For custom encoding. |
+
+Options:
+
+| Option | Meaning |
+| --- | --- |
+| `saveAsFile` | Also write the result to disk. Default `false`. |
+| `name` | File name without extension. Random if omitted. Written to the current directory. |
+| `duration` | APNG only: length in seconds. |
+| `fps` | APNG only: frames per second. Default `60`. |
+
+`Exporter` accepts a `Scene` or the lower-level `LazyCanvas`. Animated PNG needs a `Scene`; see [Signals and animation](/docs/animation#playing-a-scene).
+
+## Serving an image
+
+Without `saveAsFile` the result is a `Buffer`, ready for an HTTP response:
+
+```ts
+import http from "node:http";
+
+http
+  .createServer(async (req, res) => {
+    const scene = buildScene(new URL(req.url!, "http://x").searchParams);
+    const png = await new Exporter(scene).export("png");
+    res.writeHead(200, { "Content-Type": "image/png" }).end(png);
+  })
+  .listen(3000);
+```
+
+Create a new `Scene` per request: a scene renders one frame at a time and holds its layers.
+
+## JSON and YAML
+
+```ts
+const json = await exporter.export("json");  // string
+const yaml = await exporter.export("yaml");
+
+import { readJSONFile, readYAMLFile } from "@nmmty/lazycanvas/node";
+
+const canvas = readJSONFile("./scene.json", { adapter });   // a LazyCanvas
+const png = await new Exporter(canvas).export("png");
+```
+
+The readers return a `LazyCanvas` with the layers already added. The in-memory equivalents, `JSONReader.read(object, opts)` and `YAMLReader.read(string, opts)`, are in the main entry point and work in the browser as well.
+
+## Browser
+
+There is no `Exporter` in the browser; encode the canvas the browser's way, or ask the scene:
+
+```ts
+await scene.renderFrame(0);
+
+const dataUrl = scene.encode("png");       // data URL string
+const blob = await new Promise<Blob | null>((resolve) =>
+  (canvas as HTMLCanvasElement).toBlob(resolve, "image/webp", 0.9),
+);
+```
+
+`scene.encode(format)` encodes whatever is on the canvas now, without rendering again. For video-like output, `scene.renderAnimation(start, end, fps)` returns an array of PNG data URLs and `renderAnimationData` raw RGBA frames.
+
+If an image from another origin was drawn without CORS, the canvas is tainted and the browser refuses to export it. See [Troubleshooting](/docs/troubleshooting).

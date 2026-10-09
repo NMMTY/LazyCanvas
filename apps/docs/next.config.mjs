@@ -16,6 +16,7 @@ const nextConfig = {
   },
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   transpilePackages: ["next-mdx-remote"],
+  serverExternalPackages: ["@napi-rs/canvas"],
   experimental: {
     serverMinification: true,
     serverActions: {
@@ -36,6 +37,11 @@ const nextConfig = {
   },
   // Reduce webpack cache size
   webpack: (config, { dev, isServer }) => {
+    // yoga-layout (used by @nmmty/lazycanvas) loads its wasm with a top-level
+    // await, which webpack only emits correctly with these two switched on.
+    config.experiments = { ...config.experiments, topLevelAwait: true };
+    config.output.environment = { ...config.output.environment, asyncFunction: true };
+
     // Only enable source maps in development
     if (!dev) {
       config.devtool = false;

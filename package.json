@@ -41,6 +41,8 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "build:apps": "pnpm -r --filter \"./apps/*\" build",
-    "check:packages": "node scripts/check-packages.mjs"
+    "check:packages": "node scripts/check-packages.mjs",
+    "docs:dev": "pnpm --filter @nmmty/lazycanvas-docs dev",
+    "docs:build": "pnpm build && pnpm --filter @nmmty/lazycanvas docgen && pnpm --filter @nmmty/lazycanvas-docs build"
   }
 }

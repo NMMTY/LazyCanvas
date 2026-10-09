@@ -2,8 +2,11 @@ import { Div } from "./structures/components";
 import { BaseLayer } from "./structures/components";
 
 /**
- * JSX createElement factory for LazyCanvas components
- * Compatible with "jsx": "react" in tsconfig.json
+ * JSX `createElement` factory for LazyCanvas layers: the classic JSX runtime
+ * (the `jsx: react` setting with `createElement` as the factory).
+ *
+ * Children are collected from the trailing arguments and from `props.children`;
+ * nested arrays are flattened and empty values dropped.
  */
 export function createElement(type: any, props: any | null, ...children: any[]): any {
   // Handle null props

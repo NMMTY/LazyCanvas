@@ -1,22 +1,20 @@
-import React from "react";
-import { 
-  Column, 
-  Row, 
-  Heading, 
-  Text, 
-  Button, 
-  Grid,
-  Media, 
-  Line, 
-  StatusIndicator,
-  Badge,
-  Tag,
-  Meta,
-  Schema
-} from "@once-ui-system/core";
-import { baseURL, meta, schema, changelog, roadmap, routes } from "@/resources";
-import { formatDate } from "./utils/formatDate";
+import { Example } from "@/product/Example";
 import { PageList } from "@/product/PageList";
+import { baseURL, meta, schema } from "@/resources";
+import {
+  Badge,
+  Button,
+  CodeBlock,
+  Column,
+  Grid,
+  Heading,
+  Meta,
+  Row,
+  Schema,
+  Tag,
+  Text,
+} from "@once-ui-system/core";
+import React from "react";
 
 export async function generateMetadata() {
   return Meta.generate({
@@ -24,44 +22,28 @@ export async function generateMetadata() {
     description: meta.home.description,
     baseURL: baseURL,
     path: meta.home.path,
-    image: meta.home.image
+    image: meta.home.image,
   });
 }
 
-// Calculate roadmap progress stats
-const calculateRoadmapStats = () => {
-  let totalTasks = 0;
-  let inProgressTasks = 0;
-  let completedTasks = 0;
-  
-  roadmap.forEach(product => {
-    product.columns.forEach(column => {
-      totalTasks += column.tasks.length;
-      
-      if (column.title === "In Progress") {
-        inProgressTasks += column.tasks.length;
-      }
-      
-      if (column.title === "Done") {
-        completedTasks += column.tasks.length;
-      }
-    });
-  });
-  
-  const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-  
-  return {
-    totalTasks,
-    inProgressTasks,
-    completedTasks,
-    progressPercentage
-  };
-};
-
-const roadmapStats = calculateRoadmapStats();
-
-// Get the latest changelog entry
-const latestChangelogEntry = changelog[0];
+const features = [
+  {
+    title: "Layers",
+    text: "Rounded shapes, text, images, lines, curves, polygons and paths — described as plain objects or JSX.",
+  },
+  {
+    title: "Flexbox layout",
+    text: "Arrange layers with gap, padding, alignment and absolute positioning, powered by Yoga.",
+  },
+  {
+    title: "Signals and animation",
+    text: "Animate any prop with tweens, easing and generator timelines. Export to animated PNG.",
+  },
+  {
+    title: "Node.js, browser, React",
+    text: "One core, three adapters. The same scene renders on a server, in a canvas and as a React component.",
+  },
+];
 
 export default function Home() {
   return (
@@ -72,101 +54,102 @@ export default function Home() {
         description={meta.home.description}
         baseURL={baseURL}
         path={meta.home.path}
-        author={{
-          name: schema.name
-        }}
+        author={{ name: schema.name }}
       />
-      
-      {/* Hero Section */}
+
       <Column fillWidth gap="l" paddingTop="l">
-        <Row fillWidth gap="l">
-          <Column maxWidth="xs" gap="12">
+        <Column gap="12">
           <Badge
-              background="overlay"
-              paddingLeft="12"
-              paddingRight="16"
-              paddingY="8"
-              border="neutral-alpha-medium"
-              href="/LazyCanvas/QuickStart"
-              vertical="center"
-              marginBottom="12"
-            >
-                <Tag marginRight="12">Docs</Tag>
-                <Text
-                  variant="label-default-s"
-                  onBackground="neutral-weak"
-                >
-                    New to LazyCanvas? Start here!
-                </Text>
-            </Badge>
-            <Heading variant="display-strong-s">
-              RE:Docs
+            background="overlay"
+            paddingLeft="12"
+            paddingRight="16"
+            paddingY="8"
+            border="neutral-alpha-medium"
+            href="/docs/migration-from-0.6"
+            vertical="center"
+            marginBottom="12"
+          >
+            <Tag marginRight="12">1.0</Tag>
+            <Text variant="label-default-s" onBackground="neutral-weak">
+              Coming from 0.6? Read the migration guide
+            </Text>
+          </Badge>
+          <Heading variant="display-strong-s">LazyCanvas</Heading>
+          <Text wrap="balance" onBackground="neutral-weak" variant="body-default-xl">
+            Declarative 2D canvas rendering with flexbox layout, JSX and signal-based animation — for
+            Node.js, the browser and React.
+          </Text>
+        </Column>
+
+        <Row gap="12" wrap>
+          <Button href="/docs/quick-start" size="l" suffixIcon="chevronRight" data-border="rounded">
+            Quick start
+          </Button>
+          <Button
+            href="https://github.com/NMMTY/LazyCanvas"
+            size="l"
+            variant="secondary"
+            prefixIcon="github"
+            data-border="rounded"
+            weight="default"
+          >
+            GitHub
+          </Button>
+        </Row>
+
+        <CodeBlock
+          marginTop="8"
+          codes={[
+            {
+              code: "npm install @nmmty/lazycanvas @nmmty/adapter-react @nmmty/adapter-browser",
+              language: "bash",
+              label: "React",
+            },
+            {
+              code: "npm install @nmmty/lazycanvas @nmmty/adapter-node",
+              language: "bash",
+              label: "Node.js",
+            },
+            {
+              code: "npm install @nmmty/lazycanvas @nmmty/adapter-browser",
+              language: "bash",
+              label: "Browser",
+            },
+          ]}
+          copyButton
+        />
+      </Column>
+
+      <Example name="animation" hideCode caption="Live: rendered right now by @nmmty/adapter-react." />
+
+      <Grid fillWidth columns="2" s={{ columns: "1" }} gap="12">
+        {features.map((feature) => (
+          <Column
+            key={feature.title}
+            gap="8"
+            padding="20"
+            radius="l"
+            border="neutral-alpha-medium"
+            background="surface"
+          >
+            <Heading as="h3" variant="heading-strong-l">
+              {feature.title}
             </Heading>
-            <Text wrap="balance" onBackground="neutral-weak" variant="body-default-xl" marginBottom="20">
-                Find any documentation about NMMTY modules that interest you!
+            <Text variant="body-default-m" onBackground="neutral-weak">
+              {feature.text}
             </Text>
           </Column>
-        </Row>
-      </Column>
+        ))}
+      </Grid>
 
       <Column fillWidth>
-        <PageList depth={1} thumbnail={true} marginTop="24" minHeight={14}/>
-        <Heading as="h2" variant="display-default-xs" marginTop="48">
-          LazyCanvas
+        <Heading as="h2" variant="display-default-xs" marginTop="24">
+          Documentation
         </Heading>
-        <Grid fillWidth columns="2" s={{columns: "1"}} gap="8" marginTop="24">
-          <PageList path={["LazyCanvas"]} depth={1} description={false}/>
+        <Grid fillWidth columns="2" s={{ columns: "1" }} gap="8" marginTop="24">
+          <PageList path={["docs"]} depth={1} description={false} />
         </Grid>
       </Column>
-      
-      {/* Latest Update Section */}
-      {routes['/changelog'] && (
-       <Column 
-       maxWidth={56}
-       background="overlay"
-       radius="l"
-       border="neutral-alpha-weak"
-     >
-       <Column paddingX="32" paddingY="24" fillWidth horizontal="between" s={{direction: "column"}} gap="4">
-         <Row fillWidth vertical="center" horizontal="between" gap="16" wrap>
-           <Heading as="h2" variant="display-default-xs">
-             Latest Update
-           </Heading>
-           <Button data-border="rounded" weight="default" variant="secondary" href="/changelog" size="s" suffixIcon="chevronRight">
-             All changes
-           </Button>
-         </Row>
-         <Text variant="label-default-s" onBackground="neutral-weak">
-           {formatDate(latestChangelogEntry.date)}
-         </Text>
-       </Column>
-        
-        <Column fillWidth>
-          {latestChangelogEntry.image && (
-            <Media
-              priority
-              sizes="(max-width: 768px) 100vw, 768px"
-              radius="l"
-              src={latestChangelogEntry.image} 
-              alt={`Illustration for ${latestChangelogEntry.title}`}
-              border="neutral-alpha-weak"
-              aspectRatio="16 / 9"
-            />
-          )}
-          <Column fillWidth gap="4" paddingX="32" paddingY="24">
-            <Heading as="h3">
-              {latestChangelogEntry.title}
-            </Heading>
-
-            {latestChangelogEntry.description && (
-              <Text variant="body-default-m" onBackground="neutral-weak">
-                {latestChangelogEntry.description}
-              </Text>
-            )}
-          </Column>
-        </Column>
-      </Column>
-      )}
     </Column>
   );
 }

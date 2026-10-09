@@ -1,0 +1,37 @@
+---
+title: "Introduction"
+summary: "What LazyCanvas is, how its packages fit together and when to use it."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "learn"
+---
+
+LazyCanvas turns a **description of a picture** into pixels. You describe layers — rounded rectangles, text, images, paths — arrange them with flexbox, optionally animate their properties, and LazyCanvas draws them onto a canvas.
+
+The same description renders on **Node.js** (to a PNG, JPEG, WebP or animated PNG), in the **browser**, and in **React** as a component.
+
+<Example name="hello" caption="This canvas is rendered live by @nmmty/adapter-react. The code below it is the code that runs." />
+
+## Why LazyCanvas
+
+- **Declarative.** Describe *what* to draw. Layers are plain objects (or JSX), so a scene is easy to build from data — a profile card, a certificate, a chart, a social image.
+- **Real layout.** Layers can be laid out with the [Yoga](https://www.yogalayout.dev/) flexbox engine: `flexDirection`, `gap`, `padding`, `justifyContent`, `alignItems`, absolute positioning.
+- **Reactive and animated.** Props accept *signals*. Animate them with generator functions and tweens — `all`, `chain`, `loop`, easing — or let React state drive them.
+- **One core, many environments.** The core never touches a concrete canvas. An *adapter* plugs in `@napi-rs/canvas` on Node.js or the native `<canvas>` in the browser.
+- **Typed.** Everything ships with TypeScript declarations, ESM and CommonJS builds.
+
+## The packages
+
+| Package | Use it for |
+| --- | --- |
+| `@nmmty/lazycanvas` | The core: `Scene`, layers, layout, signals, animation. Always needed. |
+| `@nmmty/lazycanvas/node` | Node.js only: `Exporter` (PNG, JPEG, WebP, APNG, JSON, YAML) and scene file readers. |
+| `@nmmty/adapter-node` | Draw on Node.js with [`@napi-rs/canvas`](https://github.com/Brooooooklyn/canvas). |
+| `@nmmty/adapter-browser` | Draw on an `HTMLCanvasElement`. |
+| `@nmmty/adapter-react` | `<Scene>` and layer components for React and Next.js. Uses the browser adapter. |
+
+## Where to go next
+
+- [Installation](/docs/installation) — pick the packages for your environment.
+- [Quick start](/docs/quick-start) — your first scene on Node.js, in the browser and in React.
+- [Core concepts](/docs/core-concepts) — scenes, layers, coordinates and units.
+- Coming from 0.6? Read the [migration guide](/docs/migration-from-0.6).
