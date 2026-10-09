@@ -177,8 +177,10 @@ describe("TextLayer rendering in vertical directions", () => {
 
     expect(rl.empty).toBe(false);
     expect(lr.empty).toBe(false);
-    // Same footprint, mirrored content.
-    expect(rl.width).toBe(lr.width);
+    // Same footprint, mirrored content. The two renders place glyphs at different
+    // sub-pixel offsets, so antialiasing can move the ink edge by a pixel or two
+    // depending on the platform's rasteriser (CI differs from a dev machine).
+    expect(Math.abs(rl.width - lr.width)).toBeLessThanOrEqual(2);
   });
 
   it("never hands a vertical direction to the canvas context", async () => {
