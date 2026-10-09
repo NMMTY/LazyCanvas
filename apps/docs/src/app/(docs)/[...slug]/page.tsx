@@ -7,6 +7,16 @@ import { CustomMDX } from "@/product/mdx";
 import { Metadata } from "next";
 import React from "react";
 
+// Every page is rendered at build time. Reading content and example sources
+// from disk at request time breaks on serverless hosts, where `src/` is not part
+// of the deployed function, and surfaces as "An error occurred in the Server
+// Components render".
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return getPages().map((page) => ({ slug: page.slug.split("/") }));
+}
+
 export async function generateMetadata({
   params,
 }: {
