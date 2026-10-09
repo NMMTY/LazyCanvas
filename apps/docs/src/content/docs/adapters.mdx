@@ -1,0 +1,54 @@
+---
+title: "Adapters"
+summary: "What an adapter does, the three official ones and how to write your own."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "code"
+---
+
+LazyCanvas never imports a canvas implementation. An **adapter** is the one object that connects it to the environment: it creates canvases, loads images and registers fonts.
+
+| Adapter | Environment | Draws with |
+| --- | --- | --- |
+| `NodeCanvasAdapter` — `@nmmty/adapter-node` | Node.js | [`@napi-rs/canvas`](https://github.com/Brooooooklyn/canvas) |
+| `BrowserCanvasAdapter` — `@nmmty/adapter-browser` | Browser | `HTMLCanvasElement` |
+| `<Scene>` — `@nmmty/adapter-react` | React | `BrowserCanvasAdapter`, created for you |
+
+```ts
+const scene = new Scene(400, 200, { adapter: new NodeCanvasAdapter() });
+```
+
+## The contract
+
+```ts
+interface ICanvasAdapter {
+  createCanvas(width: number, height: number): ICanvas;
+  fonts: IFontsAdapter;
+  loadImage(src: ImageSource): Promise<any>;
+  Path2D?: any;
+}
+```
+
+| Member | What it must do |
+| --- | --- |
+| `createCanvas` | Return a canvas with `width`, `height` and `getContext("2d")`. For raster export it should also have `toBuffer(mime)` (Node) or `toDataURL(mime)` (browser). |
+| `fonts.register(base64, family)` | Register a font from base64 data. Return `true` on success; never throw. |
+| `fonts.registerFromPath(path, family)` | The same from a file. May return `false` where files make no sense (the browser). |
+| `fonts.has(family)`, `fonts.families` | Report what is registered. |
+| `loadImage(src)` | Resolve an object `ctx.drawImage` accepts, from a URL, path or bytes (`ImageSource`). |
+| `Path2D` | The `Path2D` constructor, when the environment has no global one. |
+
+Two optional methods are used when present: `fontsReady(): Promise<void>` and `loadFonts(specs: string[]): Promise<void>` — `<Scene>` calls them before the first frame so web fonts are loaded.
+
+## Writing your own
+
+To target another surface, implement `ICanvasAdapter` and pass an instance as `adapter`. Start from the two official adapters — each is a single short file:
+
+- [`adapter-node`](https://github.com/NMMTY/LazyCanvas/blob/main/packages/adapter-node/src/index.ts) — wraps `@napi-rs/canvas`.
+- [`adapter-browser`](https://github.com/NMMTY/LazyCanvas/blob/main/packages/adapter-browser/src/index.ts) — wraps `HTMLCanvasElement`, the CSS Font Loading API and `Image`.
+
+Things worth knowing:
+
+- The 2D context only needs the subset of `CanvasRenderingContext2D` in `ICanvasRenderingContext2D`; any implementation of the standard canvas API satisfies it.
+- Methods on `fonts` return a boolean instead of throwing, so a missing font file never aborts a render.
+- The adapter is also handed to `Pattern` and `ImageLayer`, so `loadImage` must accept every `ImageSource` you want to support.
+- Export (`Exporter`, `scene.encode`) uses `canvas.toBuffer(mime)` when the canvas has it and `canvas.toDataURL(mime)` otherwise.

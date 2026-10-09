@@ -1,0 +1,63 @@
+---
+title: "Colors and fills"
+summary: "Solid colors, linear/radial/conic gradients and image patterns."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "code"
+---
+
+Wherever a layer takes a `color`, you can pass a **color string**, a **`Gradient`**, a **`Pattern`**, or a **signal** holding any of those.
+
+<Example name="fills" caption="A checkerboard pattern behind a linear, a radial and a conic gradient." />
+
+## Color strings
+
+Any CSS color: `"#7c3aed"`, `"#7c3aed80"`, `"rgb(124, 58, 237)"`, `"rgba(124, 58, 237, 0.5)"`, `"hsl(262, 83%, 58%)"`, `"hsla(…)"`.
+
+## Gradients
+
+```ts
+import { Gradient } from "@nmmty/lazycanvas";
+
+const gradient = new Gradient()
+  .setType("linear")                                  // "linear" | "radial" | "conic"
+  .setPoints({ x: 20, y: 20 }, { x: 140, y: 140 })    // start, end
+  .setStops({ color: "#f43f5e", offset: 0 }, { color: "#6366f1", offset: 1 });
+
+new MorphLayer({ color: gradient, size: { width: 120, height: 120 } });
+```
+
+| Type | Points | Notes |
+| --- | --- | --- |
+| `linear` | Two: start and end | |
+| `radial` | Two circles: `{ x, y, r }` for the inner and the outer | |
+| `conic` | One: the centre | `setAngle(degrees)` sets where the sweep starts |
+
+**Gradient points are in canvas coordinates**, not relative to the layer that uses them, so place them where the layer is. Offsets run from `0` to `1`.
+
+## Patterns
+
+A `Pattern` tiles an image across a layer.
+
+```ts
+import { Pattern } from "@nmmty/lazycanvas";
+
+const checker = new Pattern()
+  .setSrc("https://example.com/tile.png") // URL, data URL — or another LazyCanvas
+  .setType("repeat");                      // "repeat" | "repeat-x" | "repeat-y" | "no-repeat"
+```
+
+The image is loaded through the scene's adapter, so the same rules as for [images](/docs/images-and-paths) apply (CORS in the browser).
+
+## Strokes
+
+Give a layer a `stroke` and it is **outlined instead of filled**:
+
+```ts
+new MorphLayer({
+  color: "#6366f1",
+  size: { width: 100, height: 100, radius: { all: 20 } },
+  stroke: { width: 4, cap: "round", join: "round", dash: [8, 4] },
+});
+```
+
+`stroke` takes `width`, `cap`, `join`, `dash`, `dashOffset` and `miterLimit`. The outline uses `color`, so a gradient can be a stroke too.

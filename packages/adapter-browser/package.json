@@ -1,0 +1,54 @@
+{
+  "name": "@nmmty/adapter-browser",
+  "version": "1.0.0-rc.1",
+  "description": "Browser adapter for @nmmty/lazycanvas, powered by the native HTMLCanvasElement.",
+  "keywords": ["lazycanvas", "canvas", "browser", "html-canvas", "adapter"],
+  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-browser#readme",
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  },
+  "license": "MIT",
+  "author": "NMMTY",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git",
+    "directory": "packages/adapter-browser"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@nmmty/lazycanvas": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "tsup": "8.5.0",
+    "@nmmty/lazycanvas": "workspace:^"
+  }
+}

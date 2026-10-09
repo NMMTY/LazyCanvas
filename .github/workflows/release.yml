@@ -1,0 +1,80 @@
+name: Release
+
+# Publishes @nmmty/lazycanvas, @nmmty/adapter-node, @nmmty/adapter-browser and
+# @nmmty/adapter-react together when a version tag is pushed:
+#
+#   git tag v1.0.0 && git push origin v1.0.0
+#
+# Prerelease versions (1.0.0-rc.1) are published under the `next` dist-tag,
+# stable ones under `latest`. Needs an NPM_TOKEN secret with publish rights to
+# the @nmmty scope.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the GitHub release
+  id-token: write # npm provenance
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: verify and publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Only release commits that are on main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Check versions against the tag
+        id: release
+        run: |
+          dist_tag="$(node scripts/check-release.mjs "$GITHUB_REF_NAME")"
+          echo "dist_tag=$dist_tag" >> "$GITHUB_OUTPUT"
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm check:packages
+
+      - name: Publish
+        run: |
+          pnpm publish -r \
+            --filter "./packages/*" \
+            --filter "!@hitomihiumi/micro-docgen" \
+            --access public \
+            --tag "${{ steps.release.outputs.dist_tag }}" \
+            --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+
+      - name: GitHub release
+        run: |
+          flags=""
+          if [ "${{ steps.release.outputs.dist_tag }}" = "next" ]; then flags="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" --generate-notes $flags
+        env:
+          GH_TOKEN: ${{ github.token }}

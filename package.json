@@ -1,12 +1,49 @@
 {
   "private": true,
   "name": "lazycanvas-monorepo",
-  "workspaces": [
-    "plugins/*",
-    "packages/*"
-  ],
-  "engines": {
-    "node": "20.x"
+  "description": "LazyCanvas monorepo: declarative 2D canvas rendering for Node.js, the browser and React.",
+  "license": "MIT",
+  "author": "NMMTY",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git"
   },
-  "packageManager": "pnpm@10.15.1"
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  },
+  "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
+  "engines": {
+    "node": "22.x"
+  },
+  "packageManager": "pnpm@10.15.1",
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@biomejs/biome": "1.9.4",
+    "esbuild": "^0.28.2",
+    "happy-dom": "^18.0.1",
+    "publint": "^0.3.25",
+    "tsup": "8.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.3",
+      "@types/react-dom": "19.2.3"
+    }
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "typecheck": "pnpm -r --filter \"./packages/*\" typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "build:apps": "pnpm -r --filter \"./apps/*\" build",
+    "check:packages": "node scripts/check-packages.mjs",
+    "docs:dev": "pnpm --filter @nmmty/lazycanvas-docs dev",
+    "docs:build": "pnpm build && pnpm --filter @nmmty/lazycanvas docgen && pnpm --filter @nmmty/lazycanvas-docs build"
+  }
 }

@@ -1,5 +1,6 @@
 import { layout, social } from "@/resources/once-ui.config";
 import {
+  type IconName,
   Button,
   Column,
   Icon,
@@ -26,7 +27,7 @@ export const Footer = () => {
             Social
           </Row>
           {social.map((link, index) => (
-            <Button key={index} href={link.link} weight="default" prefixIcon={link.icon} label={link.name} size="s" variant="secondary" />
+            <Button key={index} href={link.link} weight="default" prefixIcon={link.icon as IconName} label={link.name} size="s" variant="secondary" />
           ))}
         </Column>
       </Row>

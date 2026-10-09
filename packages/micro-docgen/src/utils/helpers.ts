@@ -127,17 +127,24 @@ export function parseType(t: JSONOutput.SomeType): string {
     }
 }
 
+/**
+ * Breaks a type into the pieces it is written with, so the generator can turn
+ * every type name among them into a link. Concatenating the pieces gives back
+ * the type as written: separators (` | `, `, `, `;`) are pieces of their own.
+ */
 export function parseTypes(t: JSONOutput.SomeType): string[] {
     if (!t?.type) return [''];
+
+    const join = (items: JSONOutput.SomeType[], separator: string): string[] =>
+        items.flatMap((item, i) => (i === 0 ? parseTypes(item) : [separator, ...parseTypes(item)]));
+
     switch (t.type) {
         case 'array':
             return ['Array', '<', ...parseTypes(t.elementType), '>'];
         case 'conditional':
             return [
                 ...parseTypes(t.checkType),
-                ' ',
-                'extends',
-                ' ',
+                ' extends ',
                 ...parseTypes(t.extendsType),
                 ' ? ',
                 ...parseTypes(t.trueType),
@@ -147,80 +154,90 @@ export function parseTypes(t: JSONOutput.SomeType): string[] {
         case 'indexedAccess':
             return [...parseTypes(t.objectType), '[', ...parseTypes(t.indexType), ']'];
         case 'intersection':
-            return t.types.flatMap((m, i, a) =>
-                [...parseTypes(m), i === a.length - 1 ? '' : ' & '].filter((m) => !!m)
-            );
+            return join(t.types, ' & ');
         case 'predicate': {
             const res: string[] = [];
-            if (t.asserts) res.push('asserts', ' ', t.name);
-            if (t.targetType) res.push(' is', ...parseTypes(t.targetType));
+            if (t.asserts) res.push('asserts ');
+            res.push(t.name);
+            if (t.targetType) res.push(' is ', ...parseTypes(t.targetType));
             return res;
         }
         case 'reference': {
-            const res: string[] = [];
-            res.push(t.name);
-            if (t.typeArguments) res.push('<', ...t.typeArguments.flatMap(parseTypes), '>');
+            const res: string[] = [t.name];
+            if (t.typeArguments?.length) res.push('<', ...join(t.typeArguments, ', '), '>');
             return res;
         }
         case 'reflection': {
-            const obj = {} as Record<string, any>;
             const { children, signatures } = t.declaration;
 
             if (children && children.length > 0) {
-                for (const child of children) {
-                    obj[child.name] = parseType(child.type as JSONOutput.SomeType);
-                }
                 return [
-                    '{',
-                    '\n  ',
-                    ...Object.entries(obj)
-                        .flatMap(([k, v], i, a) => [
-                            k,
-                            ':',
-                            ' ',
-                            ...[Array.isArray(v) ? v.flat() : v],
-                            ';'.concat(i === a.length - 1 ? '' : '\n  ')
-                        ])
-                        .flat(),
-                    '\n}'
-                ];
+                    '{ ',
+                    ...children.flatMap((child, i) => {
+                        const type = child.type
+                            ? parseTypes(child.type as JSONOutput.SomeType)
+                            : child.signatures?.[0]?.type
+                              ? parseTypes(child.signatures[0].type as JSONOutput.SomeType)
+                              : ['any'];
+                        return [
+                            i === 0 ? '' : '; ',
+                            child.name,
+                            child.flags?.isOptional ? '?' : '',
+                            ': ',
+                            ...type
+                        ];
+                    }),
+                    ' }'
+                ].filter((piece) => piece !== '');
             }
 
             if (signatures && signatures.length > 0) {
                 const s = signatures[0];
-                const params = s.parameters?.flatMap(
-                    (p) =>
-                        `${p.name}: ${
-                            p.type ? parseTypes(p.type as JSONOutput.SomeType) : 'unknown'
-                        }`
-                );
+                const params = (s.parameters || []).flatMap((p, i) => [
+                    i === 0 ? '' : ', ',
+                    p.name,
+                    p.flags?.isOptional ? '?' : '',
+                    ': ',
+                    ...(p.type ? parseTypes(p.type as JSONOutput.SomeType) : ['unknown'])
+                ]);
                 return [
-                    '(\n  ',
-                    ...(params || ['...args', 'unknown', '[', ']']),
-                    '\n) => ',
+                    '(',
+                    ...params,
+                    ') => ',
                     ...(s.type ? parseTypes(s.type as JSONOutput.SomeType) : ['unknown'])
-                ];
+                ].filter((piece) => piece !== '');
             }
 
-            return ['{', '}'];
+            return ['{}'];
         }
         case 'literal':
-            return typeof t.value === 'string' ? ["'", t.value, "'"] : [`${t.value}`];
+            return [typeof t.value === 'string' ? `'${t.value}'` : `${t.value}`];
         case 'templateLiteral':
-            return t.tail.map(
-                (tail) => `\`${t.head}${t.tail.length ? `\\$\{${parseType(tail[0])}\}\`` : ''}`
-            );
+            return [
+                '`',
+                t.head,
+                ...t.tail.flatMap((tail) => ['${', ...parseTypes(tail[0]), '}', tail[1]]),
+                '`'
+            ].filter((piece) => piece !== '');
         case 'tuple':
-            return ['[', ...(t.elements?.flatMap(parseTypes) || []), ']'];
+            return ['[', ...join(t.elements || [], ', '), ']'];
+        case 'optional':
+            return [...parseTypes(t.elementType), '?'];
+        case 'rest':
+            return ['...', ...parseTypes(t.elementType)];
+        case 'namedTupleMember':
+            return [t.name, t.isOptional ? '?' : '', ': ', ...parseTypes(t.element)].filter(
+                (piece) => piece !== ''
+            );
         case 'typeOperator':
-            return [t.operator, ...parseTypes(t.target)];
+            return [`${t.operator} `, ...parseTypes(t.target)];
         case 'union':
-            return t.types
-                .flatMap(parseTypes)
-                .filter((t) => !!t)
-                .flat(Infinity);
+            return join(
+                t.types.filter((member) => !!parseType(member)?.trim().length),
+                ' | '
+            );
         case 'query':
-            return ['(', 'typeof', ' ', ...parseTypes(t.queryType), ')'];
+            return ['typeof ', ...parseTypes(t.queryType)];
         case 'inferred':
         case 'intrinsic':
             // @ts-ignore
@@ -233,7 +250,7 @@ export function parseTypes(t: JSONOutput.SomeType): string[] {
         case 'unknown':
             return [t.name];
         default:
-            return ['any'];
+            return [parseType(t) || 'any'];
     }
 }
 

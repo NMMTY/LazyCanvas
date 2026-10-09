@@ -6,15 +6,5 @@ export {
   social,
   schema,
   meta,
-  routes,
-  dataStyle
+  routes
 } from "@/resources/once-ui.config";
-
-export {
-  roadmap,
-  task
-} from "@/resources/roadmap";
-
-export {
-  changelog
-} from "@/resources/changelog";

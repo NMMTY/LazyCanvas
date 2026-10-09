@@ -1,0 +1,58 @@
+# Changelog
+
+All notable changes to the published packages are documented here. The four
+packages — `@nmmty/lazycanvas`, `@nmmty/adapter-node`, `@nmmty/adapter-browser`
+and `@nmmty/adapter-react` — are released together and share one version.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
+the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.0.0]
+
+LazyCanvas 1.0 is a ground-up rework of the 0.6 line. **It contains breaking
+changes** — read the [migration guide](./apps/docs/src/content/docs/migration-from-0.6.mdx)
+before upgrading.
+
+### Added
+
+- **Adapters.** The core no longer depends on `@napi-rs/canvas`. Pick an adapter for your
+  environment: `@nmmty/adapter-node`, `@nmmty/adapter-browser`, or `@nmmty/adapter-react` for React.
+- **`Scene`** as the main entry point: load a layer tree, render any frame, drive animations.
+- **Flexbox layout** through Yoga: a `layout` prop on every layer (`flexDirection`, `gap`,
+  `padding`, `justifyContent`, `alignItems`, absolute positioning, …) and `Group` as the container.
+- **JSX**, with both the classic (`/** @jsx createElement */`) and the automatic
+  (`jsxImportSource: "@nmmty/lazycanvas"`) runtimes.
+- **Signals and generator-based animation**: `createSignal`, tweens, `Easing`, `all`, `chain`,
+  `loop`, `waitFor`, `spring`, `timeline`, …
+- **APNG export**, and `renderFrame`/`renderAnimation` to render any point of the timeline.
+- **Vertical text** (`direction: "ttb" | "btt"`) with word and ideograph modes.
+- **`@nmmty/adapter-react`**: `<Scene>`, `Morph`, `Text`, `Image`, `Line`, `Bezier`,
+  `Quadratic`, `Polygon`, `Path2D`, `Group`, and `registerLayer` for your own layers.
+- ESM **and** CommonJS builds of every package, with conditional `exports` and types for both.
+- Package READMEs, a documentation site with live examples, and a 0.6 → 1.0 migration guide.
+
+### Changed
+
+- **Breaking:** `new LazyCanvas(...)` and `new Scene(...)` require an `adapter`.
+- **Breaking:** `Exporter`, `APNGEncoder`, `readJSONFile` and `readYAMLFile` moved to
+  `@nmmty/lazycanvas/node`; the main entry point has no Node.js built-ins.
+- **Breaking:** the bundled Geist fonts moved from the main entry point to
+  `@nmmty/lazycanvas/fonts` and are opt-in. They are plain base64 strings, and font data in
+  general may be a `string` or a `Uint8Array` — `Buffer` is no longer required.
+- **Breaking:** `ClassicRenderPipeline` is deprecated; `Scene` always uses `ModernRenderPipeline`.
+- The main entry point no longer re-exports internal helpers; only `LazyError`, the font, tree,
+  `Path2D` and vertical-text utilities remain.
+- Peer dependencies between the packages are caret ranges (`^1.0.0`).
+
+### Removed
+
+- **Breaking:** `PluginManager` and the plugin hooks.
+- **Breaking:** `AnimationManager` and the frame-based animation settings (replaced by signals).
+- **Breaking:** `ClearLayer`.
+- **Breaking:** the `RenderManager` class (replaced by render pipelines).
+- **Breaking:** GIF and SVG export, and `Export.JPEG` (use `Export.JPG`).
+
+[Unreleased]: https://github.com/NMMTY/LazyCanvas/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/NMMTY/LazyCanvas/releases/tag/v1.0.0

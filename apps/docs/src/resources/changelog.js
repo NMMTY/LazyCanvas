@@ -1,3 +1,0 @@
-const changelog = [];
-
-export { changelog };

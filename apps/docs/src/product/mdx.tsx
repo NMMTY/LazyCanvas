@@ -1,4 +1,5 @@
 import { MDXRemote, MDXRemoteProps } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import React, { ReactNode } from "react";
 
 import { 
@@ -12,7 +13,6 @@ import {
   InlineCode, 
   Accordion, 
   AccordionGroup ,
-  CodeBlock,
   TextProps,
   HeadingLink,
   MediaProps,
@@ -25,6 +25,8 @@ import {
   ListItem,
   Line,
 } from "@once-ui-system/core";
+import { CodeBlock } from "@once-ui-system/core/code";
+import { Example } from "./Example";
 import { PageList } from "./PageList";
 import {CustomTable} from "@/product/CustomTable";
 
@@ -38,7 +40,6 @@ const onceUIComponents = {
   InlineCode,
   Accordion,
   AccordionGroup,
-  CodeBlock,
   Grid,
   HeadingLink,
   Feedback,
@@ -54,26 +55,12 @@ type CustomLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 };
 
 function CustomLink({ href, children, ...props }: CustomLinkProps) {
-  if (href.startsWith("/")) {
-    return (
-      <SmartLink href={href} {...props}>
-        {children}
-      </SmartLink>
-    );
-  }
-
-  if (href.startsWith("#")) {
-    return (
-      <a href={href} {...props}>
-        {children}
-      </a>
-    );
-  }
-
+  // SmartLink picks a client-side link for internal paths, and an external
+  // one (new tab, noopener) for everything else; in-page anchors work as-is.
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+    <SmartLink href={href} {...(props as object)}>
       {children}
-    </a>
+    </SmartLink>
   );
 }
 
@@ -98,7 +85,17 @@ function createImage({ alt, src, ...props }: MediaProps & { src: string }) {
   );
 }
 
-function slugify(str: string): string {
+// Headings can contain inline code or emphasis, so children are not always a string.
+function textOf(node: ReactNode): string {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(textOf).join("");
+  if (React.isValidElement(node)) return textOf((node.props as { children?: ReactNode }).children);
+  return "";
+}
+
+function slugify(input: ReactNode): string {
+  const str = textOf(input);
   return str
     .toLowerCase()
     .replace(/\s+/g, "-") // Replace spaces with -
@@ -129,7 +126,7 @@ function createListItem({ children }: { children: ReactNode }) {
 function createHeading(as: "h1" | "h2" | "h3" | "h4" | "h5" | "h6") {
   // Use HeadingLinkProps to ensure type compatibility
   const CustomHeading = ({ children, ...props }: Omit<React.ComponentProps<typeof HeadingLink>, 'as' | 'id'>) => {
-    const slug = slugify(children as string);
+    const slug = slugify(children);
     return (
       <HeadingLink
         marginTop="24"
@@ -192,7 +189,33 @@ function createCodeBlock(props: any) {
   }
   
   // Fallback for other pre tags or empty code blocks
-  return <pre {...props} />;
+  return (
+    <Column as="pre" fillWidth overflowX="auto" marginTop="8" marginBottom="16">
+      {props.children}
+    </Column>
+  );
+}
+
+/**
+ * GitHub-flavoured markdown tables arrive as <thead>/<tbody> element trees;
+ * rebuild them as the data Once UI's Table takes.
+ */
+function MarkdownTable({ children }: { children: ReactNode }) {
+  const sections = React.Children.toArray(children) as React.ReactElement<{ children?: ReactNode }>[];
+  const rowsOf = (section?: React.ReactElement<{ children?: ReactNode }>) =>
+    section
+      ? (React.Children.toArray(section.props.children) as React.ReactElement<{
+          children?: ReactNode;
+        }>[]).map((row) => React.Children.toArray(row.props.children).map((cell) => (cell as React.ReactElement<{ children?: ReactNode }>).props.children))
+      : [];
+
+  const [head, body] = sections;
+  const headers = (rowsOf(head)[0] ?? []).map((content, index) => ({
+    content,
+    key: `col-${index}`,
+  }));
+
+  return <Table marginTop="8" marginBottom="16" hoverable data={{ headers, rows: rowsOf(body) }} />;
 }
 
 function createHR() {
@@ -215,7 +238,9 @@ const components = {
   ol: createList as any,
   li: createListItem as any,
   hr: createHR as any,
+  table: MarkdownTable as any,
   PageList,
+  Example,
   ...onceUIComponents,
   Table: CustomTable
 };
@@ -228,7 +253,11 @@ export function CustomMDX(props: CustomMDXProps) {
   // Add a try-catch block to handle any errors during MDX rendering
   try {
     return (
-      <MDXRemote {...props} components={{ ...components, ...(props.components || {}) }} />
+      <MDXRemote
+        {...props}
+        options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+        components={{ ...components, ...(props.components || {}) }}
+      />
     );
   } catch (error) {
     console.error('Error rendering MDX content:', error);

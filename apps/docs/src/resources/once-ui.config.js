@@ -1,36 +1,42 @@
-const baseURL = "https://docs.once-ui.com";
+// Set NEXT_PUBLIC_SITE_URL to the public address of the site; on Vercel the
+// production domain is picked up automatically.
+const baseURL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
 
-const routes = {
-  '/changelog':  false,
-  '/roadmap':    false,
-}
+const routes = {};
 
-// Import and set font for each variant
+// Import and set font for each variant. The CSS variables are deliberately not called
+// --font-*: Once UI's tokens.css declares `:root { --font-body: var(--font-body) }`,
+// a self-reference, so next/font's variables get their own names and custom.css maps
+// them onto Once UI's.
 import { Inter } from "next/font/google";
 import { Geist_Mono } from "next/font/google";
 import { Sora } from "next/font/google";
 import { Lexend } from "next/font/google";
 
 const heading = Sora({
-    variable: "--font-heading",
+    variable: "--next-font-heading",
     subsets: ["latin"],
     display: "swap",
 });
 
 const body = Lexend({
-    variable: "--font-body",
+    variable: "--next-font-body",
     subsets: ["latin"],
     display: "swap",
 });
 
 const label = Inter({
-    variable: "--font-label",
+    variable: "--next-font-label",
     subsets: ["latin"],
     display: "swap",
 });
 
 const code = Geist_Mono({
-    variable: "--font-code",
+    variable: "--next-font-code",
     subsets: ["latin"],
     display: "swap",
 });
@@ -53,20 +59,6 @@ const style = {
   surface: "filled",
   transition: "all",
   scaling: "100",
-};
-
-const dataStyle = {
-  variant: "gradient", // flat | gradient | outline
-  mode: "categorical", // categorical | divergent | sequential
-  height: 24, // default chart height
-  axis: {
-    stroke: "var(--neutral-alpha-weak)",
-  },
-  tick: {
-    fill: "var(--neutral-on-background-weak)",
-    fontSize: 11,
-    line: false
-  },
 };
 
 const layout = {
@@ -129,43 +121,35 @@ const effects = {
 };
 
 const social = [
-  // Links are automatically displayed.
-  // Import new icons in /once-ui/icons.ts
   {
     name: "GitHub",
     icon: "github",
-    link: "https://github.com/NMMTY",
-  }
+    link: "https://github.com/NMMTY/LazyCanvas",
+  },
+  {
+    name: "npm",
+    icon: "npm",
+    link: "https://www.npmjs.com/package/@nmmty/lazycanvas",
+  },
 ];
 
 const schema = {
   logo: "",
   type: "Organization",
-  name: "NMMTY",
-  description: "Website with documentation for NMMTY organization modules and its participants.",
+  name: "LazyCanvas",
+  description:
+    "Declarative 2D canvas rendering with flexbox layout, JSX and signal-based animation for Node.js, the browser and React.",
   email: "",
-  locale: "en_US"
+  locale: "en_US",
 };
 
 const meta = {
   home: {
-    title: `RE:Docs – ${schema.name}`,
+    title: `${schema.name} – Declarative 2D canvas for Node.js, the browser and React`,
     description: schema.description,
     path: "/",
-    image: "/api/og/generate?title=RE:Docs&description=Documentation for NMMTY modules"
+    image: "/api/og/generate?title=LazyCanvas&description=Declarative 2D canvas for Node.js, the browser and React",
   },
-  roadmap: {
-    title: `Roadmap – ${schema.name}`,
-    description: schema.description,
-    path: "/roadmap",
-    image: "/api/og/generate?title=Roadmap"
-  },
-  changelog: {
-    title: `Changelog – ${schema.name}`,
-    description: schema.description,
-    path: "/changelog",
-    image: "/api/og/generate?title=Changelog"
-  }
 };
 
-export { dataStyle, effects, style, layout, baseURL, social, schema, meta, routes, fonts };
+export { effects, style, layout, baseURL, social, schema, meta, routes, fonts };

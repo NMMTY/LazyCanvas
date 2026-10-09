@@ -32,7 +32,3 @@ yarn-error.log*
 # Vercel
 .vercel
 
-# Other packages in monorepo
-packages/
-plugins/
-!apps/docs/

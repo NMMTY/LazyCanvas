@@ -1,59 +1,125 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "0.6.5",
-  "description": "A simple way to interact with @napi-rs/canvas in an advanced way!",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "test": "tsc ./test/test.ts && node ./test/test.js",
-    "centring": "tsc ./test/centring.ts && node ./test/centring.js",
-    "logo": "tsc ./test/logo.ts && node ./test/logo.js",
-    "text": "tsc ./test/text.ts && node ./test/text.js",
-    "animation": "tsc ./test/animation.ts && node ./test/animation.js",
-    "iotest": "tsc ./test/iotest.ts && node ./test/iotest.js",
-    "gradient": "tsc ./test/gradient.ts && node ./test/gradient.js",
-    "docgen": "tsx docgen.ts && tsx ./scripts/post-docgen.ts",
-    "lint": "eslint ./src --ext .ts",
-    "lint:fix": "eslint ./src --ext .ts --fix",
-    "font": "tsx ./scripts/font-gen.ts",
-    "build": "tsc && tsx ./scripts/post-build.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/NMMTY/LazyCanvas.git"
-  },
+  "version": "1.0.0-rc.1",
+  "description": "Declarative 2D canvas rendering with flexbox layout, JSX and signal-based animation — for Node.js and the browser.",
   "keywords": [
     "canvas",
-    "@napi-rs/canvas",
-    "node-canvas",
-    "easy",
-    "simple"
+    "2d",
+    "jsx",
+    "layout",
+    "flexbox",
+    "yoga",
+    "animation",
+    "signals",
+    "image-generation",
+    "napi-rs",
+    "browser",
+    "node"
   ],
-  "author": "NMMTY",
-  "license": "MIT",
+  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/lazycanvas#readme",
   "bugs": {
     "url": "https://github.com/NMMTY/LazyCanvas/issues"
   },
-  "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
+  "license": "MIT",
+  "author": "NMMTY",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git",
+    "directory": "packages/lazycanvas"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./node": {
+      "import": {
+        "types": "./dist/node/index.d.mts",
+        "default": "./dist/node/index.mjs"
+      },
+      "require": {
+        "types": "./dist/node/index.d.ts",
+        "default": "./dist/node/index.js"
+      }
+    },
+    "./fonts": {
+      "import": {
+        "types": "./dist/fonts/index.d.mts",
+        "default": "./dist/fonts/index.mjs"
+      },
+      "require": {
+        "types": "./dist/fonts/index.d.ts",
+        "default": "./dist/fonts/index.js"
+      }
+    },
+    "./jsx-runtime": {
+      "import": {
+        "types": "./dist/jsx-runtime.d.mts",
+        "default": "./dist/jsx-runtime.mjs"
+      },
+      "require": {
+        "types": "./dist/jsx-runtime.d.ts",
+        "default": "./dist/jsx-runtime.js"
+      }
+    },
+    "./jsx-dev-runtime": {
+      "import": {
+        "types": "./dist/jsx-dev-runtime.d.mts",
+        "default": "./dist/jsx-dev-runtime.mjs"
+      },
+      "require": {
+        "types": "./dist/jsx-dev-runtime.d.ts",
+        "default": "./dist/jsx-dev-runtime.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "node": ["./dist/node/index.d.ts"],
+      "fonts": ["./dist/fonts/index.d.ts"],
+      "jsx-runtime": ["./dist/jsx-runtime.d.ts"],
+      "jsx-dev-runtime": ["./dist/jsx-dev-runtime.d.ts"]
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check ./src",
+    "lint:fix": "biome check --write ./src",
+    "font": "tsx ./scripts/font-gen.ts",
+    "docgen": "tsx docgen.ts && tsx ./scripts/post-docgen.ts"
+  },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.72",
-    "gifenc": "^1.0.3",
-    "js-yaml": "^4.1.0",
-    "path": "^0.12.7",
-    "svgson": "^5.3.1"
+    "js-yaml": "^4.3.2",
+    "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@hitomihiumi/colors.ts": "^1.0.3",
     "@hitomihiumi/micro-docgen": "workspace:*",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.2",
-    "@typescript-eslint/utils": "^8.39.1",
-    "ava": "^6.2.0",
-    "eslint": "^9.23.0",
-    "eslint-config-neon": "^0.2.7",
-    "lodash.merge": "^4.6.2",
-    "tslib": "^2.8.1",
+    "tsup": "8.5.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.9.2"
   }
 }

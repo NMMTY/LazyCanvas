@@ -1,0 +1,23 @@
+{
+  "title": "Documentation",
+  "order": 1,
+  "pages": {
+    "introduction": 1,
+    "installation": 2,
+    "quick-start": 3,
+    "core-concepts": 4,
+    "layout": 5,
+    "colors-and-fills": 6,
+    "text": 7,
+    "images-and-paths": 8,
+    "effects": 9,
+    "animation": 10,
+    "react": 11,
+    "jsx": 12,
+    "exporting": 13,
+    "adapters": 14,
+    "bundlers": 15,
+    "troubleshooting": 16,
+    "migration-from-0.6": 17
+  }
+}

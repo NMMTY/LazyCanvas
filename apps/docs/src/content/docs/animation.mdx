@@ -1,0 +1,106 @@
+---
+title: "Signals and animation"
+summary: "Animate any layer prop with signals, tweens, easing and generator-based timelines."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "bolt"
+---
+
+<Example name="animation" caption="Three signals, animated together, then back." />
+
+## Signals
+
+A **signal** holds a value that layers read on every frame. Wherever a prop is a `ScaleType`, a color, or `opacity` / `text`, you can pass a signal instead of a plain value.
+
+```ts
+import { createSignal } from "@nmmty/lazycanvas";
+
+const x = createSignal(40);
+const color = createSignal("#ef4444");
+
+new MorphLayer({
+  position: { x, y: 60 },
+  size: { width: 48, height: 48 },
+  color,
+});
+```
+
+`signal.value()` reads it, `signal.set(v)` changes it immediately, and `signal.reset()` returns to the initial value.
+
+## Tweens
+
+`signal.to(target, seconds, { easing })` returns an animation (a generator) that moves the signal:
+
+```ts
+function* move() {
+  yield* x.to(440, 1.2, { easing: Easing.easeInOutCubic });
+}
+```
+
+Colors tween through RGB by default; create the signal with `createSignal("#f00", { colorSpace: "hsl" })` to tween through HSL. Numbers, colors and `{ x, y }` points are interpolated; pass `interpolator` in the config for other types (without one a value snaps to the target at the end).
+
+`Easing` has `linear`, `easeIn`/`easeOut`/`easeInOut` and the `Cubic`, `Quart`, `Quint`, `Sine`, `Expo`, `Circ`, `Back`, `Elastic` and `Bounce` families of each.
+
+## Composing
+
+Animations are generators, so you compose them with `yield*`:
+
+| Helper | Does |
+| --- | --- |
+| `all(a, b, …)` | Runs animations in parallel and waits for all. |
+| `chain(a, b, …)` | Runs them one after another. |
+| `waitFor(seconds)` | Pauses. |
+| `delay(seconds, a)` | Waits, then runs `a`. |
+| `loop(() => a, times?)` | Repeats; forever by default. |
+| `loopFor(() => a, seconds)` | Repeats until the time is up. |
+| `any(a, b, …)` | Runs in parallel until one finishes. |
+| `spring`, `sequence`, `yoyo`, `timeline` | Physics, value lists, ping-pong and keyframes. |
+
+```ts
+scene.addAnimation(function* () {
+  yield* all(x.to(440, 1), color.to("#3b82f6", 1));
+  yield* waitFor(0.3);
+  yield* x.to(40, 1);
+});
+```
+
+## Playing a scene
+
+The scene owns the timeline. How you advance it depends on where you run.
+
+### Browser, by hand
+
+```ts
+scene.addAnimation(myAnimation);
+
+function frame(now: number) {
+  scene.renderFrame((now - start) / 1000);
+  requestAnimationFrame(frame);
+}
+const start = performance.now();
+requestAnimationFrame(frame);
+```
+
+`scene.hasActiveAnimations()` tells you when the animation has finished; `scene.clearAnimations()` and `scene.resetTimeline()` restart it (also reset the signals with `resetSignals(x, color)`).
+
+### React
+
+`<Scene animated>` runs this loop for you — see the [React guide](/docs/react).
+
+### Node.js, to a file
+
+Render the timeline into an animated PNG:
+
+```ts
+import { calculateSequentialDuration, resetSignals } from "@nmmty/lazycanvas";
+
+const duration = calculateSequentialDuration([() => intro(), () => outro()]);
+resetSignals(x, color); // measuring ran the animation: put the signals back
+
+scene.addAnimation(chain(intro(), outro()));
+
+await new Exporter(scene).export("apng", { duration, fps: 30, name: "move", saveAsFile: true });
+```
+
+The APNG exporter renders `duration` seconds at `fps` frames per second. `calculateDuration`, `calculateParallelDuration` and `calculateSequentialDuration` measure how long an animation takes.
+
+You can also grab frames yourself: `await scene.renderAnimation(0, 2, 30)` returns PNG buffers (or data URLs in the browser) for t = 0…2 s, and `renderAnimationData` returns raw RGBA frames for your own encoder.

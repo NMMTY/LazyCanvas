@@ -148,7 +148,8 @@ export class ClassSerializer extends AbstractSerializer {
                     .map((m) => m.content[0].text) || [],
             static:
                 decl.flags.isStatic || !!decl.comment?.blockTags?.some((r) => r.tag === '@static'),
-            type: decl.type ? parseType(decl.type) : 'any'
+            type: decl.type ? parseType(decl.type) : 'any',
+            rawType: decl.type ? parseTypes(decl.type) : ['any']
         } as DocumentedClassProperty;
 
         if (decl.kind === ReflectionKind.Accessor) {
@@ -178,7 +179,8 @@ export class ClassSerializer extends AbstractSerializer {
                 static:
                     getter.flags.isStatic ||
                     getter.comment?.blockTags?.some((r) => r.tag === '@static'),
-                type: getter.type ? parseType(getter.type) : 'any'
+                type: getter.type ? parseType(getter.type) : 'any',
+                rawType: getter.type ? parseTypes(getter.type) : ['any']
             } as Partial<DocumentedClassProperty>);
         }
 

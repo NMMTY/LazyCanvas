@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { Schemes, Accordion, Column, Flex, Icon, Row, Tag, ToggleButton } from "@once-ui-system/core";
+import { type IconName, Schemes, Accordion, Column, Flex, Icon, Row, Tag, ToggleButton } from "@once-ui-system/core";
 import { usePathname } from 'next/navigation';
 import { routes, layout } from "@/resources";
 
@@ -171,11 +171,11 @@ const NavigationItemComponent: React.FC<{
           onBackground={isSelected ? "neutral-strong" : "neutral-weak"}
           textVariant={isSelected ? "label-strong-s" : "label-default-s"}
           style={{ textOverflow: "ellipsis", whiteSpace: "nowrap"}}>
-            {item.navIcon && <Icon size="xs" name={item.navIcon}/>}
+            {item.navIcon && <Icon size="xs" name={item.navIcon as IconName}/>}
             {item.label || item.title}
         </Row>
         {item.navTag && (
-          <Tag data-theme="dark" data-brand={item.navTagVariant} style={{marginRight: "-0.5rem", transform: "scale(0.8)", transformOrigin: "right center"}} variant="brand" size="s">
+          <Tag data-theme="dark" data-brand={item.navTagVariant} style={{marginRight: "-0.5rem", transform: "scale(0.8)", transformOrigin: "right center"}} size="s">
               {item.navTag}
           </Tag>
         )}
@@ -197,45 +197,6 @@ const NavigationItem = React.memo(NavigationItemComponent, (prevProps, nextProps
 
 NavigationItem.displayName = 'NavigationItem';
 
-// Memoized resource link component
-const ResourceLinkComponent: React.FC<{
-  href: string;
-  icon: string;
-  label: string;
-  pathname: string;
-}> = ({ href, icon, label, pathname }) => {
-  const isSelected = pathname === href;
-  
-  return (
-    <ToggleButton
-      fillWidth
-      horizontal="between"
-      selected={isSelected}
-      className={styles.navigation}
-      href={href}>
-      <Row 
-        gap="8"
-        onBackground={isSelected ? "neutral-strong" : "neutral-weak"}
-        textVariant={isSelected ? "label-strong-s" : "label-default-s"}>
-        <Icon size="xs" name={icon}/>
-        {label}
-      </Row>
-    </ToggleButton>
-  );
-};
-
-// Add display name and memoize with a less aggressive comparison function
-const ResourceLink = React.memo(ResourceLinkComponent, (prevProps, nextProps) => {
-  // Always re-render if the pathname changes - this is critical for active state updates
-  if (prevProps.pathname !== nextProps.pathname) {
-    return false; // Different pathname means we should re-render
-  }
-  
-  // Otherwise, only re-render if the href or icon changes
-  return prevProps.href === nextProps.href && prevProps.icon === nextProps.icon;
-});
-
-ResourceLink.displayName = 'ResourceLink';
 
 // Create a stable version of the sidebar that doesn't re-render
 const SidebarContent: React.FC<{
@@ -259,36 +220,9 @@ const SidebarContent: React.FC<{
     );
   };
 
-  // Create resources section
-  const resourcesSection = (!(routes['/roadmap'] || routes['/changelog'])) ? null : (
-    <Column gap="2" marginTop="32" paddingLeft="4">
-      <Row textVariant="label-strong-s" onBackground="brand-strong" paddingLeft="8" paddingY="12">
-        Resources
-      </Row>
-      {routes['/roadmap'] && (
-        <ResourceLink 
-          href="/roadmap"
-          icon="roadmap"
-          label="Roadmap"
-          pathname={pathname}
-        />
-      )}
-      
-      {routes['/changelog'] && (
-        <ResourceLink 
-          href="/changelog"
-          icon="changelog"
-          label="Changelog"
-          pathname={pathname}
-        />
-      )}
-    </Column>
-  );
-
   return (
     <>
       {renderNavigation(navigation, 0)}
-      {resourcesSection}
     </>
   );
 }, (prevProps, nextProps) => {

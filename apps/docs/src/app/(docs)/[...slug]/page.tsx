@@ -7,6 +7,16 @@ import { CustomMDX } from "@/product/mdx";
 import { Metadata } from "next";
 import React from "react";
 
+// Every page is rendered at build time. Reading content and example sources
+// from disk at request time breaks on serverless hosts, where `src/` is not part
+// of the deployed function, and surfaces as "An error occurred in the Server
+// Components render".
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return getPages().map((page) => ({ slug: page.slug.split("/") }));
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -76,11 +86,6 @@ export default async function Docs({
             <Text variant="body-default-s" onBackground="neutral-weak">
               Last update: {formatDate(doc.metadata.updatedAt)}
             </Text>
-            {doc.metadata.github && (
-              <Button className="mt-20" href={"https://github.com/once-ui-system/core/blob/main/packages/core/src/" + doc.metadata.github} size="s" variant="secondary" prefixIcon="github" weight="default" data-border="rounded">
-                View on GitHub
-              </Button>
-            )}
           </Column>
           {doc.metadata.image && (
             <Media border="neutral-alpha-medium" enlarge src={doc.metadata.image} alt={"Thumbnail of " + doc.metadata.title} aspectRatio="16 / 9" radius="m" sizes="(max-width: 768px) 100vw, 768px" priority />
@@ -146,10 +151,7 @@ export default async function Docs({
         </Column>
       </Row>
       <Column gap="16" maxWidth={layout.sideNav.width} s={{hide: true}} position="sticky" top="80" fitHeight>
-        <Row gap="12" paddingLeft="2" vertical="center" onBackground="neutral-medium" textVariant="label-default-s">
-          <Icon name="document" size="xs"/>
-          On this page
-        </Row>
+        {/* HeadingNav renders its own "On this page" header */}
         <HeadingNav/>
       </Column>
     </>

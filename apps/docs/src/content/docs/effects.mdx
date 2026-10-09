@@ -1,0 +1,35 @@
+---
+title: "Effects"
+summary: "Shadows, opacity, CSS filters, transforms and blend modes."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "code"
+---
+
+Every layer accepts the same set of visual effects.
+
+<Example name="effects" caption="Shadow, opacity, hue-rotate filter and rotation on the same box." />
+
+| Prop | Example |
+| --- | --- |
+| `opacity` | `opacity: 0.4` (a number, or a signal) |
+| `shadow` | `shadow: { color: "#00000066", blur: 16, offsetX: 4, offsetY: 8 }` |
+| `filter` | `filter: Filters.blur(8)` — any CSS filter string works too |
+| `transform` | `transform: { rotate: 20, scale: { x: 1.2, y: 1.2 }, translate: { x: 10, y: 0 } }` — `rotate` is in degrees |
+| `globalComposite` | `globalComposite: "multiply"` — any canvas blend mode |
+| `visible`, `zIndex` | Set through the second constructor argument, or as props in JSX / React |
+
+## Filters
+
+`Filters` builds type-checked CSS filter strings:
+
+```ts
+import { Filters } from "@nmmty/lazycanvas";
+
+Filters.blur(4);          // "blur(4px)"
+Filters.brightness(120);  // "brightness(120%)"
+Filters.grayscale(100);
+Filters.hueRotate(90);
+Filters.dropShadow("#000", 2, 4, 8); // color, offsetX, offsetY, blur
+```
+
+The others are `contrast`, `invert`, `opacity`, `saturate` and `sepia`. In JS, `filter` also accepts a string with several filters, such as `"blur(2px) grayscale(50%)"`.

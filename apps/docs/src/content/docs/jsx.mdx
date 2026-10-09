@@ -1,0 +1,61 @@
+---
+title: "JSX"
+summary: "Write LazyCanvas scenes as JSX, with the classic or the automatic runtime."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "code"
+---
+
+LazyCanvas layers are classes, but you can describe them with JSX. This works anywhere — in Node.js scripts too — and is independent of React.
+
+## Automatic runtime
+
+Point the compiler at LazyCanvas:
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "@nmmty/lazycanvas"
+  }
+}
+```
+
+or per file:
+
+```tsx
+/** @jsxImportSource @nmmty/lazycanvas */
+import { Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+
+scene.load(
+  <Group layout={{ flexDirection: "row", gap: 12, padding: 16 }}>
+    <MorphLayer color="#7c3aed" layout={{ width: 80, height: 80 }} />
+    <TextLayer
+      text="JSX"
+      color="#111827"
+      font={{ family: "sans-serif", size: 32, weight: 700 }}
+      align="left"
+    />
+  </Group>,
+);
+```
+
+## Classic runtime
+
+```tsx
+/** @jsx createElement */
+/** @jsxFrag Fragment */
+import { Fragment, createElement, Group, MorphLayer } from "@nmmty/lazycanvas";
+```
+
+with `"jsx": "react"` in `tsconfig.json`.
+
+## Details
+
+- JSX expressions evaluate to **layer instances**: `<MorphLayer … />` is `new MorphLayer(props)`. You can pass them straight to `scene.load`.
+- `id`, `visible` and `zIndex` are lifted out of the props and given to the layer as its identity.
+- Children become `.add(...)` calls. Falsy children (`false`, `null`, `undefined`) are skipped and arrays and fragments are flattened, so `{items.map(…)}` and `{cond && <… />}` work as you expect.
+- `ref` can be a callback or an object with `current`; it receives the created layer.
+- A lowercase `<group>` is the same as `<Group>`. Function components are called with their props and `children`, so you can write your own reusable pieces.
+
+This runtime is independent of React's: in a React app, use [`@nmmty/adapter-react`](/docs/react) for canvases, and keep `jsxImportSource` pointing at React.

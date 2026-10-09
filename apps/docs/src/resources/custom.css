@@ -15,3 +15,34 @@
     --scheme-accent-1100: #ffd3d0;
     --scheme-accent-1200: #ffd3d0;
 }
+
+
+
+/*
+ * Once UI's tokens.css declares `:root { --font-body: var(--font-body); … }`,
+ * a self-reference, which is invalid and leaves every font variable empty, so
+ * `html { font-family: var(--font-body) }` and everything that inherits it
+ * (lists, table cells, links, plain text) fell back to Times. next/font's
+ * variables use their own names (--next-font-*, see once-ui.config.js) and are
+ * mapped here. `html:root` is more specific than `:root`, so this wins
+ * regardless of the order the stylesheets load in.
+ */
+html:root {
+  --font-heading: var(--next-font-heading);
+  --font-body: var(--next-font-body);
+  --font-label: var(--next-font-label);
+  --font-code: var(--next-font-code);
+}
+
+/* Diff blocks are highlighted by a different path than other languages and fall back to `monospace`. */
+code[class*="language-diff"],
+code[class*="language-diff"] * {
+  font-family: var(--font-code);
+}
+
+
+/* Long types in the API reference (object and function types) wrap instead of being cut off. */
+tbody[class*="Table_tbody"] tr td[class*="Table_td"] {
+  white-space: normal;
+  overflow-wrap: break-word;
+}

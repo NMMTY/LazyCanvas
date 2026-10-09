@@ -1,106 +1,98 @@
-import { FillType, PatternType, AnyPatternType } from "../../types";
+import {
+  type AnyPatternType,
+  FillType,
+  ICanvas,
+  type ICanvasAdapter,
+  type ICanvasRenderingContext2D,
+  PatternType,
+} from "../../types";
+import { LazyError, loadImageFallback } from "../../utils";
 import { LazyCanvas } from "../LazyCanvas";
-import { Canvas, loadImage, SKRSContext2D, SvgCanvas } from "@napi-rs/canvas";
-import { Exporter } from "./Exporter";
-import { LazyError } from "../../utils/LazyUtil";
+import { serializeCanvas } from "./serialize";
 
-/**
- * Interface representing a pattern.
- */
+/** Interface representing a pattern. */
 export interface IPattern {
-    /**
-     * The type of fill, which is always `Pattern` for this interface.
-     */
-    fillType: FillType;
-
-    /**
-     * The type of the pattern (e.g., repeat, no-repeat, etc.).
-     */
-    type: AnyPatternType;
-
-    /**
-     * The source of the pattern, which can be a string (URL or path) or a LazyCanvas instance.
-     */
-    src: string | LazyCanvas;
+  fillType: FillType;
+  type: AnyPatternType;
+  src: string | LazyCanvas;
 }
 
 /**
- * Class representing a pattern with properties and methods to manipulate it.
+ * A repeating image fill, usable wherever a color is accepted.
+ *
+ * @example
+ * ```ts
+ * new MorphLayer({
+ *   color: new Pattern().setSrc("https://example.com/tile.png").setType("repeat"),
+ *   size: { width: 200, height: 200 },
+ * });
+ * ```
  */
 export class Pattern implements IPattern {
-    /**
-     * The type of fill, which is always `Pattern`.
-     */
-    fillType: FillType = FillType.Pattern;
+  fillType: FillType = FillType.Pattern;
+  type: AnyPatternType;
+  src: string | LazyCanvas;
 
-    /**
-     * The type of the pattern (e.g., repeat, no-repeat, etc.).
-     */
-    type: AnyPatternType;
+  constructor(opts?: { props?: IPattern }) {
+    this.type = opts?.props?.type || PatternType.Repeat;
+    this.src = opts?.props?.src || "";
+  }
 
-    /**
-     * The source of the pattern, which can be a string (URL or path) or a LazyCanvas instance.
-     */
-    src: string | LazyCanvas;
+  /**
+   * Sets the repetition mode.
+   *
+   * @param {AnyPatternType} type - `repeat`, `repeat-x`, `repeat-y` or `no-repeat`.
+   * @returns {this} The current instance for chaining.
+   */
+  setType(type: AnyPatternType): this {
+    this.type = type;
+    return this;
+  }
 
-    /**
-     * Constructs a new Pattern instance.
-     * @param {Object} [opts] - Optional properties for the pattern.
-     * @param {IPattern} [opts.props] - The pattern properties.
-     */
-    constructor(opts?: { props?: IPattern }) {
-        this.type = opts?.props?.type || PatternType.Repeat;
-        this.src = opts?.props?.src || '';
+  /**
+   * Sets the pattern source.
+   *
+   * @param {string | LazyCanvas} src - An image URL, or another canvas to tile.
+   * @returns {this} The current instance for chaining.
+   */
+  setSrc(src: string | LazyCanvas): this {
+    this.src = src;
+    return this;
+  }
+
+  /**
+   * Resolves the pattern into a fill style for `ctx`.
+   *
+   * @param {ICanvasRenderingContext2D} ctx - The target context.
+   * @param {object} [opts] - Where to find the adapter used to load the image: `adapter`, or the layers `manager` that carries it. An adapter itself is accepted too.
+   */
+  async draw(
+    ctx: ICanvasRenderingContext2D,
+    opts?: ICanvasAdapter | { adapter?: ICanvasAdapter; manager?: { adapter?: ICanvasAdapter } },
+  ): Promise<any> {
+    if (!this.src) throw new LazyError("Pattern source is not set");
+
+    if (this.src instanceof LazyCanvas) {
+      const canvas = await this.src.manager.render.render("canvas");
+      return ctx.createPattern(canvas as any, this.type);
     }
 
-    /**
-     * Sets the type of the pattern.
-     * @param {AnyPatternType} [type] - The type of the pattern (e.g., repeat, no-repeat).
-     * @returns {this} The current instance for chaining.
-     */
-    setType(type: AnyPatternType): this {
-        this.type = type;
-        return this;
-    }
+    const adapter = opts && "loadImage" in opts ? opts : (opts?.adapter ?? opts?.manager?.adapter);
+    const image = adapter ? await adapter.loadImage(this.src) : await loadImageFallback(this.src);
+    return ctx.createPattern(image, this.type);
+  }
 
-    /**
-     * Sets the source of the pattern.
-     * @param {string | LazyCanvas} [src] - The source of the pattern, which can be a string (URL or path) or a LazyCanvas instance.
-     * @returns {this} The current instance for chaining.
-     */
-    setSrc(src: string | LazyCanvas): this {
-        this.src = src;
-        return this;
+  /** Serialises the pattern. */
+  toJSON(): IPattern {
+    let src = this.src;
+    if (this.src instanceof LazyCanvas) {
+      // @ts-ignore
+      src = serializeCanvas(this.src);
     }
-
-    /**
-     * Draws the pattern on a canvas context.
-     * @param {SKRSContext2D} [ctx] - The canvas rendering context.
-     * @returns {Promise<CanvasPattern>} The created pattern.
-     */
-    async draw(ctx: SKRSContext2D): Promise<CanvasPattern> {
-        if (!this.src) throw new LazyError('Pattern source is not set');
-
-        if (this.src instanceof LazyCanvas) {
-            return ctx.createPattern((await this.src.manager.render.render('canvas')) as unknown as Canvas | SvgCanvas, this.type);
-        }
-        return ctx.createPattern(await loadImage(this.src), this.type);
-    }
-
-    /**
-     * Converts the Pattern instance to a JSON representation.
-     * @returns {IPattern} The JSON representation of the pattern.
-     */
-    toJSON(): IPattern {
-        let src = this.src;
-        if (this.src instanceof LazyCanvas) {
-            // @ts-ignore
-            src = new Exporter(this.src).syncExport('json');
-        }
-        return {
-            fillType: this.fillType,
-            type: this.type,
-            src: src
-        };
-    }
+    return {
+      fillType: this.fillType,
+      type: this.type,
+      src: src,
+    };
+  }
 }

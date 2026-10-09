@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "1.0.0"]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      # Build first: the adapters typecheck against the core package's emitted
+      # declarations, which do not exist on a fresh checkout.
+      - name: Build packages
+        run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      # Packs the four public packages, installs the tarballs into a clean
+      # project and loads every entry point as both ESM and CJS.
+      - name: Check the published packages
+        run: pnpm check:packages

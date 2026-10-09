@@ -1,0 +1,103 @@
+---
+title: "React"
+summary: "Use <Scene> and layer components in React and Next.js: props, state, animation and refs."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "code"
+---
+
+`@nmmty/adapter-react` lets you describe a scene with components. It is the same engine as everywhere else: the components are turned into LazyCanvas layers and drawn onto one `<canvas>`.
+
+```bash
+npm install @nmmty/lazycanvas @nmmty/adapter-browser @nmmty/adapter-react
+```
+
+## Components
+
+```tsx
+import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
+```
+
+| Component | Layer |
+| --- | --- |
+| `Scene` | The canvas. Renders a `<canvas>` element. |
+| `Group` | The core `Group` — a flex container. |
+| `Morph`, `Text`, `Image` | `MorphLayer`, `TextLayer`, `ImageLayer` |
+| `Line`, `Bezier`, `Quadratic`, `Polygon`, `Path2D` | The matching layers. |
+
+The props of each component are the props of its layer class. `<Scene>` children are **not DOM**: nothing inside `<Scene>` is rendered by React itself, only converted into layers. Fragments, `Group` and the layer components are understood; other React components and DOM elements in there are ignored.
+
+## State drives the picture
+
+Because props are plain values, ordinary React state just works — the canvas redraws when children change:
+
+<Example name="reactive" />
+
+## `<Scene>` props
+
+| Prop | Description |
+| --- | --- |
+| `width`, `height` | Canvas size in pixels. Required. Changing them rebuilds the scene. |
+| `className`, `style` | Passed to the `<canvas>`. Use `style={{ maxWidth: "100%", height: "auto" }}` to make it responsive. |
+| `autoRender` | Default `true`. Turn off to render yourself through the ref. |
+| `animated` | `true` loops the scene's animations forever, a number plays that many loops. |
+| `onReady(scene, canvas)` | Called once the scene exists — register animations here. |
+| `onFrame(scene)` | Called after each drawn frame. |
+| `adapter` | Use a different adapter than the browser one. |
+| `debug` | Verbose logging. |
+
+## Animation
+
+Create signals with `useMemo` (or `useRef`) so they survive re-renders, pass them as props, and register the animation in `onReady`:
+
+```tsx
+const x = useMemo(() => createSignal(40), []);
+
+<Scene
+  width={480}
+  height={120}
+  animated
+  onReady={(scene) => scene.addAnimation(function* () {
+    yield* x.to(440, 1.2);
+    yield* x.to(40, 1.2);
+  })}
+>
+  <Morph color="#ef4444" size={{ width: 48, height: 48 }} position={{ x, y: 60 }} />
+</Scene>
+```
+
+With `animated`, the scene replays the animation when it finishes. Callbacks may be inline functions: a new function on each render does not restart the scene.
+
+## The ref
+
+```tsx
+const ref = useRef<SceneRef>(null);
+
+<Scene ref={ref} width={400} height={200}>…</Scene>
+
+await ref.current?.renderFrame(0.5);
+ref.current?.getLayer("title");
+```
+
+`SceneRef` has `renderFrame(time)`, `playAnimation(signal, animation)`, `addAnimation(animation)`, `clearAnimations()`, `resetTimeline()`, `getLayer(id)` and `scene`, the underlying `Scene`.
+
+## Fonts
+
+`<Scene>` collects the font families used by its text layers and loads them through the browser adapter before the first frame. Declare the family with CSS `@font-face` or `next/font` and use its name in `font.family`:
+
+```tsx
+<Text text="Hello" font={{ family: "Inter", size: 32, weight: 700 }} color="#fff" align="left" />
+```
+
+## Custom layers
+
+Wrap your own layer class to use it in JSX:
+
+```tsx
+import { registerLayer } from "@nmmty/adapter-react";
+
+export const Badge = registerLayer("BadgeLayer", BadgeLayer);
+```
+
+## Next.js
+
+`<Scene>` creates its scene in an effect, so nothing is drawn on the server and the component is safe in server-rendered trees. The package is a client module, so you can import it from Server Components files directly. Remember the webpack settings for Yoga — see [Bundlers and SSR](/docs/bundlers).

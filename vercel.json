@@ -1,7 +1,8 @@
 {
-  "buildCommand": "cd apps/docs && pnpm build",
-  "devCommand": "cd apps/docs && pnpm dev",
-  "installCommand": "pnpm install",
-  "outputDirectory": "apps/docs/.next",
-  "framework": "nextjs"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm docs:build",
+  "devCommand": "pnpm --filter @nmmty/lazycanvas-docs dev",
+  "outputDirectory": "apps/docs/.next"
 }

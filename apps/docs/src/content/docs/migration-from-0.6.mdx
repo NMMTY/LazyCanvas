@@ -1,0 +1,249 @@
+---
+title: "Migrating from 0.6.x"
+summary: "Everything that changed between LazyCanvas 0.6 and 1.0, with before/after code and a checklist."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "bolt"
+---
+
+LazyCanvas 1.0 keeps the layers you know — `MorphLayer`, `TextLayer`, `ImageLayer` and the rest, with the same fluent setters — but it is organised differently. The core no longer bundles a canvas, rendering goes through an **adapter**, there is a flexbox layout engine, and animation is driven by **signals** instead of frames.
+
+Most 0.6 code can be moved over in a few minutes. This guide lists every breaking change, then walks through the migration step by step.
+
+## At a glance
+
+| 0.6.x | 1.0 |
+| --- | --- |
+| `@napi-rs/canvas` is a dependency of the core | Not in the core. Install **`@nmmty/adapter-node`** (or `adapter-browser`) and pass `adapter`. |
+| `new LazyCanvas({ debug }).create(w, h)` | `new Scene(w, h, { adapter })`, or `new LazyCanvas(ClassicRenderPipeline, { adapter }).create(w, h)` to keep the old behaviour. |
+| `canvas.manager.layers.add(layer)` | `scene.load(root)` (`manager.layers.add` still works on a `LazyCanvas`). |
+| `Exporter`, `YAMLReader.readFile`, `JSONReader.readFile` from `@nmmty/lazycanvas` | From **`@nmmty/lazycanvas/node`**: `Exporter`, `readJSONFile`, `readYAMLFile`. |
+| GIF export, `AnimationManager` | **Removed.** Animate with signals; export animated **PNG** (`"apng"`). |
+| SVG export, `setSvgExportFlag`, `Export.SVG` | **Removed.** |
+| `Export.JPEG` | `Export.JPG` / `"jpg"` |
+| `PluginManager`, `lazyCanvas.use(plugin)` | **Removed.** |
+| `ClearLayer` | **Removed.** Erase with a layer using `globalComposite: "destination-out"`. |
+| `RenderManager` | Render pipelines: `ModernRenderPipeline`, `ClassicRenderPipeline` (deprecated). |
+| Geist fonts registered automatically | Opt in: `manager.fonts.loadFonts(Fonts)` from `@nmmty/lazycanvas/fonts`. |
+| CommonJS only | ESM and CommonJS. Node.js 18+. |
+
+## Two ways to migrate
+
+**Minimal changes.** Keep your 0.6 code as it is and only fix the plumbing (install an adapter, new imports). Your layers render exactly as before through `ClassicRenderPipeline`.
+
+**Modern.** Switch to `Scene`, the layout engine, JSX or signals. Do this at your own pace, file by file: both styles work side by side.
+
+The rest of this guide starts with the plumbing everyone needs, then covers the optional modern features.
+
+## 1. Install an adapter
+
+```bash
+npm install @nmmty/lazycanvas@latest @nmmty/adapter-node
+```
+
+`@nmmty/adapter-node` brings its own `@napi-rs/canvas` (now 1.x; it was 0.1.x). If your code imports `@napi-rs/canvas` directly — to register fonts with `GlobalFonts`, for example — upgrade it to match.
+
+## 2. Create the canvas
+
+**0.6**
+
+```ts
+import { LazyCanvas } from "@nmmty/lazycanvas";
+
+const canvas = new LazyCanvas({ debug: true }).create(800, 600);
+```
+
+**1.0, minimal changes**
+
+```ts
+import { NodeCanvasAdapter } from "@nmmty/adapter-node";
+import { ClassicRenderPipeline, LazyCanvas } from "@nmmty/lazycanvas";
+
+const canvas = new LazyCanvas(ClassicRenderPipeline, {
+  adapter: new NodeCanvasAdapter(),
+  debug: true,
+}).create(800, 600);
+```
+
+**1.0, modern**
+
+```ts
+import { NodeCanvasAdapter } from "@nmmty/adapter-node";
+import { Scene } from "@nmmty/lazycanvas";
+
+const scene = new Scene(800, 600, { adapter: new NodeCanvasAdapter(), debug: true });
+```
+
+Forgetting the adapter throws `A canvas adapter is required` with the fix in the message.
+
+`ClassicRenderPipeline` draws layers exactly like 0.6 but ignores the new `layout` prop and is deprecated; `ModernRenderPipeline` (always used by `Scene`) supports both. In the browser use `BrowserCanvasAdapter` from `@nmmty/adapter-browser`.
+
+## 3. `Group`
+
+`Group` keeps its name and API (`add`, `remove`, `setID`, …), so there is nothing to rename. What is new is that, with `ModernRenderPipeline` (always used by `Scene`), a `Group` is also a flexbox container configured by its `layout` prop — see [Layout](/docs/layout).
+
+## 4. Move Node.js-only imports
+
+`Exporter`, the file readers and the APNG encoder moved to a separate entry point, so the main one can be bundled for browsers without `node:` polyfills.
+
+```diff
+-import { Exporter, YAMLReader } from "@nmmty/lazycanvas";
++import { Exporter, readYAMLFile } from "@nmmty/lazycanvas/node";
+
+-const canvas = YAMLReader.readFile("./scene.yaml");
++const canvas = readYAMLFile("./scene.yaml", { adapter });
+
+ new Exporter(canvas).export("png", { name: "out", saveAsFile: true });
+```
+
+`JSONReader.read(object, { adapter })` and `YAMLReader.read(string, { adapter })` — which take data you already have — stay in the main entry point. The `*.readFile` helpers that touched the file system became `readJSONFile` and `readYAMLFile`. They need the `adapter` option, since the reader creates a canvas.
+
+`new Exporter(...)` accepts a `LazyCanvas` as before, and now also a `Scene`.
+
+## 5. Export formats
+
+| 0.6 | 1.0 |
+| --- | --- |
+| `png`, `webp`, `buffer`, `json`, `yaml`, `ctx`, `canvas` | Unchanged |
+| `jpeg`, `Export.JPEG` | `jpg`, `Export.JPG` |
+| `gif` | Removed — use `apng` (see below). |
+| `svg`, `setSvgExportFlag` | Removed. LazyCanvas draws raster images only. |
+| — | New: `apng` (animated PNG) |
+
+## 6. Fonts
+
+0.6 registered the bundled Geist fonts automatically. That cost every user 2.7 MB, so in 1.0 they are opt-in:
+
+```ts
+import { Fonts } from "@nmmty/lazycanvas/fonts";
+
+canvas.manager.fonts.loadFonts(Fonts);
+```
+
+Do this before the first render if you use `FontsList.Geist_*` / `FontsList.GeistMono_*`, or text will fall back to `sans-serif`. `Fonts` values are now plain base64 strings instead of `Buffer`s, and `Font.setBase64` accepts a string or a `Uint8Array`.
+
+In the browser, declare fonts with CSS and see [Text and fonts](/docs/text#fonts).
+
+## 7. Animation
+
+0.6 animated by frames: you set a frame rate on `AnimationManager`, added one `Group` per frame and exported a GIF.
+
+**0.6**
+
+```ts
+const canvas = new LazyCanvas({ debug: true }).create(400, 400).animated();
+canvas.manager.animation.setFrameRate(60).setClear(true, 20);
+
+for (let i = 0; i < 100; i++) {
+  canvas.manager.layers.add(
+    new Group().add(
+      new MorphLayer()
+        .setPosition(100 + i * 2, 100 + i * 2)
+        .setColor(`hsl(${Math.ceil(i * 1.5)}, 100%, 50%)`)
+        .setSize(200, 200, { all: 100 - i / 2 }),
+    ),
+  );
+}
+
+new Exporter(canvas).export("gif", { name: "animation", saveAsFile: true });
+```
+
+In 1.0 you describe **one** scene whose properties change over time. The properties are *signals* and the changes are *generators*:
+
+**1.0**
+
+```ts
+import { Group, Easing, MorphLayer, Scene, all, createSignal } from "@nmmty/lazycanvas";
+import { Exporter } from "@nmmty/lazycanvas/node";
+
+const pos = createSignal(100);
+const hue = createSignal("#ff0000", { colorSpace: "hsl" });
+const radius = createSignal(100);
+
+const scene = new Scene(400, 400, { adapter });
+scene.load(
+  new Group().add(
+    new MorphLayer({
+      position: { x: pos, y: pos },
+      color: hue,
+      size: { width: 200, height: 200, radius: { all: radius } },
+    }),
+  ),
+);
+
+scene.addAnimation(function* () {
+  yield* all(
+    pos.to(300, 2, { easing: Easing.easeInOutCubic }),
+    hue.to("#0000ff", 2),
+    radius.to(50, 2),
+  );
+});
+
+await new Exporter(scene).export("apng", { duration: 2, fps: 30, name: "animation", saveAsFile: true });
+```
+
+There is no GIF encoder anymore. APNG plays in every current browser. If you need GIF, render frames with `scene.renderAnimationData(0, 2, 30)` and hand the RGBA arrays to an encoder of your choice. See [Signals and animation](/docs/animation).
+
+Removed along with `AnimationManager`: `setFrameRate`, `setLoop`, `setTransparent`, `setRGBFormat`, `setMaxColors` and `setClear`. The frame rate is now an argument of the export or of `renderAnimation`, and each frame is a full redraw.
+
+## 8. Plugins
+
+`PluginManager`, `ILazyCanvasPlugin`, `lazyCanvas.use()` and the plugin hooks are gone. The same needs are served by the structure of the library: layers are classes you can extend, adapters are replaceable, and a render pipeline is a class you can subclass (`BaseRenderPipeline`).
+
+## 9. `ClearLayer`
+
+Erase a rectangle with an ordinary layer and the `destination-out` blend mode:
+
+```diff
+-new ClearLayer().setPosition(200, 140).setSize(40, 20)
++new MorphLayer()
++  .setPosition(200, 140)
++  .setColor("#000")
++  .setSize(40, 20)
++  .setGlobalCompositeOperation("destination-out")
+```
+
+## 10. Smaller changes
+
+- **`RenderManager`** no longer exists as a class. `canvas.manager.render` is the render pipeline you passed to `LazyCanvas`.
+- **A few helper exports** — `drawShadow`, `filters` and `opacity` — are gone. Use the layer props (`shadow`, `filter`, `opacity`) and `Filters`.
+- **Internal utilities** (`parseToNormal`, `DrawUtils`, …) are no longer part of the public API; the supported utilities are `LazyError`, the font helpers, the tree helpers (`walkLayers`, `findLayer`, `getChildren`), `registerPath2D` and the vertical-text helpers.
+- **Types.** `Buffer` no longer appears in public types: `ImageSource` is `string | ArrayBuffer | Uint8Array`, font data is `string | Uint8Array`.
+- **`ImageLayer`, `Pattern`** load images through the adapter, so in the browser the same CORS rules as `<img crossorigin>` apply.
+- **JSON and YAML** scene files written by 0.6 can usually be read by 1.0; re-export them with 1.0 once to pick up the current format.
+
+## 11. What you gain
+
+You do not have to adopt any of this to migrate, but it is why 1.0 exists:
+
+- **Flexbox layout** for any `Group` — see [Layout](/docs/layout).
+- **JSX**, with `jsxImportSource` — see [JSX](/docs/jsx).
+- **Signals and animation** — see [Signals and animation](/docs/animation).
+- **React** — `@nmmty/adapter-react`, see [React](/docs/react).
+- **Browser support** — the main entry point runs in any bundler.
+- **Vertical text**, per-range text colors and letter/word spacing.
+- **ESM and CommonJS** builds, `jsx-runtime` entry points and full type declarations.
+
+## Checklist
+
+1. Install `@nmmty/lazycanvas@latest` and `@nmmty/adapter-node` (or `adapter-browser`).
+2. Pass `adapter` to `new LazyCanvas(…)` / `new Scene(…)`; pick `ClassicRenderPipeline` to keep 0.6 rendering.
+3. Nothing to rename: `Group` is still `Group`.
+4. Import `Exporter`, `readJSONFile`, `readYAMLFile` from `@nmmty/lazycanvas/node`.
+5. `jpeg` → `jpg`; replace GIF with APNG; drop SVG export.
+6. Load `Fonts` from `@nmmty/lazycanvas/fonts` if you use the bundled Geist fonts.
+7. Replace `AnimationManager` code with signals.
+8. Remove plugins and `ClearLayer`.
+9. Run your TypeScript build: removed APIs surface as compile errors.
+
+## Common errors after upgrading
+
+| Error | Cause and fix |
+| --- | --- |
+| `A canvas adapter is required` | Pass `adapter` — step 1 and 2. |
+| `Module '"@nmmty/lazycanvas"' has no exported member 'Exporter'` | Import it from `@nmmty/lazycanvas/node`. |
+| `Export type "gif" is not supported` | GIF was removed; use `apng`. |
+| Text renders in a plain font | Load the Geist fonts (step 6), or register your own font before the first render. |
+| `Cannot find module 'node:fs'` in a browser bundle | Something imports `@nmmty/lazycanvas/node` into browser code. |
+| `Top-level await is not available` | Configure your bundler for Yoga — see [Bundlers and SSR](/docs/bundlers). |
+
+Something not covered here? [Open an issue](https://github.com/NMMTY/LazyCanvas/issues) and we will add it to this guide.

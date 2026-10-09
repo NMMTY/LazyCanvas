@@ -1,0 +1,69 @@
+---
+title: "Troubleshooting"
+summary: "Solutions to the problems people run into: missing adapter, fonts, CORS, Yoga and bundler errors."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "book"
+---
+
+## "A canvas adapter is required"
+
+`new Scene(...)` and `new LazyCanvas(...)` need an adapter — they no longer assume `@napi-rs/canvas`.
+
+```ts
+import { NodeCanvasAdapter } from "@nmmty/adapter-node";
+
+new Scene(400, 200, { adapter: new NodeCanvasAdapter() });
+```
+
+Use `BrowserCanvasAdapter` from `@nmmty/adapter-browser` in the browser.
+
+## "Scene: No root layer loaded"
+
+`renderFrame` was called before `scene.load(tree)`. Load at least one root layer first.
+
+## Nothing is drawn, or text is missing
+
+- **A layer has no size.** Shapes need `size` (or a `layout` width and height). A `Group` itself draws nothing.
+- **Everything is stacked at the top-left.** Layers inside a flex container are laid out by Yoga; give the container a size and `justifyContent` / `alignItems`.
+- **The layer is off-canvas.** Remember that most layers are *centred* on their `position` — see [Core concepts](/docs/core-concepts#centring).
+- **Text is cut off at the top.** `position.y` is the baseline by default; add `baseline: "top"`.
+- **A layer is hidden by another one.** Layers are drawn in order and by `zIndex`; a full-size background must come first.
+
+## The wrong font is used
+
+- In the browser the family must be loaded before the first frame. Use `<Scene>` from `@nmmty/adapter-react`, or `await adapter.loadFonts([...])` and `await adapter.fontsReady()`. In Firefox the first paint otherwise uses the fallback font until the font is in the cache.
+- On Node.js register the font first: `scene.lazyCanvas.manager.fonts.add(new Font()…)`. An unknown family falls back to `sans-serif`.
+
+## Images fail to load in the browser
+
+The browser adapter requests images with `crossOrigin = "anonymous"`. The server must answer with `Access-Control-Allow-Origin`. If you cannot control it, proxy the image through your own origin or fetch it as bytes and pass an `ArrayBuffer` as `src`.
+
+A canvas that drew a cross-origin image without CORS is *tainted*: `toDataURL` and `toBlob` then throw a `SecurityError`.
+
+## `Top-level await is not available` / `Module parse failed`
+
+Yoga uses top-level await. See [Bundlers and SSR](/docs/bundlers) for the webpack, Next.js and Vite settings.
+
+## `Cannot find module 'node:fs'` in the browser
+
+Something imports `@nmmty/lazycanvas/node` (`Exporter`, `readJSONFile`, …). Those are Node.js only; in the browser use `scene.encode("png")` and the in-memory readers.
+
+## `@napi-rs/canvas` fails to load
+
+The native binary for your platform is missing. Reinstall without `--ignore-scripts` / `--no-optional`, and on Alpine make sure the `musl` build is installed. When bundling for Next.js, add `serverExternalPackages: ["@napi-rs/canvas"]`.
+
+## The canvas looks blurry on a high-DPI screen
+
+A canvas has one pixel per unit. Create the scene at the physical size and scale it down with CSS:
+
+```tsx
+<Scene width={960} height={320} style={{ width: 480, height: 160 }}>…</Scene>
+```
+
+## Frames look wrong when I call `renderFrame` in a loop
+
+Await each call, or let the scene queue them: frames are serialised, so overlapping calls render in order but each waits for the previous one. For animations, render at increasing times rather than at `0` repeatedly.
+
+## Still stuck?
+
+Search the [issues](https://github.com/NMMTY/LazyCanvas/issues) or open a new one with a minimal scene that reproduces the problem.

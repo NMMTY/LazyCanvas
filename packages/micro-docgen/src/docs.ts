@@ -397,33 +397,8 @@ export async function createDocumentation(options: MicroDocgenInit): Promise<Doc
                 return escape(type);
             };
 
-            const linkedArr = r.map((p) => linkTypes(p));
-
-            // insert | between each type
-            return linkedArr.reduce((acc, curr, i) => {
-                if (i === 0) return curr;
-
-                const prev = acc[acc.length - 1];
-                const specialChars = /[\>\<\|\&\'\"\-\+\s\\\]\[\;\:]/;
-
-                if (specialChars.test(prev) || specialChars.test(curr[0])) {
-                     if (
-                        specialChars.test(prev) && specialChars.test(curr[0])
-                     ) return acc + ' ' + curr;
-                    const isMarkdownLink = (str: string) => /\[([^\]]+)\]\(([^)]+)\)/.test(str);
-
-                    const accIsLink = isMarkdownLink(acc);
-                    const currIsLink = isMarkdownLink(curr);
-
-                    if (accIsLink && currIsLink) return acc + ' | ' + curr;
-                    if (accIsLink && !currIsLink) return acc + ' ' + curr;
-                    if (!accIsLink && currIsLink) return acc + ' ' + curr;
-
-                    return acc + curr;
-                }
-
-                return acc + ' | ' + curr;
-            }, '');
+            // The pieces carry their own separators (see parseTypes).
+            return r.map((p) => linkTypes(p)).join('');
         }
     });
 

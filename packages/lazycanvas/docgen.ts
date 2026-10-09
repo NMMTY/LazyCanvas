@@ -1,68 +1,47 @@
-import { createDocumentation } from '@hitomihiumi/micro-docgen';
-import { version, homepage } from './package.json';
+import { rmSync } from "node:fs";
+import { createDocumentation } from "@hitomihiumi/micro-docgen";
+import { homepage, version } from "./package.json";
 
 async function main() {
-    const docs = await createDocumentation({
-        name: 'LazyCanvas',
-        version,
-        github: homepage,
-        tsconfigPath: './tsconfig.json',
-        input: ['src'],
-        markdown: true,
-        output: 'public',
-        jsonName: 'docs.json',
-        clean: true,
-        omitTypeLinkerExtension: true,
-        custom: [
-            {
-                name: 'QuickStart',
-                category: '',
-                path: './resources/QuickStart.mdx'
-            },
-            {
-                name: 'BasicUsage',
-                category: '',
-                path: './resources/BasicUsage.mdx'
-            }
-        ],
-        customOrder: {
-            0: ['QuickStart', 'BasicUsage'],
-            'Classes': {
-                'General': [
-                    'LazyCanvas',
-                    'PluginManager',
-                    'FontsManager',
-                    'LayersManager',
-                    'RenderManager',
-                    'AnimationManager'
-                ],
-                'Components': [
-                    'BaseLayer',
-                    'Group',
-                    'ImageLayer',
-                    'TextLayer',
-                    'LineLayer',
-                    'MorphLayer',
-                    'PolygonLayer',
-                    'Path2DLayer',
-                    'QuadraticLayer',
-                    'BezierLayer',
-                    'ClearLayer'
-                ],
-                'Helpers': [
-                    'Font',
-                    'Pattern',
-                    'Gradient',
-                    'Link',
-                    'Exporter',
-                    'JSONReader',
-                    'YAMLReader'
-                ]
-            }
-        }
-    });
+  // The generator only overwrites: pages of removed or renamed symbols would linger.
+  rmSync("public", { recursive: true, force: true });
 
-    console.log(`Took ${docs.metadata.generationMs}ms to generate the documentation!`);
+  const docs = await createDocumentation({
+    name: "reference",
+    version,
+    github: homepage,
+    tsconfigPath: "./tsconfig.json",
+    input: ["src"],
+    markdown: true,
+    output: "public",
+    jsonName: "docs.json",
+    clean: true,
+    omitTypeLinkerExtension: true,
+    customOrder: {
+      Classes: {
+        Core: ["Scene", "LazyCanvas", "LayersManager", "FontsManager", "LayoutManager"],
+        Layers: [
+          "BaseLayer",
+          "Group",
+          "MorphLayer",
+          "TextLayer",
+          "ImageLayer",
+          "LineLayer",
+          "QuadraticLayer",
+          "BezierLayer",
+          "PolygonLayer",
+          "Path2DLayer",
+        ],
+        Animation: ["Signal", "Timeline", "ThreadScheduler"],
+        Rendering: ["ModernRenderPipeline", "ClassicRenderPipeline", "BaseRenderPipeline"],
+        Helpers: ["Font", "Pattern", "Gradient", "Link", "JSONReader", "YAMLReader"],
+        "Node.js": ["Exporter", "APNGEncoder"],
+        Errors: ["LazyError"],
+      },
+    },
+  });
+
+  console.log(`Took ${docs.metadata.generationMs}ms to generate the documentation!`);
 }
 
 main();

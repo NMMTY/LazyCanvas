@@ -1,0 +1,108 @@
+---
+title: "Text and fonts"
+summary: "TextLayer: fonts, alignment, wrapping, letter spacing, per-range colors, vertical writing and font loading."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "code"
+---
+
+<Example name="text" />
+
+## TextLayer
+
+```ts
+new TextLayer({
+  text: "Hello",
+  color: "#ffffff",
+  font: { family: "sans-serif", size: 32, weight: 700 },
+  align: "left",
+  baseline: "top",
+  position: { x: 20, y: 20 },
+});
+```
+
+| Prop | Meaning |
+| --- | --- |
+| `text` | The string, or a `Signal<string>`. |
+| `font` | `{ family, size, weight }`. `weight` is `100`…`900` (`950` for Geist Mono Extra Black). |
+| `align` | Horizontal anchor of `position`: `left`, `center`, `right`, `start`, `end`. |
+| `baseline` | Vertical anchor: `top`, `middle`, `bottom`, `alphabetic`, … Use `top` to position by the top edge. |
+| `letterSpacing`, `wordSpacing` | Extra space, in pixels. |
+| `subStringColors` | `[{ color, start, end }]` — colour character ranges differently. |
+| `multiline` | `{ enabled: true, spacing }`. With `size: { width, height }` the text wraps inside that box; `spacing` is a line-height multiplier (default `1.1`). |
+| `stroke` | Outline the glyphs. |
+| `direction` | `ltr`, `rtl`, `ttb` or `btt` — see below. |
+
+Inside a flex [layout](/docs/layout) a text layer is measured and positioned for you.
+
+## Vertical text
+
+`direction: "ttb"` (top to bottom) and `"btt"` lay characters out in columns. `vertical` refines how:
+
+```ts
+new TextLayer({
+  text: "Top to bottom",
+  direction: "ttb",
+  vertical: { mode: "words", columns: "rl", gap: 8 },
+  font: { family: "sans-serif", size: 26, weight: 700 },
+  color: "#fbbf24",
+  align: "left",
+});
+```
+
+- `mode: "words"` keeps each word horizontal and stacks the words down the column — right for alphabetic scripts.
+- `mode: "ideographs"` stacks single characters upright — right for CJK text.
+- `columns: "rl"` (right to left) or `"lr"` orders the columns; with `multiline` enabled, `size.height` is where a column wraps.
+
+## Fonts
+
+A layer can only use a family that exists in the environment. How you make it exist depends on where you run.
+
+### Browser
+
+Declare it with CSS (or `next/font`) and use the family name:
+
+```css
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter.ttf");
+  font-weight: 100 900;
+}
+```
+
+A canvas does not make the browser download a font, so it must be loaded **before** the first frame. `<Scene>` from `@nmmty/adapter-react` does that for you. With the plain adapter, ask for the fonts you use:
+
+```ts
+const adapter = new BrowserCanvasAdapter(canvas);
+await adapter.loadFonts(['700 32px "Inter"', '400 16px "Inter"']);
+await scene.renderFrame(0);
+```
+
+### Node.js
+
+Register a file, or base64 data, with the font manager:
+
+```ts
+import { Font } from "@nmmty/lazycanvas";
+
+scene.lazyCanvas.manager.fonts.add(
+  new Font().setFamily("Inter").setWeight(400).setPath("./fonts/Inter-Regular.ttf"),
+);
+```
+
+Register fonts **before** the first frame. A family that is not available falls back to `sans-serif`.
+
+### Bundled Geist
+
+LazyCanvas ships Geist and Geist Mono as base64 data behind its own entry point (about 2.7 MB, so it is opt-in):
+
+```ts
+import { Fonts } from "@nmmty/lazycanvas/fonts";
+
+scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
+```
+
+Weights are then available as `{ family: "Geist", weight: 600, … }`, and `FontsList.Geist_SemiBold(32)` returns a ready-made `font` object. You rarely want this in the browser — prefer CSS fonts there.
+
+### Your own fonts as base64
+
+`pnpm --filter @nmmty/lazycanvas font` converts a folder of `.ttf`/`.otf` files named `{Family}-{Weight}` (for example `Inter-Bold.ttf`) into a module in the same shape as `Fonts`. See the [script's readme](https://github.com/NMMTY/LazyCanvas/blob/main/packages/lazycanvas/scripts/FontsGenerate.md).

@@ -1,0 +1,42 @@
+---
+title: "Installation"
+summary: "Install the core and the adapter for Node.js, the browser or React."
+updatedAt: "2026-10-09T12:00:00.000Z"
+navIcon: "bolt"
+---
+
+LazyCanvas is split into a core and an adapter for the environment you draw in. Install the core plus one adapter.
+
+## Node.js
+
+```bash
+npm install @nmmty/lazycanvas @nmmty/adapter-node
+```
+
+Requires Node.js 18 or newer. `@napi-rs/canvas` comes with the adapter and ships prebuilt binaries for Linux, macOS and Windows — no system libraries to install.
+
+## Browser
+
+```bash
+npm install @nmmty/lazycanvas @nmmty/adapter-browser
+```
+
+## React and Next.js
+
+```bash
+npm install @nmmty/lazycanvas @nmmty/adapter-browser @nmmty/adapter-react
+```
+
+React 18 or newer. `@nmmty/adapter-react` is marked `"use client"`, so you can import it from App Router files.
+
+## Package managers
+
+The commands above work with `pnpm add`, `yarn add` and `bun add` as well. The four packages share a version number and declare each other as peer dependencies with caret ranges (`^1.0.0`), so installing the latest of each is always consistent.
+
+## TypeScript
+
+No extra setup. Declarations are included for both ESM and CommonJS. To use the automatic JSX runtime for LazyCanvas layers, see [JSX](/docs/jsx).
+
+## Bundlers
+
+The main entry point has no Node.js built-ins, so browser bundlers need no polyfills. One thing needs attention in webpack-based setups, including Next.js: Yoga loads its WebAssembly with a top-level `await`. See [Bundlers and SSR](/docs/bundlers).
