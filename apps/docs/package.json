@@ -21,14 +21,14 @@
     "eslint-config-next": "15.5.27",
     "gray-matter": "^4.0.3",
     "next": "15.5.27",
-    "next-mdx-remote": "^5.0.0",
+    "next-mdx-remote": "^6.0.0",
     "prismjs": "^1.30.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-icons": "^5.2.1",
     "remark-gfm": "^4.0.1",
     "sass": "^1.77.6",
-    "sharp": "^0.33.4"
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@types/node": "^20",

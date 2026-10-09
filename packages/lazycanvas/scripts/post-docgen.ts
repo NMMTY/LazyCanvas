@@ -8,6 +8,29 @@ import * as path from "node:path";
 const source = path.join(__dirname, "..", "public", "reference");
 const destination = path.join(__dirname, "../../..", "apps", "docs", "src", "content", "reference");
 
+/**
+ * The generator writes tables as `<Table data={{ headers: […], rows: […] }} />`.
+ * next-mdx-remote 6 refuses JavaScript expressions in MDX by default (a
+ * security measure), so pass the same data as a URL-encoded JSON string
+ * attribute instead; `CustomTable` decodes it.
+ */
+function encodeTables(source: string): string {
+  return source
+    .split("\n")
+    .map((line) => {
+      const prefix = "<Table data={{ headers: ";
+      const suffix = " }} />";
+      if (!line.startsWith(prefix) || !line.endsWith(suffix)) return line;
+      const body = line.slice(prefix.length, line.length - suffix.length);
+      const split = body.indexOf("], rows: ");
+      if (split === -1) return line;
+      const headers = JSON.parse(body.slice(0, split + 1));
+      const rows = JSON.parse(body.slice(split + "], rows: ".length));
+      return `<Table data="${encodeURIComponent(JSON.stringify({ headers, rows }))}" />`;
+    })
+    .join("\n");
+}
+
 function copyFiles(from: string, to: string) {
   fs.mkdirSync(to, { recursive: true });
 
@@ -17,7 +40,9 @@ function copyFiles(from: string, to: string) {
 
     if (entry.isDirectory()) {
       copyFiles(sourcePath, destPath);
-    } else if (/\.(mdx|json)$/i.test(entry.name)) {
+    } else if (/\.mdx$/i.test(entry.name)) {
+      fs.writeFileSync(destPath, encodeTables(fs.readFileSync(sourcePath, "utf8")));
+    } else if (/\.json$/i.test(entry.name)) {
       fs.copyFileSync(sourcePath, destPath);
     }
   }

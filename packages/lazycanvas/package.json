@@ -109,7 +109,7 @@
     "docgen": "tsx docgen.ts && tsx ./scripts/post-docgen.ts"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.2",
     "yoga-layout": "^3.2.1"
   },
   "devDependencies": {

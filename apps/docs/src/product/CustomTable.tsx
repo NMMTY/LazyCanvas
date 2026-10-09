@@ -29,7 +29,14 @@ function hyperlink(text: string): ReactNode[] {
   return parts;
 }
 
-function CustomTable({ data, ...rest }: TableProps) {
+type CustomTableProps = Omit<TableProps, "data"> & {
+  /** The table data, or the same JSON as a URL-encoded string (how the generated MDX passes it). */
+  data: TableProps["data"] | string;
+};
+
+function CustomTable({ data: input, ...rest }: CustomTableProps) {
+  const data: TableProps["data"] =
+    typeof input === "string" ? JSON.parse(decodeURIComponent(input)) : input;
   const rows = data.rows.map((row) =>
     row.map((cell) => (typeof cell === "string" ? hyperlink(cell.replace(/\\/g, "")) : cell)),
   );
