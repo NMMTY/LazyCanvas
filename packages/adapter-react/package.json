@@ -1,42 +1,59 @@
 {
   "name": "@nmmty/adapter-react",
   "version": "1.0.0-dev.1",
-  "description": "React integration for @nmmty/lazycanvas — <Scene> component with browser adapter",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+  "description": "React bindings for @nmmty/lazycanvas: a <Scene> component, layer components and animation hooks.",
+  "keywords": ["lazycanvas", "react", "canvas", "jsx", "animation", "nextjs"],
+  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-react#readme",
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
   },
-  "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["react", "canvas", "jsx", "scene", "lazy", "nextjs"],
-  "author": "NMMTY",
   "license": "MIT",
-  "peerDependencies": {
-    "react": ">=18.0.0",
-    "@nmmty/lazycanvas": "workspace:*",
-    "@nmmty/adapter-browser": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/react": "^19.0.0",
-    "typescript": "^5.4.5",
-    "@nmmty/lazycanvas": "workspace:*",
-    "@nmmty/adapter-browser": "workspace:*"
-  },
-  "sideEffects": false,
-  "files": ["dist"],
+  "author": "NMMTY",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NMMTY/LazyCanvas.git",
     "directory": "packages/adapter-react"
   },
-  "bugs": {
-    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
   },
-  "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-react#readme"
+  "files": ["dist", "README.md", "LICENSE"],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@nmmty/lazycanvas": "workspace:^",
+    "@nmmty/adapter-browser": "workspace:^",
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "tsup": "8.5.0",
+    "@nmmty/lazycanvas": "workspace:^",
+    "@nmmty/adapter-browser": "workspace:^",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0"
+  }
 }

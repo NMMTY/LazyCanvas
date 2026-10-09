@@ -1,12 +1,26 @@
 {
   "private": true,
   "name": "lazycanvas-monorepo",
+  "description": "LazyCanvas monorepo: declarative 2D canvas rendering for Node.js, the browser and React.",
+  "license": "MIT",
+  "author": "NMMTY",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NMMTY/LazyCanvas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NMMTY/LazyCanvas/issues"
+  },
+  "homepage": "https://github.com/NMMTY/LazyCanvas#readme",
   "engines": {
     "node": "22.x"
   },
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@biomejs/biome": "1.9.4",
+    "publint": "^0.3.25",
+    "tsup": "8.5.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
@@ -25,6 +39,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "build:apps": "pnpm -r --filter \"./apps/*\" build"
+    "build:apps": "pnpm -r --filter \"./apps/*\" build",
+    "check:packages": "node scripts/check-packages.mjs"
   }
 }

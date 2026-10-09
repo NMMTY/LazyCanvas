@@ -43,13 +43,7 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Verify the browser entry point pulls in no Node built-ins
-        run: |
-          if grep -rlE '"node:(fs|path|zlib)"' \
-              --include='*.js' \
-              --exclude-dir=node \
-              packages/lazycanvas/dist; then
-            echo "::error::Node built-ins leaked into the browser entry point"
-            exit 1
-          fi
-          echo "browser entry point is clean"
+      # Packs the four public packages, installs the tarballs into a clean
+      # project and loads every entry point as both ESM and CJS.
+      - name: Check the published packages
+        run: pnpm check:packages
