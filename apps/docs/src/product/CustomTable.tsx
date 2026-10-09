@@ -1,6 +1,6 @@
 "use client";
 
-import { SmartLink, Table, type TableProps } from "@once-ui-system/core";
+import { InlineCode, SmartLink, Table, type TableProps } from "@once-ui-system/core";
 import type { ReactNode } from "react";
 
 /**
@@ -8,6 +8,20 @@ import type { ReactNode } from "react";
  * (`[Scene](/reference/…)`) and backslash escapes. Turn them into nodes before
  * handing the table to Once UI.
  */
+function withCode(text: string, keyBase: number): ReactNode[] {
+  // `inline code` in descriptions
+  return text
+    .split(/(`[^`]+`)/)
+    .filter(Boolean)
+    .map((part, i) =>
+      part.startsWith("`") && part.endsWith("`") && part.length > 2 ? (
+        <InlineCode key={`${keyBase}-${i}`}>{part.slice(1, -1)}</InlineCode>
+      ) : (
+        part
+      ),
+    );
+}
+
 function hyperlink(text: string): ReactNode[] {
   const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
   const parts: ReactNode[] = [];
@@ -15,7 +29,7 @@ function hyperlink(text: string): ReactNode[] {
   let match = regex.exec(text);
 
   while (match !== null) {
-    if (match.index > lastIndex) parts.push(text.substring(lastIndex, match.index));
+    if (match.index > lastIndex) parts.push(...withCode(text.substring(lastIndex, match.index), lastIndex));
     parts.push(
       <SmartLink key={match.index} href={match[2]}>
         {match[1]}
@@ -25,7 +39,7 @@ function hyperlink(text: string): ReactNode[] {
     match = regex.exec(text);
   }
 
-  if (lastIndex < text.length) parts.push(text.substring(lastIndex));
+  if (lastIndex < text.length) parts.push(...withCode(text.substring(lastIndex), lastIndex));
   return parts;
 }
 

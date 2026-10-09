@@ -1,4 +1,5 @@
 import { ReflectionKind } from 'typedoc';
+import type { JSONOutput } from 'typedoc';
 import { FileMetadata, getFileMetadata, getName, parseType, parseTypes } from '../utils';
 import { AbstractSerializer } from './AbstractSerializer';
 import { DocumentedClassProperty, DocumentedParameter } from './ClassSerializer';
@@ -10,6 +11,7 @@ export interface DocumentedTypes {
     private: boolean;
     deprecated: boolean;
     type: string | null;
+    rawType: string[] | null;
     properties: DocumentedTypeProperty[];
     parameters: DocumentedParameter[];
     returns: {
@@ -37,6 +39,7 @@ export class TypesSerializer extends AbstractSerializer {
             returns: null,
             see: [],
             type: this.declaration.type ? parseType(this.declaration.type) : 'any',
+            rawType: this.declaration.type ? parseTypes(this.declaration.type) : ['any'],
             objectType: this.declaration.kind
         } as DocumentedTypes;
 
@@ -46,10 +49,24 @@ export class TypesSerializer extends AbstractSerializer {
         ) {
             if (this.declaration.children) {
                 base.properties = this.declaration.children.map((m) => {
-                    if (m.type?.type !== 'reflection')
+                    // A method has no `type`, only call signatures: describe it as the
+                    // function type it is, instead of `any`.
+                    const memberType: JSONOutput.SomeType | undefined =
+                        m.type ??
+                        (m.signatures?.length
+                            ? ({
+                                  type: 'reflection',
+                                  declaration: { signatures: [m.signatures[0]] }
+                              } as unknown as JSONOutput.SomeType)
+                            : undefined);
+
+                    if (memberType?.type !== 'reflection')
                         return {
                             name: m.name,
-                            description: m.comment?.summary?.map((t) => t.text).join('') || null,
+                            description:
+                                (m.comment?.summary || m.signatures?.[0]?.comment?.summary)
+                                    ?.map((t: { text: string }) => t.text)
+                                    .join('') || null,
                             value: m.defaultValue || null,
                             abstract: !!m.flags.isAbstract,
                             default: m.defaultValue || null,
@@ -64,24 +81,24 @@ export class TypesSerializer extends AbstractSerializer {
                                     ?.find((r) => r.tag === '@see')
                                     ?.content?.map((m) => m.text) || [],
                             static: !!m.flags.isStatic,
-                            type: m.type ? parseType(m.type) : 'any',
-                            rawType: m.type ? parseTypes(m.type) : ['any']
+                            type: memberType ? parseType(memberType) : 'any',
+                            rawType: memberType ? parseTypes(memberType) : ['any']
                         };
 
                     return {
                         name: m.name,
                         description:
                             (
-                                m.type?.declaration?.signatures?.[0]?.comment?.summary ||
+                                (memberType as any)?.declaration?.signatures?.[0]?.comment?.summary ||
                                 m.comment?.summary
                             )
-                                ?.map((t) => t.text)
+                                ?.map((t: { text: string }) => t.text)
                                 .join('') || null,
                         value: m.defaultValue || null,
                         abstract: !!m.flags.isAbstract,
                         default: m.defaultValue || null,
                         deprecated: !!m.comment?.blockTags?.some((r) => r.tag === '@deprecated'),
-                        metadata: getFileMetadata(m.type?.declaration || m),
+                        metadata: getFileMetadata((memberType as any)?.declaration || m),
                         private: !!m.flags.isPrivate,
                         readonly: !!m.flags.isReadonly,
                         see:
@@ -89,8 +106,8 @@ export class TypesSerializer extends AbstractSerializer {
                                 ?.find((r) => r.tag === '@see')
                                 ?.content?.map((m) => m.text) || [],
                         static: !!m.flags.isStatic,
-                        type: m.type ? parseType(m.type) : 'any',
-                        rawType: m.type ? parseTypes(m.type) : ['any']
+                        type: memberType ? parseType(memberType) : 'any',
+                        rawType: memberType ? parseTypes(memberType) : ['any']
                     };
                 });
             }

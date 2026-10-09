@@ -56,8 +56,8 @@ export class MarkdownGenerator {
 
     public getClassHeading(c: DocumentedClass) {
         return `${
-            c.extends ? `extends ${this.linker(c.extends, [c.extends])}` : ''
-        }${c.implements ? `implements ${this.linker(c.implements, [c.implements])}` : ''}${
+            c.extends ? `extends ${this.linker(c.extends, c.rawExtends || [c.extends])}` : ''
+        }${c.implements ? `implements ${this.linker(c.implements, c.rawImplements || [c.implements])}` : ''}${
             c.description ? `\n\n${c.description}\n` : ''
         }`;
     }
@@ -77,7 +77,7 @@ export class MarkdownGenerator {
             const tableBody = c.parameters.map((m) => {
                 const params = [
                     escape(m.name),
-                    this.linker(m.type || 'any', [m.type || 'any']),
+                    this.linker(m.type || 'any', m.rawType || [m.type || 'any']),
                     m.optional ? 'Yes' : 'No',
                     m.description || '-'
                 ]
@@ -138,10 +138,10 @@ export class MarkdownGenerator {
                         return t.objectType === ReflectionKind.Enum ?
                             [
                                 escape(n.name),
-                                this.linker(n.type || 'any', [n.type || 'any'])
+                                this.linker(n.type || 'any', n.rawType || [n.type || 'any'])
                             ] : [
                             escape(n.name),
-                            this.linker(n.type || 'any', [n.type || 'any']),
+                            this.linker(n.type || 'any', n.rawType || [n.type || 'any']),
                             escape(n.value || '-'),
                             n.description || '-'
                         ];
@@ -159,7 +159,7 @@ export class MarkdownGenerator {
                         ], tableBody)}\n`;
                 })()
                 : t.type
-                    ? `\n${this.linker(t.type, [t.type])}`
+                    ? `\n${this.linker(t.type, t.rawType || [t.type])}`
                     : '',
             t.metadata?.url ? `\n- ${hyperlink('Source', t.metadata.url)}` : ''
         ];

@@ -39,3 +39,10 @@ code[class*="language-diff"],
 code[class*="language-diff"] * {
   font-family: var(--font-code);
 }
+
+
+/* Long types in the API reference (object and function types) wrap instead of being cut off. */
+tbody[class*="Table_tbody"] tr td[class*="Table_td"] {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
