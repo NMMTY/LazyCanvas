@@ -13,7 +13,6 @@ import {
   InlineCode, 
   Accordion, 
   AccordionGroup ,
-  CodeBlock,
   TextProps,
   HeadingLink,
   MediaProps,
@@ -26,6 +25,7 @@ import {
   ListItem,
   Line,
 } from "@once-ui-system/core";
+import { CodeBlock } from "@once-ui-system/core/code";
 import { Example } from "./Example";
 import { PageList } from "./PageList";
 import {CustomTable} from "@/product/CustomTable";
@@ -40,7 +40,6 @@ const onceUIComponents = {
   InlineCode,
   Accordion,
   AccordionGroup,
-  CodeBlock,
   Grid,
   HeadingLink,
   Feedback,
@@ -56,26 +55,12 @@ type CustomLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 };
 
 function CustomLink({ href, children, ...props }: CustomLinkProps) {
-  if (href.startsWith("/")) {
-    return (
-      <SmartLink href={href} {...props}>
-        {children}
-      </SmartLink>
-    );
-  }
-
-  if (href.startsWith("#")) {
-    return (
-      <a href={href} {...props}>
-        {children}
-      </a>
-    );
-  }
-
+  // SmartLink picks a client-side link for internal paths, and an external
+  // one (new tab, noopener) for everything else; in-page anchors work as-is.
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+    <SmartLink href={href} {...(props as object)}>
       {children}
-    </a>
+    </SmartLink>
   );
 }
 
@@ -204,7 +189,33 @@ function createCodeBlock(props: any) {
   }
   
   // Fallback for other pre tags or empty code blocks
-  return <pre {...props} />;
+  return (
+    <Column as="pre" fillWidth overflowX="auto" marginTop="8" marginBottom="16">
+      {props.children}
+    </Column>
+  );
+}
+
+/**
+ * GitHub-flavoured markdown tables arrive as <thead>/<tbody> element trees;
+ * rebuild them as the data Once UI's Table takes.
+ */
+function MarkdownTable({ children }: { children: ReactNode }) {
+  const sections = React.Children.toArray(children) as React.ReactElement<{ children?: ReactNode }>[];
+  const rowsOf = (section?: React.ReactElement<{ children?: ReactNode }>) =>
+    section
+      ? (React.Children.toArray(section.props.children) as React.ReactElement<{
+          children?: ReactNode;
+        }>[]).map((row) => React.Children.toArray(row.props.children).map((cell) => (cell as React.ReactElement<{ children?: ReactNode }>).props.children))
+      : [];
+
+  const [head, body] = sections;
+  const headers = (rowsOf(head)[0] ?? []).map((content, index) => ({
+    content,
+    key: `col-${index}`,
+  }));
+
+  return <Table marginTop="8" marginBottom="16" hoverable data={{ headers, rows: rowsOf(body) }} />;
 }
 
 function createHR() {
@@ -227,11 +238,7 @@ const components = {
   ol: createList as any,
   li: createListItem as any,
   hr: createHR as any,
-  table: ((props: any) => (
-    <div className="md-table-wrap">
-      <table className="md-table" {...props} />
-    </div>
-  )) as any,
+  table: MarkdownTable as any,
   PageList,
   Example,
   ...onceUIComponents,

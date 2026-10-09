@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { examples } from "@/examples";
-import { CodeBlock, Column, Text } from "@once-ui-system/core";
+import { Column, Text } from "@once-ui-system/core";
+import { CodeBlock } from "@once-ui-system/core/code";
 import React from "react";
 
 interface ExampleProps {

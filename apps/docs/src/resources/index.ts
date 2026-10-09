@@ -6,6 +6,5 @@ export {
   social,
   schema,
   meta,
-  routes,
-  dataStyle
+  routes
 } from "@/resources/once-ui.config";

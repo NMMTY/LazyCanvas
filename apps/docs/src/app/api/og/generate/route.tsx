@@ -1,3 +1,5 @@
+// Note: this markup is rendered by `ImageResponse` (Satori), not React DOM, so it has to be
+// plain HTML elements; Once UI components cannot be used here.
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";

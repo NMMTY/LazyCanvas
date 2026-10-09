@@ -76,11 +76,6 @@ export default async function Docs({
             <Text variant="body-default-s" onBackground="neutral-weak">
               Last update: {formatDate(doc.metadata.updatedAt)}
             </Text>
-            {doc.metadata.github && (
-              <Button className="mt-20" href={"https://github.com/once-ui-system/core/blob/main/packages/core/src/" + doc.metadata.github} size="s" variant="secondary" prefixIcon="github" weight="default" data-border="rounded">
-                View on GitHub
-              </Button>
-            )}
           </Column>
           {doc.metadata.image && (
             <Media border="neutral-alpha-medium" enlarge src={doc.metadata.image} alt={"Thumbnail of " + doc.metadata.title} aspectRatio="16 / 9" radius="m" sizes="(max-width: 768px) 100vw, 768px" priority />

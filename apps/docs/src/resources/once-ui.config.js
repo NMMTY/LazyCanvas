@@ -58,20 +58,6 @@ const style = {
   scaling: "100",
 };
 
-const dataStyle = {
-  variant: "gradient", // flat | gradient | outline
-  mode: "categorical", // categorical | divergent | sequential
-  height: 24, // default chart height
-  axis: {
-    stroke: "var(--neutral-alpha-weak)",
-  },
-  tick: {
-    fill: "var(--neutral-on-background-weak)",
-    fontSize: 11,
-    line: false
-  },
-};
-
 const layout = {
   // units are set in REM
   header: {
@@ -163,4 +149,4 @@ const meta = {
   },
 };
 
-export { dataStyle, effects, style, layout, baseURL, social, schema, meta, routes, fonts };
+export { effects, style, layout, baseURL, social, schema, meta, routes, fonts };

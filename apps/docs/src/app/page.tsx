@@ -4,7 +4,6 @@ import { baseURL, meta, schema } from "@/resources";
 import {
   Badge,
   Button,
-  CodeBlock,
   Column,
   Grid,
   Heading,
@@ -14,6 +13,7 @@ import {
   Tag,
   Text,
 } from "@once-ui-system/core";
+import { CodeBlock } from "@once-ui-system/core/code";
 import React from "react";
 
 export async function generateMetadata() {

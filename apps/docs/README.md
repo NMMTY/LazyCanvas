@@ -10,7 +10,8 @@ The site at the heart of the LazyCanvas docs: guides, live examples and the gene
 | `src/content/reference/` | The API reference. **Generated** and git-ignored — see below. |
 | `src/examples/*.tsx` | Live examples. Each is a client component built on `@nmmty/adapter-react`. |
 | `src/product/Example.tsx` | The `<Example name="…" />` MDX component: renders an example next to its own source. |
-| `src/resources/once-ui.config.js` | Site name, metadata, theme. |
+| `src/resources/once-ui.config.js` | Site name, metadata, theme, fonts. |
+| `src/resources/icons.ts`, `once-ui.d.ts` | Icons added on top of Once UI's built-in set (register in both). |
 
 ## Working on it
 
@@ -43,6 +44,12 @@ navIcon: "learn"
 1. Create `src/examples/<name>.tsx`: a `"use client"` component that renders a `<Scene>`.
 2. Register it in `src/examples/index.ts`.
 3. Use it in a guide with `<Example name="<name>" />` (add `hideCode` to show only the result). The code shown on the page is the file itself, so it cannot drift from what runs.
+
+## Notes on Once UI 2
+
+- `CodeBlock` is imported from `@once-ui-system/core/code` (it needs `prismjs`), and Once UI needs Next.js 15.5 or newer.
+- Use Once UI components rather than raw HTML tags (`Column`/`Row`, `Text`, `Input`, `Select`, `Slider`, `Table`, `SmartLink`, …). The two exceptions are the `<head>` script in `layout.tsx` and the Open Graph image route, which is rendered by Satori and takes plain elements.
+- The `next/font` variable classes are set on `<body>`, not `<html>`: Once UI's `tokens.css` declares `:root { --font-heading: var(--font-heading) }`, which is invalid and leaves the font variables empty if the classes sit on `<html>`.
 
 ## Deployment
 

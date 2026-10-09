@@ -12,7 +12,7 @@ const withMDXConfig = withMDX({
 const nextConfig = {
   sassOptions: {
     compiler: "modern",
-    silenceDeprecations: ["legacy-js-api"],
+    silenceDeprecations: ["legacy-js-api", "if-function"],
   },
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   transpilePackages: ["next-mdx-remote"],

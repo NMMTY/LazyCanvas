@@ -1,6 +1,7 @@
 "use client";
 
-import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
+import { Group, Morph, Scene } from "@nmmty/adapter-react";
+import { Column, Row, Select, Slider } from "@once-ui-system/core";
 import { useState } from "react";
 
 const JUSTIFY = ["flex-start", "center", "flex-end", "space-between", "space-around"] as const;
@@ -12,22 +13,27 @@ export default function Layout() {
   const [gap, setGap] = useState(12);
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-        <select value={justifyContent} onChange={(e) => setJustify(e.target.value as never)}>
-          {JUSTIFY.map((value) => (
-            <option key={value}>{value}</option>
-          ))}
-        </select>
-        <select value={flexDirection} onChange={(e) => setDirection(e.target.value as never)}>
-          <option>row</option>
-          <option>column</option>
-        </select>
-        <label>
-          gap {gap}{" "}
-          <input type="range" min={0} max={40} value={gap} onChange={(e) => setGap(+e.target.value)} />
-        </label>
-      </div>
+    <Column gap="12" horizontal="center">
+      <Row gap="12" wrap fillWidth>
+        <Select
+          id="justify"
+          label="justifyContent"
+          value={justifyContent}
+          options={JUSTIFY.map((value) => ({ label: value, value }))}
+          onSelect={(value) => setJustify(value as (typeof JUSTIFY)[number])}
+        />
+        <Select
+          id="direction"
+          label="flexDirection"
+          value={flexDirection}
+          options={[
+            { label: "row", value: "row" },
+            { label: "column", value: "column" },
+          ]}
+          onSelect={(value) => setDirection(value as "row" | "column")}
+        />
+        <Slider label="gap" showValue min={0} max={40} value={gap} onChange={setGap} />
+      </Row>
 
       <Scene width={480} height={200} style={{ maxWidth: "100%", height: "auto" }}>
         <Group
@@ -46,7 +52,7 @@ export default function Layout() {
             size={{ width: 480, height: 200, radius: { all: 16 } }}
             layout={{ position: "absolute", top: 0, left: 0 }}
           />
-          {COLORS.map((color, index) => (
+          {COLORS.map((color) => (
             <Morph
               key={color}
               color={color}
@@ -56,6 +62,6 @@ export default function Layout() {
           ))}
         </Group>
       </Scene>
-    </div>
+    </Column>
   );
 }

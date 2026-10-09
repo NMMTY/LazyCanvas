@@ -55,12 +55,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         as="html"
         lang="en"
         suppressHydrationWarning
-        className={classNames(
-          fonts.heading.variable,
-          fonts.body.variable,
-          fonts.label.variable,
-          fonts.code.variable,
-        )}
       >
         <head>
           <script
@@ -110,7 +104,27 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           />
         </head>
         <Providers>
-        <Column background="page" as="body" fillWidth margin="0" padding="0" style={{ minHeight: "100vh" }}>
+        {/*
+          The font variables belong on <body>, not <html>. Once UI's tokens.css declares
+          `:root { --font-heading: var(--font-heading); … }`, a self-reference that is
+          invalid and leaves every font variable empty (the text then falls back to
+          Times). A class on <html> has the same specificity and loses to it depending on
+          stylesheet order; a declaration on <body> always wins over the inherited value.
+        */}
+        <Column
+          background="page"
+          as="body"
+          fillWidth
+          margin="0"
+          padding="0"
+          style={{ minHeight: "100vh" }}
+          className={classNames(
+            fonts.heading.variable,
+            fonts.body.variable,
+            fonts.label.variable,
+            fonts.code.variable,
+          )}
+        >
         <Background
           position="fixed"
           mask={{

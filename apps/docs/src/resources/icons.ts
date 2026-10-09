@@ -1,90 +1,26 @@
-import { IconType } from "react-icons";
-
+import type { IconComponent } from "@once-ui-system/core";
+import { FaGithub, FaNpm } from "react-icons/fa6";
 import {
-  HiMiniMinus,
-  HiOutlineEye,
-  HiOutlineEyeSlash,
-  HiMiniPlus,
-  HiOutlineMagnifyingGlass,
-  HiCalendar,
-  HiOutlineLink,
-  HiArrowUpRight,
-  HiOutlineShieldCheck,
-  HiOutlineSparkles,
-  HiOutlineBars3BottomLeft,
-  HiOutlineHome,
-  HiOutlineAcademicCap,
-  HiOutlineQueueList,
-  HiOutlineRocketLaunch,
-  HiOutlineIdentification,
-  HiOutlinePhoto,
-  HiOutlineMap,
-  HiOutlineClock,
-  HiOutlineLightBulb,
-  HiOutlineAdjustmentsHorizontal,
-  HiOutlinePaintBrush,
-  HiOutlineDocumentDuplicate,
-  HiOutlineDocumentText,
-  HiOutlineSquare3Stack3D,
-  HiOutlineLanguage,
-  HiOutlineCube,
-  HiOutlineBars3,
-  HiOutlineKey,
-} from "react-icons/hi2";
+  VscSymbolClass,
+  VscSymbolEnum,
+  VscSymbolInterface,
+  VscSymbolMethod,
+  VscSymbolVariable,
+  VscGroupByRefType,
+} from "react-icons/vsc";
 
-import { RiVisaLine } from "react-icons/ri";
-
-import { FaDiscord, FaGithub, FaNpm, FaGoogle, FaLinkedin, FaMailchimp, FaThreads } from "react-icons/fa6";
-
-import { VscSymbolClass, VscSymbolVariable, VscSymbolMethod, VscSymbolEnum, VscSymbolInterface, VscGroupByRefType  } from "react-icons/vsc";
-
-export const iconLibrary: Record<string, IconType> = {
-  openLink: HiOutlineLink,
-  discord: FaDiscord,
-  google: FaGoogle,
+/**
+ * Icons the site registers on top of the ones Once UI ships: brand marks and
+ * the symbol kinds used by the API reference. Names must also be declared in
+ * `once-ui.d.ts` so that `IconName` knows about them.
+ */
+export const iconLibrary: Record<string, IconComponent> = {
   github: FaGithub,
   npm: FaNpm,
-  arrowUpRight: HiArrowUpRight,
-  minus: HiMiniMinus,
-  plus: HiMiniPlus,
-  calendar: HiCalendar,
-  eye: HiOutlineEye,
-  eyeOff: HiOutlineEyeSlash,
-  search: HiOutlineMagnifyingGlass,
-  visa: RiVisaLine,
-  security: HiOutlineShieldCheck,
-  sparkle: HiOutlineSparkles,
-  document: HiOutlineBars3BottomLeft,
-  linkedin: FaLinkedin,
-  threads: FaThreads,
-  home: HiOutlineHome,
-  scholar: HiOutlineAcademicCap,
-  queue: HiOutlineQueueList,
-  rocket: HiOutlineRocketLaunch,
-  card: HiOutlineIdentification,
-  image: HiOutlinePhoto,
-  roadmap: HiOutlineMap,
-  changelog: HiOutlineClock,
-  lightbulb: HiOutlineLightBulb,
-  config: HiOutlineAdjustmentsHorizontal,
-  mailchimp: FaMailchimp,
-  style: HiOutlinePaintBrush,
-  pages: HiOutlineDocumentDuplicate,
-  learn: HiOutlineAcademicCap,
-  page: HiOutlineDocumentText,
-  project: HiOutlineSquare3Stack3D,
-  article: HiOutlineQueueList,
-  language: HiOutlineLanguage,
-  components: HiOutlineCube,
-  sidebar: HiOutlineBars3,
-  password: HiOutlineKey,
   class: VscSymbolClass,
-  variable: VscSymbolVariable,
-  method: VscSymbolMethod,
   enum: VscSymbolEnum,
+  function: VscSymbolMethod,
   interface: VscSymbolInterface,
   type: VscGroupByRefType,
+  variable: VscSymbolVariable,
 };
-
-export type IconLibrary = typeof iconLibrary;
-export type IconName = keyof IconLibrary;

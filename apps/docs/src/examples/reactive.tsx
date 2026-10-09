@@ -1,6 +1,7 @@
 "use client";
 
 import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
+import { Column, Input, Row, Slider } from "@once-ui-system/core";
 import { useState } from "react";
 
 export default function Reactive() {
@@ -9,18 +10,12 @@ export default function Reactive() {
   const [label, setLabel] = useState("Edit me");
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-        <label>
-          radius {radius}{" "}
-          <input type="range" min={0} max={70} value={radius} onChange={(e) => setRadius(+e.target.value)} />
-        </label>
-        <label>
-          hue {hue}{" "}
-          <input type="range" min={0} max={360} value={hue} onChange={(e) => setHue(+e.target.value)} />
-        </label>
-        <input value={label} onChange={(e) => setLabel(e.target.value)} />
-      </div>
+    <Column gap="12" horizontal="center">
+      <Row gap="16" wrap fillWidth vertical="center">
+        <Slider label="radius" showValue min={0} max={70} value={radius} onChange={setRadius} />
+        <Slider label="hue" showValue min={0} max={360} value={hue} onChange={setHue} />
+        <Input id="label" label="Text" value={label} onChange={(e) => setLabel(e.target.value)} />
+      </Row>
 
       <Scene width={480} height={160} style={{ maxWidth: "100%", height: "auto" }}>
         <Group layout={{ width: 480, height: 160, justifyContent: "center", alignItems: "center" }}>
@@ -37,6 +32,6 @@ export default function Reactive() {
           />
         </Group>
       </Scene>
-    </div>
+    </Column>
   );
 }
