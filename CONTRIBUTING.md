@@ -63,10 +63,12 @@ The four public packages share one version.
 
 1. Move the **Unreleased** notes in `CHANGELOG.md` under the new version.
 2. Bump the `version` in all four `packages/*/package.json` files.
-3. Run `pnpm install && pnpm build && pnpm test && pnpm check:packages` locally.
+3. Run `pnpm install && pnpm build && pnpm test && pnpm check:packages` locally, and
+   `node scripts/check-release.mjs v1.2.3` to confirm the versions agree and the changelog has the section.
 4. Merge to `main`, then tag: `git tag v1.2.3 && git push origin v1.2.3`.
-5. The `Release` workflow publishes with provenance: tags with a prerelease suffix (`v1.1.0-rc.1`)
-   go to the `next` dist-tag, everything else to `latest`.
+5. The `Release` workflow re-runs every check, publishes the four packages with provenance and creates
+   the GitHub release. Tags with a prerelease suffix (`v1.1.0-rc.1`) go to the `next` dist-tag,
+   everything else to `latest`. It needs an `NPM_TOKEN` repository secret.
 
 ## Code of conduct
 

@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/adapter-react",
-  "version": "1.0.0-dev.1",
+  "version": "1.0.0-rc.1",
   "description": "React bindings for @nmmty/lazycanvas: a <Scene> component, layer components and animation hooks.",
   "keywords": ["lazycanvas", "react", "canvas", "jsx", "animation", "nextjs"],
   "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-react#readme",
