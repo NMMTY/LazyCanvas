@@ -8,32 +8,35 @@ const baseURL =
 
 const routes = {};
 
-// Import and set font for each variant
+// Import and set font for each variant. The CSS variables are deliberately not called
+// --font-*: Once UI's tokens.css declares `:root { --font-body: var(--font-body) }`,
+// a self-reference, so next/font's variables get their own names and custom.css maps
+// them onto Once UI's.
 import { Inter } from "next/font/google";
 import { Geist_Mono } from "next/font/google";
 import { Sora } from "next/font/google";
 import { Lexend } from "next/font/google";
 
 const heading = Sora({
-    variable: "--font-heading",
+    variable: "--next-font-heading",
     subsets: ["latin"],
     display: "swap",
 });
 
 const body = Lexend({
-    variable: "--font-body",
+    variable: "--next-font-body",
     subsets: ["latin"],
     display: "swap",
 });
 
 const label = Inter({
-    variable: "--font-label",
+    variable: "--next-font-label",
     subsets: ["latin"],
     display: "swap",
 });
 
 const code = Geist_Mono({
-    variable: "--font-code",
+    variable: "--next-font-code",
     subsets: ["latin"],
     display: "swap",
 });
