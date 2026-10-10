@@ -201,34 +201,35 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
     if (debug) LazyLog.log("none", "MorphLayer:", { x, y, w, h, rad });
 
     ctx.save();
+    try {
+      if (this.props.transform) {
+        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
+      }
+      ctx.beginPath();
+      if (Object.keys(rad).length > 0) {
+        ctx.moveTo(x + w / 2, y);
+        ctx.arcTo(x + w, y, x + w, y + h / 2, rad.rightTop || rad.all || 0);
+        ctx.arcTo(x + w, y + h, x + w / 2, y + h, rad.rightBottom || rad.all || 0);
+        ctx.arcTo(x, y + h, x, y + h / 2, rad.leftBottom || rad.all || 0);
+        ctx.arcTo(x, y, x + w / 2, y, rad.leftTop || rad.all || 0);
+      } else {
+        ctx.rect(x, y, w, h);
+      }
+      ctx.closePath();
 
-    if (this.props.transform) {
-      transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
+      DrawUtils.drawShadow(ctx, this.props.shadow);
+      DrawUtils.opacity(ctx, this.props.opacity);
+      DrawUtils.filters(ctx, this.props.filter);
+      DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+
+      if (this.props.stroke) {
+        ctx.stroke();
+      } else {
+        ctx.fill();
+      }
+    } finally {
+      ctx.restore();
     }
-    ctx.beginPath();
-    if (Object.keys(rad).length > 0) {
-      ctx.moveTo(x + w / 2, y);
-      ctx.arcTo(x + w, y, x + w, y + h / 2, rad.rightTop || rad.all || 0);
-      ctx.arcTo(x + w, y + h, x + w / 2, y + h, rad.rightBottom || rad.all || 0);
-      ctx.arcTo(x, y + h, x, y + h / 2, rad.leftBottom || rad.all || 0);
-      ctx.arcTo(x, y, x + w / 2, y, rad.leftTop || rad.all || 0);
-    } else {
-      ctx.rect(x, y, w, h);
-    }
-    ctx.closePath();
-
-    DrawUtils.drawShadow(ctx, this.props.shadow);
-    DrawUtils.opacity(ctx, this.props.opacity);
-    DrawUtils.filters(ctx, this.props.filter);
-    DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
-
-    if (this.props.stroke) {
-      ctx.stroke();
-    } else {
-      ctx.fill();
-    }
-
-    ctx.restore();
   }
 
   /**

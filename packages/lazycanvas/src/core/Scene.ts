@@ -95,6 +95,12 @@ export class Scene {
 
     this.scheduler.update(time);
 
+    // Start every frame from a clean slate: a transform or clip left behind by
+    // earlier drawing (a failed frame, or user code) would make this frame come
+    // out shifted and clear the wrong area, leaving the old one visible.
+    const ctx = this.lazyCanvas.ctx as { resetTransform?: () => void };
+    ctx.resetTransform?.();
+
     this.lazyCanvas.ctx.clearRect(
       0,
       0,

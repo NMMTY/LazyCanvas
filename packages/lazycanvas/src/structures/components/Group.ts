@@ -6,7 +6,7 @@ import {
   type ICanvasRenderingContext2D,
   LayerType,
 } from "../../types";
-import { LazyLog, authoredProps, generateID, getChildren } from "../../utils";
+import { LazyLog, authoredProps, generateID, getChildren, throwFirst } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerProps } from "./BaseLayer";
 
@@ -194,22 +194,31 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
     // would draw every descendant twice.
     const children = layer instanceof Group ? [] : getChildren(layer);
     if (children.length > 0) {
+      const errors: unknown[] = [];
+
       ctx.save();
+      try {
+        // Layout positions are relative to the parent, so move into the parent's
+        // coordinate space before drawing the children.
+        const position = layer.props?.position;
+        if (position) {
+          const x = typeof position.x === "number" ? position.x : 0;
+          const y = typeof position.y === "number" ? position.y : 0;
+          ctx.translate(x, y);
+        }
 
-      // Layout positions are relative to the parent, so move into the parent's
-      // coordinate space before drawing the children.
-      const position = layer.props?.position;
-      if (position) {
-        const x = typeof position.x === "number" ? position.x : 0;
-        const y = typeof position.y === "number" ? position.y : 0;
-        ctx.translate(x, y);
+        for (const child of children) {
+          try {
+            await this.renderLayer(child, ctx, canvas, manager, debug, adapter);
+          } catch (error) {
+            errors.push(error);
+          }
+        }
+      } finally {
+        ctx.restore();
       }
 
-      for (const child of children) {
-        await this.renderLayer(child, ctx, canvas, manager, debug, adapter);
-      }
-
-      ctx.restore();
+      throwFirst(errors);
     }
 
     ctx.shadowColor = "transparent";
@@ -223,22 +232,35 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
     debug: boolean,
     adapter?: ICanvasAdapter,
   ) {
+    const errors: unknown[] = [];
+
     ctx.save();
-
-    // Apply position translation if available (from layout)
-    if (this.props.position) {
-      const x = typeof this.props.position.x === "number" ? this.props.position.x : 0;
-      const y = typeof this.props.position.y === "number" ? this.props.position.y : 0;
-      ctx.translate(x, y);
-    }
-
-    for (const subLayer of this.layers) {
-      if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
-      if (subLayer.visible) {
-        await this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter);
+    try {
+      // Apply position translation if available (from layout)
+      if (this.props.position) {
+        const x = typeof this.props.position.x === "number" ? this.props.position.x : 0;
+        const y = typeof this.props.position.y === "number" ? this.props.position.y : 0;
+        ctx.translate(x, y);
       }
+
+      // One layer failing must not take its siblings down with it, nor leave the
+      // context translated for whatever is drawn next: draw everything, put the
+      // state back, and only then report.
+      for (const subLayer of this.layers) {
+        if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
+        if (subLayer.visible) {
+          try {
+            await this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter);
+          } catch (error) {
+            errors.push(error);
+          }
+        }
+      }
+    } finally {
+      ctx.restore();
     }
-    ctx.restore();
+
+    throwFirst(errors);
   }
 
   /**

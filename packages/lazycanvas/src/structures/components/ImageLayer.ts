@@ -22,6 +22,12 @@ import { Link } from "../helpers";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
+/** A short description of an image source for log messages. */
+function describeSource(src: unknown): string {
+  if (typeof src !== "string") return "binary image data";
+  return src.length > 80 ? `"${src.slice(0, 77)}…"` : `"${src}"`;
+}
+
 /**
  * Interface representing an Image Layer.
  */
@@ -45,6 +51,14 @@ export interface IImageLayerProps extends IBaseLayerProps {
    * The source of the image, which can be a URL or a Buffer.
    */
   src: string | Buffer;
+
+  /**
+   * What to draw when the image cannot be loaded: a neutral box with a cross, in
+   * the layer's size and with its rounded corners, so the layout keeps its shape
+   * and the other layers still render. Pass `false` to make the failure an error
+   * instead.
+   */
+  placeholder?: false | { color?: string; stroke?: string };
 
   /**
    * The size of the image, including width, height, and radius.
@@ -96,6 +110,17 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
   setSrc(src: string): this {
     if (!isImageUrlValid(src)) throw new LazyError("The src of the image must be a valid URL");
     this.props.src = src;
+    return this;
+  }
+
+  /**
+   * Sets the placeholder drawn when the image cannot be loaded.
+   * @param {false | { color?: string; stroke?: string }} [placeholder] - Colors of the box and
+   * its cross, or `false` to throw instead of drawing a placeholder.
+   * @returns {this} The current instance for chaining.
+   */
+  setPlaceholder(placeholder: false | { color?: string; stroke?: string }): this {
+    this.props.placeholder = placeholder;
     return this;
   }
 
@@ -161,34 +186,81 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
 
     // Load before saving the context: holding a save() across a network fetch
     // leaves the state stack open for as long as the image takes to arrive.
-    const image = adapter
-      ? await adapter.loadImage(this.props.src)
-      : await loadImageFallback(this.props.src);
-    if (!image) throw new LazyError("The image could not be loaded");
+    let image: any = null;
+    let failure: unknown;
+    try {
+      image = adapter
+        ? await adapter.loadImage(this.props.src)
+        : await loadImageFallback(this.props.src);
+    } catch (error) {
+      failure = error;
+    }
+
+    if (!image) {
+      const reason =
+        failure instanceof Error ? failure.message : "the image loader returned nothing";
+      if (this.props.placeholder === false) {
+        throw new LazyError(`ImageLayer "${this.id}": the image could not be loaded (${reason})`);
+      }
+      LazyLog.log(
+        "warn",
+        `ImageLayer "${this.id}": could not load ${describeSource(this.props.src)} (${reason}); drawing a placeholder`,
+      );
+    }
 
     ctx.save();
+    try {
+      if (this.props.transform) {
+        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
+      }
+      DrawUtils.drawShadow(ctx, this.props.shadow);
+      DrawUtils.opacity(ctx, this.props.opacity);
+      DrawUtils.filters(ctx, this.props.filter);
 
-    if (this.props.transform) {
-      transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
-    }
-    DrawUtils.drawShadow(ctx, this.props.shadow);
-    DrawUtils.opacity(ctx, this.props.opacity);
-    DrawUtils.filters(ctx, this.props.filter);
+      if (Object.keys(rad).length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(x + w / 2, y);
+        ctx.arcTo(x + w, y, x + w, y + h / 2, rad.rightTop || rad.all || 0);
+        ctx.arcTo(x + w, y + h, x + w / 2, y + h, rad.rightBottom || rad.all || 0);
+        ctx.arcTo(x, y + h, x, y + h / 2, rad.leftBottom || rad.all || 0);
+        ctx.arcTo(x, y, x + w / 2, y, rad.leftTop || rad.all || 0);
+        ctx.closePath();
+        ctx.clip();
+      }
 
-    if (Object.keys(rad).length > 0) {
-      ctx.beginPath();
-      ctx.moveTo(x + w / 2, y);
-      ctx.arcTo(x + w, y, x + w, y + h / 2, rad.rightTop || rad.all || 0);
-      ctx.arcTo(x + w, y + h, x + w / 2, y + h, rad.rightBottom || rad.all || 0);
-      ctx.arcTo(x, y + h, x, y + h / 2, rad.leftBottom || rad.all || 0);
-      ctx.arcTo(x, y, x + w / 2, y, rad.leftTop || rad.all || 0);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(image, x, y, w, h);
-    } else {
-      ctx.drawImage(image, x, y, w, h);
+      if (image) {
+        ctx.drawImage(image, x, y, w, h);
+      } else {
+        this.drawPlaceholder(ctx, x, y, w, h);
+      }
+    } finally {
+      ctx.restore();
     }
-    ctx.restore();
+  }
+
+  /**
+   * Draws the stand-in for an image that could not be loaded: a filled box with
+   * a cross, clipped by whatever clip the caller has set up.
+   */
+  private drawPlaceholder(
+    ctx: ICanvasRenderingContext2D,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ): void {
+    const options = this.props.placeholder || {};
+    ctx.fillStyle = options.color ?? "#e5e7eb";
+    ctx.fillRect(x, y, w, h);
+
+    ctx.strokeStyle = options.stroke ?? "#9ca3af";
+    ctx.lineWidth = Math.max(1, Math.min(w, h) / 24);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x, y + h);
+    ctx.stroke();
   }
 
   /**

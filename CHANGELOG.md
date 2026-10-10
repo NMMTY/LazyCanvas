@@ -27,6 +27,7 @@ before upgrading.
 - **Signals and generator-based animation**: `createSignal`, tweens, `Easing`, `all`, `chain`,
   `loop`, `waitFor`, `spring`, `timeline`, …
 - **APNG export**, and `renderFrame`/`renderAnimation` to render any point of the timeline.
+- **`ImageLayer` placeholder**: an image that cannot be loaded is drawn as a placeholder (configurable, or `placeholder: false` to fail) instead of aborting the frame; a layer that throws no longer stops the layers after it or leaves the canvas state shifted.
 - **Vertical text** (`direction: "ttb" | "btt"`) with word and ideograph modes.
 - **`@nmmty/adapter-react`**: `<Scene>`, `Morph`, `Text`, `Image`, `Line`, `Bezier`,
   `Quadratic`, `Polygon`, `Path2D`, `Group`, and `registerLayer` for your own layers.

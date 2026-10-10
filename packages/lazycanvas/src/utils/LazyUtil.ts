@@ -31,3 +31,15 @@ export const defaultArg = {
     return { vertical: vertical || false, layer: layer || false };
   },
 };
+
+/**
+ * Rethrows the first of the errors collected while drawing a subtree; the others
+ * are logged so they are not lost.
+ */
+export function throwFirst(errors: unknown[]): void {
+  if (errors.length === 0) return;
+  for (const extra of errors.slice(1)) {
+    LazyLog.log("error", extra instanceof Error ? extra.message : String(extra));
+  }
+  throw errors[0];
+}
