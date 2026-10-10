@@ -2,12 +2,34 @@
 
 All notable changes to the published packages are documented here. The four
 packages — `@nmmty/lazycanvas`, `@nmmty/adapter-node`, `@nmmty/adapter-browser`
-and `@nmmty/adapter-react` — are released together and share one version.
+and `@nmmty/adapter-react` — are versioned independently: a release only
+contains the packages whose version was bumped, and each entry below names the
+packages it applies to.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.1]
+
+`@nmmty/lazycanvas` only; the adapters stay at 1.0.0.
+
+### Added
+
+- **`ImageLayer` placeholder**: an image that cannot be loaded is drawn as a placeholder
+  (a box with a cross, in the layer's size and with its rounded corners; style it with
+  `placeholder: { color, stroke }`) and a warning is logged, instead of aborting the frame.
+  `placeholder: false` restores the error.
+
+### Fixed
+
+- A layer that throws while drawing no longer stops the layers after it: the frame is
+  completed and the first error is reported afterwards.
+- A failing layer no longer leaves the canvas context transformed. A `Group` that had
+  translated the context never undid it, so the next frame was drawn shifted and the previous
+  one was left behind, which showed up as layers drawn twice with an offset. Every layer
+  restores the context in a `finally`, and `Scene` resets the transform before each frame.
 
 ## [1.0.0]
 
@@ -27,7 +49,6 @@ before upgrading.
 - **Signals and generator-based animation**: `createSignal`, tweens, `Easing`, `all`, `chain`,
   `loop`, `waitFor`, `spring`, `timeline`, …
 - **APNG export**, and `renderFrame`/`renderAnimation` to render any point of the timeline.
-- **`ImageLayer` placeholder**: an image that cannot be loaded is drawn as a placeholder (configurable, or `placeholder: false` to fail) instead of aborting the frame; a layer that throws no longer stops the layers after it or leaves the canvas state shifted.
 - **Vertical text** (`direction: "ttb" | "btt"`) with word and ideograph modes.
 - **`@nmmty/adapter-react`**: `<Scene>`, `Morph`, `Text`, `Image`, `Line`, `Bezier`,
   `Quadratic`, `Polygon`, `Path2D`, `Group`, and `registerLayer` for your own layers.
@@ -55,5 +76,6 @@ before upgrading.
 - **Breaking:** the `RenderManager` class (replaced by render pipelines).
 - **Breaking:** GIF and SVG export, and `Export.JPEG` (use `Export.JPG`).
 
-[Unreleased]: https://github.com/NMMTY/LazyCanvas/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/NMMTY/LazyCanvas/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/NMMTY/LazyCanvas/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/NMMTY/LazyCanvas/releases/tag/v1.0.0

@@ -59,16 +59,21 @@ CI runs lint, build, typecheck, tests and `check:packages` on every pull request
 
 ## Releasing
 
-The four public packages share one version.
+The four public packages are versioned independently. A release publishes the packages whose
+`version` is not on npm yet and skips the rest, so bump only what changed.
 
-1. Move the **Unreleased** notes in `CHANGELOG.md` under the new version.
-2. Bump the `version` in all four `packages/*/package.json` files.
+1. Bump `version` in the `package.json` of each package that changed (follow semver; a package
+   that depends on another through a peer range does not need a bump unless it changed itself).
+2. Move the **Unreleased** notes in `CHANGELOG.md` under a section for the new version, saying
+   which packages it applies to.
 3. Run `pnpm install && pnpm build && pnpm test && pnpm check:packages` locally, and
-   `node scripts/check-release.mjs v1.2.3` to confirm the versions agree and the changelog has the section.
-4. Merge to `main`, then tag: `git tag v1.2.3 && git push origin v1.2.3`.
-5. The `Release` workflow re-runs every check, publishes the four packages with provenance and creates
-   the GitHub release. Tags with a prerelease suffix (`v1.1.0-rc.1`) go to the `next` dist-tag,
-   everything else to `latest`. It needs an `NPM_TOKEN` repository secret.
+   `node scripts/check-release.mjs v1.2.3` (`--offline` to skip the npm lookup) to see what would be
+   published and to check that the tag and the changelog match.
+4. Merge to `main`, then tag with the version of a package being published:
+   `git tag v1.2.3 && git push origin v1.2.3`.
+5. The `Release` workflow re-runs every check, publishes each package from the plan with
+   provenance and creates the GitHub release. Prerelease versions (`1.1.0-rc.1`) go to the `next`
+   dist-tag, everything else to `latest`. It needs an `NPM_TOKEN` repository secret.
 
 ## Code of conduct
 
