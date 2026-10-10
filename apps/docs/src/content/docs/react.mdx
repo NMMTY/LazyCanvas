@@ -41,7 +41,8 @@ Because props are plain values, ordinary React state just works — the canvas r
 | `autoRender` | Default `true`. Turn off to render yourself through the ref. |
 | `animated` | `true` loops the scene's animations forever, a number plays that many loops. |
 | `onReady(scene, canvas)` | Called once the scene exists — register animations here. |
-| `onFrame(scene)` | Called after each drawn frame. |
+| `onFrame(scene)` | Called after each drawn frame, before it is copied to the page. |
+| `cache` | Default `true`. Keeps layer pictures between frames so layers that did not change are copied, not drawn. Layers with a `filter` are stored by default; `cache` on a layer overrides that. Pass `false` to turn it off, or `{ maxBytes, maxEntries }` to set the limits. |
 | `adapter` | Use a different adapter than the browser one. |
 | `debug` | Verbose logging. |
 

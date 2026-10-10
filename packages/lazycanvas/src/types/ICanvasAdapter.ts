@@ -89,6 +89,9 @@ export interface ICanvasRenderingContext2D {
   roundRect(x: number, y: number, w: number, h: number, radii: number | number[]): void;
   isPointInPath(x: number, y: number): boolean;
   isPointInStroke(x: number, y: number): boolean;
+  /** Needed by the layer cache to draw a layer where it belongs; without it nothing is cached. */
+  getTransform?(): { a: number; b: number; c: number; d: number; e: number; f: number };
+  setTransform?(a: number, b: number, c: number, d: number, e: number, f: number): void;
 
   fillStyle: string | ICanvasGradient | ICanvasPattern;
   strokeStyle: string | ICanvasGradient | ICanvasPattern;

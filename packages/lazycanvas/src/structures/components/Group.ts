@@ -8,6 +8,7 @@ import {
 } from "../../types";
 import { LazyLog, authoredProps, generateID, getChildren, throwFirst } from "../../utils";
 import type { LayersManager } from "../managers";
+import { drawLayerCached } from "../managers/LayerCache";
 import { BaseLayer, type IBaseLayer, type IBaseLayerProps } from "./BaseLayer";
 
 /**
@@ -188,7 +189,7 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
 
     ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
 
-    await layer.draw(ctx, canvas, manager, debug, adapter);
+    await drawLayerCached(layer, ctx, canvas, manager, debug, adapter);
 
     // A Group renders its own subtree inside `draw`, so descending into it here
     // would draw every descendant twice.

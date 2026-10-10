@@ -204,6 +204,30 @@ describe("<Scene>", () => {
     expect(countPixels(canvasOf(), isGreen)).toBeGreaterThan(2000);
   });
 
+  it("keeps layer pictures between frames, and not when asked not to", async () => {
+    const blob = (color: string) => (
+      <Morph color={color} filter="blur(4px)" size={{ width: 40, height: 40 }} />
+    );
+    const statsAfter = async (cache: boolean | undefined) => {
+      const onReady = vi.fn();
+      function Demo({ color }: { color: string }) {
+        return (
+          <Scene width={60} height={60} onReady={onReady} cache={cache}>
+            {blob(color)}
+          </Scene>
+        );
+      }
+      await render(<Demo color="#ff0000" />);
+      await render(<Demo color="#00ff00" />);
+      await render(<Demo color="#0000ff" />);
+      return onReady.mock.calls[0][0].cacheStats();
+    };
+
+    // The blur is computed once; the other two frames only repaint it.
+    expect(await statsAfter(undefined)).toMatchObject({ misses: 1, tinted: 2 });
+    expect(await statsAfter(false)).toBeUndefined();
+  });
+
   it("calls onReady once with the scene and canvas, and onFrame after drawing", async () => {
     const onReady = vi.fn();
     const onFrame = vi.fn();

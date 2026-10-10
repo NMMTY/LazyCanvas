@@ -91,6 +91,13 @@ export interface IBaseLayerProps {
   layout?: ILayoutProps;
 
   /**
+   * Whether the scene may keep the picture of this layer and reuse it in the next frame (see
+   * `LayerCache`). Only takes effect on a scene created with `cache`. `true` stores the layer,
+   * `false` never does; left out, layers with a `filter` are stored and the rest are drawn as usual.
+   */
+  cache?: boolean;
+
+  /**
    * The centring type of the layer.
    */
   centring?: AnyCentring;

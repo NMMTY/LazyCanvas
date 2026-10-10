@@ -29,6 +29,17 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   Failed loads are not kept. Turn it off with `new BrowserCanvasAdapter(canvas, { imageCache: false })`
   or empty it with `clearImageCache()`.
 
+- **Layer cache** (`@nmmty/lazycanvas`, `@nmmty/adapter-react`): `new Scene(w, h, { adapter, cache: true })`
+  keeps the picture of layers between frames. A layer is looked up by what it looks like (type, props
+  after layout, canvas size, current transform), so layer objects that are created anew for every frame
+  still find the picture of the last one. A layer whose values are all the same is copied instead of
+  drawn; a blurred shape of one flat colour whose only change is the colour is repainted from its stored
+  blurred outline instead of being blurred again. Stored by default: layers with a `filter`; `cache: true`
+  / `cache: false` on a layer (including a `Group`) overrides it. Layers with a `Link`, a function or a
+  `Buffer` among their props, with `clipPath`, and images are never stored. Limits: `maxBytes` (64 MiB)
+  and `maxEntries` (64) in `LayerCacheOptions`; `scene.cacheStats()` and `scene.clearCache()`.
+  `<Scene cache>` is on by default; `cache={false}` restores drawing every layer in every frame.
+
 ### Changed
 
 - **`<Scene>` no longer shows half-drawn frames** (`@nmmty/adapter-react`): it draws on a detached back

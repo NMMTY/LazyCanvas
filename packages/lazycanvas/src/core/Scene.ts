@@ -1,6 +1,10 @@
 import { LazyCanvas } from "../structures/LazyCanvas";
 import type { Group } from "../structures/components";
-import { ModernRenderPipeline } from "../structures/managers";
+import {
+  type LayerCacheOptions,
+  type LayerCacheStats,
+  ModernRenderPipeline,
+} from "../structures/managers";
 import { type AnyExport, type AnyLayer, Export, type ICanvas, type ICanvasAdapter } from "../types";
 import { walkLayers } from "../utils";
 import type { Signal, ThreadGenerator } from "./Signal";
@@ -49,15 +53,33 @@ export class Scene {
    * @param {(time: number) => void} [opts.onFrameDrawn] - Called after every frame that was drawn
    * completely, before the next queued frame starts. The canvas holds exactly that frame at this
    * point, so it is the place to copy it somewhere (e.g. from an off-screen canvas to a visible one).
+   * @param {boolean | LayerCacheOptions} [opts.cache] - Keep the picture of layers between frames and
+   * reuse it while nothing that shows in it has changed. For a scene that is drawn again and
+   * again (a live preview); a scene drawn once only pays for it. See `LayerCache`.
    * @throws {LazyError} If no adapter is given.
    */
   constructor(
     width: number,
     height: number,
-    opts: { debug?: boolean; adapter?: ICanvasAdapter; onFrameDrawn?: (time: number) => void } = {},
+    opts: {
+      debug?: boolean;
+      adapter?: ICanvasAdapter;
+      onFrameDrawn?: (time: number) => void;
+      cache?: boolean | LayerCacheOptions;
+    } = {},
   ) {
     this.lazyCanvas = new LazyCanvas(ModernRenderPipeline, opts).create(width, height);
     this.onFrameDrawn = opts.onFrameDrawn;
+  }
+
+  /** Counters of the layer cache, or `undefined` if the scene was created without `cache`. */
+  public cacheStats(): LayerCacheStats | undefined {
+    return this.lazyCanvas.cache?.stats;
+  }
+
+  /** Forgets every stored layer picture. The next frame draws everything for real. */
+  public clearCache(): void {
+    this.lazyCanvas.cache?.clear();
   }
 
   /**

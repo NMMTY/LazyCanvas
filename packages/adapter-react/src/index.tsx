@@ -3,6 +3,7 @@ import {
   Group as GroupLayer,
   type ICanvas,
   type ICanvasAdapter,
+  type LayerCacheOptions,
   Scene as LazyScene,
   type Signal,
   type ThreadGenerator,
@@ -260,6 +261,14 @@ export interface SceneProps {
   /** false = single render, true = infinite loop, number = duration in seconds */
   animated?: boolean | number;
   debug?: boolean;
+  /**
+   * Keep the picture of layers between frames and reuse it while nothing that shows in it has
+   * changed (default `true`). A scene that is redrawn on every change (a live preview) skips the
+   * expensive layers, such as blurred shapes, that did not change, and repaints a blurred shape
+   * whose only change is its colour instead of blurring it again. Pass `false` to draw every
+   * layer in every frame, or options to tune the memory the pictures may take. See `LayerCache`.
+   */
+  cache?: boolean | LayerCacheOptions;
 }
 
 /**
@@ -288,6 +297,7 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
     autoRender = true,
     animated = false,
     debug = false,
+    cache = true,
   },
   ref,
 ) {
@@ -301,6 +311,10 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
   const onFrameRef = useRef(onFrame);
   onReadyRef.current = onReady;
   onFrameRef.current = onFrame;
+  // Options are read when a scene is created; only switching the cache on or off recreates it.
+  const cacheRef = useRef(cache);
+  cacheRef.current = cache;
+  const cacheOn = cache !== false;
 
   // Stores registered animation factories so a loop can replay them.
   type AnimEntry = { signal: Signal<any> | null; factory: () => ThreadGenerator };
@@ -379,6 +393,7 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
     const sc: LazyScene = new LazyScene(width, height, {
       adapter: canvasAdapter,
       debug,
+      cache: cacheOn ? cacheRef.current : false,
       // Runs inside the render queue, so the back buffer still holds this very frame.
       onFrameDrawn: () => {
         if (sceneRef.current !== sc) return;
@@ -419,7 +434,7 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
       sc.clearAnimations();
       sceneRef.current = null;
     };
-  }, [width, height, adapter, debug]);
+  }, [width, height, adapter, debug, cacheOn]);
 
   // --- Build the layer tree and draw one frame ------------------------------
   // Depends on `children`, so updating a layer's props from React state

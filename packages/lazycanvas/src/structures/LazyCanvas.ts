@@ -6,6 +6,8 @@ import {
   ClassicRenderPipeline,
   FontsManager,
   type IRenderManager,
+  LayerCache,
+  type LayerCacheOptions,
   LayersManager,
   type RenderManagerConstructor,
 } from "./managers";
@@ -60,9 +62,17 @@ export class LazyCanvas implements ILazyCanvas {
   };
   options: ILazyCanvasOptions;
 
+  /** Remembers layers between frames; `undefined` unless the canvas was created with `cache`. */
+  cache?: LayerCache;
+
   constructor(
     renderPipline: RenderManagerConstructor = ClassicRenderPipeline,
-    opts?: { debug?: boolean; settings?: IOLazyCanvas; adapter?: ICanvasAdapter },
+    opts?: {
+      debug?: boolean;
+      settings?: IOLazyCanvas;
+      adapter?: ICanvasAdapter;
+      cache?: boolean | LayerCacheOptions;
+    },
   ) {
     if (!opts?.adapter) {
       throw new LazyError(
@@ -82,6 +92,10 @@ export class LazyCanvas implements ILazyCanvas {
       fonts: new FontsManager({ debug: opts?.debug, adapter: opts?.adapter }),
       layout: new LayoutManager({ debug: opts?.debug }),
     };
+    if (opts.cache) {
+      this.cache = new LayerCache(this.adapter, typeof opts.cache === "object" ? opts.cache : {});
+      this.manager.layers.cache = this.cache;
+    }
     this.options = {
       width: 0,
       height: 0,
@@ -103,6 +117,7 @@ export class LazyCanvas implements ILazyCanvas {
     this.options.exportType = type;
     this.canvas = this.adapter.createCanvas(this.options.width, this.options.height);
     this.ctx = this.canvas.getContext("2d");
+    this.cache?.clear();
     return this;
   }
 
@@ -131,6 +146,7 @@ export class LazyCanvas implements ILazyCanvas {
     this.options.height = resize(this.options.height, ratio) as number;
     this.canvas = this.adapter.createCanvas(this.options.width, this.options.height);
     this.ctx = this.canvas.getContext("2d");
+    this.cache?.clear();
     const layers = resizeLayers(this.manager.layers.toArray(), ratio);
     this.manager.layers.fromArray(layers);
     return this;
@@ -152,6 +168,8 @@ export class LazyCanvas implements ILazyCanvas {
       debug: this.manager.layers.debug,
       adapter: this.adapter,
     });
+    this.manager.layers.cache = this.cache;
+    this.cache?.clear();
     return this;
   }
 }
