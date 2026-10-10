@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/adapter-node",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node.js adapter for @nmmty/lazycanvas, powered by @napi-rs/canvas.",
   "keywords": ["lazycanvas", "canvas", "node", "napi-rs", "adapter", "image-generation"],
   "homepage": "https://github.com/NMMTY/LazyCanvas/tree/main/packages/adapter-node#readme",

@@ -13,7 +13,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [1.0.1]
 
-`@nmmty/lazycanvas` only; the adapters stay at 1.0.0.
+`@nmmty/lazycanvas`, `@nmmty/adapter-node`, `@nmmty/adapter-browser` and `@nmmty/adapter-react`.
 
 ### Added
 
