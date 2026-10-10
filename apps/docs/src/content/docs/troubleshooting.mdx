@@ -38,6 +38,8 @@ Use `BrowserCanvasAdapter` from `@nmmty/adapter-browser` in the browser.
 
 The browser adapter requests images with `crossOrigin = "anonymous"`. The server must answer with `Access-Control-Allow-Origin`. If you cannot control it, proxy the image through your own origin or fetch it as bytes and pass an `ArrayBuffer` as `src`.
 
+A failed image is drawn as a [placeholder](/docs/images-and-paths#when-an-image-fails-to-load) and a warning is logged, so check the console for `could not load`.
+
 A canvas that drew a cross-origin image without CORS is *tainted*: `toDataURL` and `toBlob` then throw a `SecurityError`.
 
 ## `Top-level await is not available` / `Module parse failed`

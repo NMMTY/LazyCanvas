@@ -319,51 +319,51 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     debug: boolean,
     adapter?: ICanvasAdapter,
   ): Promise<void> {
-    ctx.beginPath();
-    ctx.save();
-
     // Node has no global Path2D, so the implementation comes from the adapter.
     const path = this.ensurePath(adapter);
     if (!path) {
-      ctx.restore();
       throw new LazyError(
         `Path2DLayer "${this.id}" cannot be drawn: no Path2D implementation available from the canvas adapter`,
       );
     }
 
-    if (debug)
-      LazyLog.log("none", "Drawing Path2D Layer: ", {
-        layerId: this.id,
-        type: this.type,
-      });
+    ctx.beginPath();
+    ctx.save();
+    try {
+      if (debug)
+        LazyLog.log("none", "Drawing Path2D Layer: ", {
+          layerId: this.id,
+          type: this.type,
+        });
 
-    if (this.props.transform) {
-      transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
-    }
-
-    DrawUtils.opacity(ctx, this.props.opacity);
-
-    if (this.props.clipPath) {
-      ctx.clip(path);
-    } else if (this.props.color) {
-      const fillStyle = await parseFillStyle(ctx, this.props.color, { debug, manager });
-
-      if (this.props.globalComposite) {
-        ctx.globalCompositeOperation = this.props.globalComposite;
+      if (this.props.transform) {
+        transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
       }
 
-      DrawUtils.drawShadow(ctx, this.props.shadow);
-      DrawUtils.filters(ctx, this.props.filter);
-      DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+      DrawUtils.opacity(ctx, this.props.opacity);
 
-      if (this.props.stroke) {
-        ctx.stroke(path);
-      } else {
-        ctx.fill(path);
+      if (this.props.clipPath) {
+        ctx.clip(path);
+      } else if (this.props.color) {
+        const fillStyle = await parseFillStyle(ctx, this.props.color, { debug, manager });
+
+        if (this.props.globalComposite) {
+          ctx.globalCompositeOperation = this.props.globalComposite;
+        }
+
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.filters(ctx, this.props.filter);
+        DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+
+        if (this.props.stroke) {
+          ctx.stroke(path);
+        } else {
+          ctx.fill(path);
+        }
       }
+    } finally {
+      ctx.restore();
     }
-
-    ctx.restore();
     ctx.closePath();
   }
 

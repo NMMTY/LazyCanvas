@@ -258,28 +258,29 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
       });
 
     ctx.save();
+    try {
+      if (this.props.transform) {
+        transform(ctx, this.props.transform, {
+          x: center.x,
+          y: center.y,
+          width,
+          height,
+          type: this.type,
+        });
+      }
+      DrawUtils.drawShadow(ctx, this.props.shadow);
+      DrawUtils.opacity(ctx, this.props.opacity);
+      DrawUtils.filters(ctx, this.props.filter);
+      DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
 
-    if (this.props.transform) {
-      transform(ctx, this.props.transform, {
-        x: center.x,
-        y: center.y,
-        width,
-        height,
-        type: this.type,
-      });
+      ctx.beginPath();
+      ctx.moveTo(xs, ys);
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, xe, ye);
+      ctx.stroke();
+      ctx.closePath();
+    } finally {
+      ctx.restore();
     }
-    DrawUtils.drawShadow(ctx, this.props.shadow);
-    DrawUtils.opacity(ctx, this.props.opacity);
-    DrawUtils.filters(ctx, this.props.filter);
-    DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
-
-    ctx.beginPath();
-    ctx.moveTo(xs, ys);
-    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, xe, ye);
-    ctx.stroke();
-    ctx.closePath();
-
-    ctx.restore();
   }
 
   /**

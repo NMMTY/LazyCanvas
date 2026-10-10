@@ -530,104 +530,108 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
     if (debug) LazyLog.log("none", "TextLayer:", { x, y, w, h });
 
     ctx.save();
-    if (this.props.transform) {
-      transform(
-        ctx,
-        this.props.transform,
-        { width: w, height: h, x, y, type: this.type },
-        {
-          text: unwrap(this.props.text),
-          textAlign: this.props.align,
-          fontSize: this.props.font.size,
-          multiline: this.props?.multiline?.enabled || false,
-        },
-      );
-    }
-    ctx.beginPath();
-    DrawUtils.drawShadow(ctx, this.props.shadow);
-    DrawUtils.opacity(ctx, this.props.opacity);
-    DrawUtils.filters(ctx, this.props.filter);
-
-    // When layout is managed by Yoga, always use top-left alignment
-    // since Yoga calculates position as top-left corner
-    const useLayoutAlignment = (this.props as any)._computedLayout === true;
-
-    // Vertical text positions every unit itself, so the context is pinned to
-    // the top-left of each slot and alignment is applied while laying out.
-    const vertical = isVerticalDirection(this.props.direction);
-
-    ctx.textAlign = vertical || useLayoutAlignment ? "left" : this.props.align;
-    if (this.props.letterSpacing) ctx.letterSpacing = `${this.props.letterSpacing}px`;
-    if (this.props.wordSpacing) ctx.wordSpacing = `${this.props.wordSpacing}px`;
-    ctx.textBaseline = vertical || useLayoutAlignment ? "top" : this.props.baseline || "alphabetic";
-
-    // ctx.direction only understands ltr/rtl/inherit; ttb and btt are ours.
-    const nativeDirection = canvasDirection(this.props.direction);
-    if (nativeDirection) ctx.direction = nativeDirection;
-
-    const fillStyle = await parseFillStyle(ctx, this.props.color, {
-      debug,
-      layer: { width: w, height: h, x, y, align: "center" },
-      manager,
-    });
-    if (vertical) {
-      const layout = this.layoutVertical(ctx, canvas);
-      const origin = useLayoutAlignment
-        ? { x, y }
-        : this.anchorBlock(x, y, layout.width, layout.height);
-
-      for (const unit of layout.units) {
-        this.drawText(
-          this.props,
+    try {
+      if (this.props.transform) {
+        transform(
           ctx,
-          fillStyle,
-          unit.text,
-          origin.x + unit.x,
-          origin.y + unit.y,
-          w,
-          unit.startOffset,
-          "left",
+          this.props.transform,
+          { width: w, height: h, x, y, type: this.type },
+          {
+            text: unwrap(this.props.text),
+            textAlign: this.props.align,
+            fontSize: this.props.font.size,
+            multiline: this.props?.multiline?.enabled || false,
+          },
         );
       }
-    } else if (this.props?.multiline?.enabled) {
-      const words = unwrap(this.props.text).split(" ");
+      ctx.beginPath();
+      DrawUtils.drawShadow(ctx, this.props.shadow);
+      DrawUtils.opacity(ctx, this.props.opacity);
+      DrawUtils.filters(ctx, this.props.filter);
 
-      let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
+      // When layout is managed by Yoga, always use top-left alignment
+      // since Yoga calculates position as top-left corner
+      const useLayoutAlignment = (this.props as any)._computedLayout === true;
 
-      for (let fontSize = 1; fontSize <= this.props.font.size; fontSize++) {
-        const lineHeight = fontSize * (this.props.multiline.spacing || 1.1);
+      // Vertical text positions every unit itself, so the context is pinned to
+      // the top-left of each slot and alignment is applied while laying out.
+      const vertical = isVerticalDirection(this.props.direction);
 
-        ctx.font = cssFont(this.props.font, fontSize);
+      ctx.textAlign = vertical || useLayoutAlignment ? "left" : this.props.align;
+      if (this.props.letterSpacing) ctx.letterSpacing = `${this.props.letterSpacing}px`;
+      if (this.props.wordSpacing) ctx.wordSpacing = `${this.props.wordSpacing}px`;
+      ctx.textBaseline =
+        vertical || useLayoutAlignment ? "top" : this.props.baseline || "alphabetic";
 
-        const xm = x;
-        let ym = y;
-        lines = [];
-        let line = "";
-        let charOffset = 0; // Track position in original text
+      // ctx.direction only understands ltr/rtl/inherit; ttb and btt are ours.
+      const nativeDirection = canvasDirection(this.props.direction);
+      if (nativeDirection) ctx.direction = nativeDirection;
 
-        for (const word of words) {
-          const linePlus = `${line + word} `;
-          if (ctx.measureText(linePlus).width > w) {
-            lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
-            charOffset += line.length;
-            line = `${word} `;
-            ym += lineHeight;
-          } else {
-            line = linePlus;
-          }
+      const fillStyle = await parseFillStyle(ctx, this.props.color, {
+        debug,
+        layer: { width: w, height: h, x, y, align: "center" },
+        manager,
+      });
+      if (vertical) {
+        const layout = this.layoutVertical(ctx, canvas);
+        const origin = useLayoutAlignment
+          ? { x, y }
+          : this.anchorBlock(x, y, layout.width, layout.height);
+
+        for (const unit of layout.units) {
+          this.drawText(
+            this.props,
+            ctx,
+            fillStyle,
+            unit.text,
+            origin.x + unit.x,
+            origin.y + unit.y,
+            w,
+            unit.startOffset,
+            "left",
+          );
         }
-        lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
-        if (ym > ym + h) break;
+      } else if (this.props?.multiline?.enabled) {
+        const words = unwrap(this.props.text).split(" ");
+
+        let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
+
+        for (let fontSize = 1; fontSize <= this.props.font.size; fontSize++) {
+          const lineHeight = fontSize * (this.props.multiline.spacing || 1.1);
+
+          ctx.font = cssFont(this.props.font, fontSize);
+
+          const xm = x;
+          let ym = y;
+          lines = [];
+          let line = "";
+          let charOffset = 0; // Track position in original text
+
+          for (const word of words) {
+            const linePlus = `${line + word} `;
+            if (ctx.measureText(linePlus).width > w) {
+              lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
+              charOffset += line.length;
+              line = `${word} `;
+              ym += lineHeight;
+            } else {
+              line = linePlus;
+            }
+          }
+          lines.push({ text: line, x: xm, y: ym, startOffset: charOffset });
+          if (ym > ym + h) break;
+        }
+        for (const line of lines) {
+          this.drawText(this.props, ctx, fillStyle, line.text, line.x, line.y, w, line.startOffset);
+        }
+      } else {
+        ctx.font = cssFont(this.props.font);
+        this.drawText(this.props, ctx, fillStyle, unwrap(this.props.text), x, y, w, 0);
       }
-      for (const line of lines) {
-        this.drawText(this.props, ctx, fillStyle, line.text, line.x, line.y, w, line.startOffset);
-      }
-    } else {
-      ctx.font = cssFont(this.props.font);
-      this.drawText(this.props, ctx, fillStyle, unwrap(this.props.text), x, y, w, 0);
+      ctx.closePath();
+    } finally {
+      ctx.restore();
     }
-    ctx.closePath();
-    ctx.restore();
   }
 
   /**

@@ -179,86 +179,89 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
       });
 
     ctx.save();
-    ctx.beginPath();
+    try {
+      ctx.beginPath();
 
-    // Calculate polygon vertices
-    const vertices: { x: number; y: number }[] = [];
-    for (let i = 0; i < this.props.size.count; i++) {
-      const angle = (i / this.props.size.count) * (2 * Math.PI) - Math.PI / 2;
-      vertices.push({
-        x: x + w / 2 + (w / 2) * Math.cos(angle),
-        y: y + h / 2 + (h / 2) * Math.sin(angle),
-      });
-    }
-
-    if (this.props.size.radius > 0) {
-      // Draw polygon with rounded corners
-      for (let i = 0; i < vertices.length; i++) {
-        const current = vertices[i];
-        const next = vertices[(i + 1) % vertices.length];
-        const prev = vertices[(i - 1 + vertices.length) % vertices.length];
-
-        // Calculate vectors from current vertex to adjacent vertices
-        const dx1 = current.x - prev.x;
-        const dy1 = current.y - prev.y;
-        const dx2 = next.x - current.x;
-        const dy2 = next.y - current.y;
-
-        // Normalize vectors
-        const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-        const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        const ndx1 = dx1 / len1;
-        const ndy1 = dy1 / len1;
-        const ndx2 = dx2 / len2;
-        const ndy2 = dy2 / len2;
-
-        // Calculate the maximum radius based on edge lengths
-        const maxRadius = Math.max(len1 / 2, len2 / 2);
-        const cornerRadius = Math.min(this.props.size.radius, maxRadius);
-
-        // Calculate arc start and end points
-        const arcStart = {
-          x: current.x - ndx1 * cornerRadius,
-          y: current.y - ndy1 * cornerRadius,
-        };
-        const arcEnd = {
-          x: current.x + ndx2 * cornerRadius,
-          y: current.y + ndy2 * cornerRadius,
-        };
-
-        if (i === 0) {
-          ctx.moveTo(arcStart.x, arcStart.y);
-        } else {
-          ctx.lineTo(arcStart.x, arcStart.y);
-        }
-
-        // Draw arc at corner
-        ctx.arcTo(current.x, current.y, arcEnd.x, arcEnd.y, cornerRadius);
+      // Calculate polygon vertices
+      const vertices: { x: number; y: number }[] = [];
+      for (let i = 0; i < this.props.size.count; i++) {
+        const angle = (i / this.props.size.count) * (2 * Math.PI) - Math.PI / 2;
+        vertices.push({
+          x: x + w / 2 + (w / 2) * Math.cos(angle),
+          y: y + h / 2 + (h / 2) * Math.sin(angle),
+        });
       }
-      ctx.closePath();
-    } else {
-      // Draw polygon without rounded corners (original behavior)
-      for (let i = 0; i < vertices.length; i++) {
-        if (i === 0) {
-          ctx.moveTo(vertices[i].x, vertices[i].y);
-        } else {
-          ctx.lineTo(vertices[i].x, vertices[i].y);
+
+      if (this.props.size.radius > 0) {
+        // Draw polygon with rounded corners
+        for (let i = 0; i < vertices.length; i++) {
+          const current = vertices[i];
+          const next = vertices[(i + 1) % vertices.length];
+          const prev = vertices[(i - 1 + vertices.length) % vertices.length];
+
+          // Calculate vectors from current vertex to adjacent vertices
+          const dx1 = current.x - prev.x;
+          const dy1 = current.y - prev.y;
+          const dx2 = next.x - current.x;
+          const dy2 = next.y - current.y;
+
+          // Normalize vectors
+          const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+          const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+          const ndx1 = dx1 / len1;
+          const ndy1 = dy1 / len1;
+          const ndx2 = dx2 / len2;
+          const ndy2 = dy2 / len2;
+
+          // Calculate the maximum radius based on edge lengths
+          const maxRadius = Math.max(len1 / 2, len2 / 2);
+          const cornerRadius = Math.min(this.props.size.radius, maxRadius);
+
+          // Calculate arc start and end points
+          const arcStart = {
+            x: current.x - ndx1 * cornerRadius,
+            y: current.y - ndy1 * cornerRadius,
+          };
+          const arcEnd = {
+            x: current.x + ndx2 * cornerRadius,
+            y: current.y + ndy2 * cornerRadius,
+          };
+
+          if (i === 0) {
+            ctx.moveTo(arcStart.x, arcStart.y);
+          } else {
+            ctx.lineTo(arcStart.x, arcStart.y);
+          }
+
+          // Draw arc at corner
+          ctx.arcTo(current.x, current.y, arcEnd.x, arcEnd.y, cornerRadius);
         }
+        ctx.closePath();
+      } else {
+        // Draw polygon without rounded corners (original behavior)
+        for (let i = 0; i < vertices.length; i++) {
+          if (i === 0) {
+            ctx.moveTo(vertices[i].x, vertices[i].y);
+          } else {
+            ctx.lineTo(vertices[i].x, vertices[i].y);
+          }
+        }
+        ctx.closePath();
       }
-      ctx.closePath();
-    }
 
-    DrawUtils.drawShadow(ctx, this.props.shadow);
-    DrawUtils.opacity(ctx, this.props.opacity);
-    DrawUtils.filters(ctx, this.props.filter);
-    DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+      DrawUtils.drawShadow(ctx, this.props.shadow);
+      DrawUtils.opacity(ctx, this.props.opacity);
+      DrawUtils.filters(ctx, this.props.filter);
+      DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
 
-    if (this.props.stroke) {
-      ctx.stroke();
-    } else {
-      ctx.fill();
+      if (this.props.stroke) {
+        ctx.stroke();
+      } else {
+        ctx.fill();
+      }
+    } finally {
+      ctx.restore();
     }
-    ctx.restore();
   }
 
   /**

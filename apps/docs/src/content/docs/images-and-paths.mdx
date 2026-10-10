@@ -24,6 +24,17 @@ new ImageLayer({
 
 The layer is drawn stretched to `size`; `radius` rounds the corners, so a square with a radius of half its side crops the image to a circle.
 
+### When an image fails to load
+
+A broken URL, a CORS error or a corrupt file does not break the scene. The layer draws a **placeholder** — a light box with a cross, in the layer's size and with its rounded corners — logs a warning, and every other layer renders as usual, so the layout keeps its shape. Style it, or turn it off to get the error instead:
+
+```ts
+new ImageLayer({ src, size: { width: 200, height: 200 }, placeholder: { color: "#1f2937", stroke: "#6b7280" } });
+new ImageLayer({ src, size: { width: 200, height: 200 }, placeholder: false }); // renderFrame rejects
+```
+
+With `placeholder: false` the rest of the frame is still drawn before `renderFrame` rejects.
+
 In the browser, images are requested with `crossOrigin = "anonymous"`. Remote hosts must send CORS headers, otherwise the load fails (and a canvas that drew a cross-origin image without CORS cannot be exported).
 
 ## Lines and curves

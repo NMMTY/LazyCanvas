@@ -1,5 +1,5 @@
 import type { AnyLayer } from "../../../types";
-import { getChildren } from "../../../utils";
+import { getChildren, throwFirst } from "../../../utils";
 import { Group } from "../../components";
 import { BaseRenderPipeline } from "./BaseRenderPipeline";
 
@@ -9,10 +9,18 @@ import { BaseRenderPipeline } from "./BaseRenderPipeline";
  * parent's coordinate space before drawing its children.
  */
 export class ModernRenderPipeline extends BaseRenderPipeline {
-  private async renderLayer(layer: AnyLayer | Group): Promise<void> {
+  /**
+   * Draws a layer and its subtree. A layer that fails does not stop the ones
+   * after it: the error is recorded in `errors` and drawing carries on.
+   */
+  private async renderLayer(layer: AnyLayer | Group, errors: unknown[]): Promise<void> {
     if (!layer.visible) return;
 
-    await this.drawLayer(layer);
+    try {
+      await this.drawLayer(layer);
+    } catch (error) {
+      errors.push(error);
+    }
 
     // `Group` draws its own children inside `Group.draw`, so descending here too
     // would render them twice.
@@ -21,19 +29,20 @@ export class ModernRenderPipeline extends BaseRenderPipeline {
 
     const ctx = this.lazyCanvas.ctx;
     ctx.save();
+    try {
+      const position = layer.props?.position;
+      if (position) {
+        const x = typeof position.x === "number" ? position.x : 0;
+        const y = typeof position.y === "number" ? position.y : 0;
+        ctx.translate(x, y);
+      }
 
-    const position = layer.props?.position;
-    if (position) {
-      const x = typeof position.x === "number" ? position.x : 0;
-      const y = typeof position.y === "number" ? position.y : 0;
-      ctx.translate(x, y);
+      for (const child of children) {
+        await this.renderLayer(child, errors);
+      }
+    } finally {
+      ctx.restore();
     }
-
-    for (const child of children) {
-      await this.renderLayer(child);
-    }
-
-    ctx.restore();
   }
 
   protected async renderTree(): Promise<void> {
@@ -52,8 +61,12 @@ export class ModernRenderPipeline extends BaseRenderPipeline {
       );
     }
 
+    const errors: unknown[] = [];
     for (const layer of rootLayers) {
-      await this.renderLayer(layer);
+      await this.renderLayer(layer, errors);
     }
+
+    // The frame is complete; now report what went wrong while drawing it.
+    throwFirst(errors);
   }
 }

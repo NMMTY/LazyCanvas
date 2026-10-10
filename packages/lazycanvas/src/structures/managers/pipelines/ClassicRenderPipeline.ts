@@ -1,3 +1,4 @@
+import { throwFirst } from "../../../utils";
 import { BaseRenderPipeline } from "./BaseRenderPipeline";
 
 /**
@@ -12,8 +13,15 @@ import { BaseRenderPipeline } from "./BaseRenderPipeline";
  */
 export class ClassicRenderPipeline extends BaseRenderPipeline {
   protected async renderTree(): Promise<void> {
+    // A layer that fails does not stop the ones after it; report once the frame is drawn.
+    const errors: unknown[] = [];
     for (const layer of this.lazyCanvas.manager.layers.toArray()) {
-      await this.drawLayer(layer);
+      try {
+        await this.drawLayer(layer);
+      } catch (error) {
+        errors.push(error);
+      }
     }
+    throwFirst(errors);
   }
 }
