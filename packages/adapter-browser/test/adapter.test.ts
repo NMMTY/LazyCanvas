@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BrowserCanvasAdapter } from "../src";
+import { BrowserCanvasAdapter, clearImageCache } from "../src";
 
 /** A stand-in for the browser's `Image` that loads or fails on the next tick. */
 function stubImage(outcome: "load" | "error") {
@@ -52,6 +52,7 @@ function stubFonts(loadImpl: () => Promise<unknown> = () => Promise.resolve()) {
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  clearImageCache();
 });
 
 afterEach(() => {
@@ -126,6 +127,28 @@ describe("BrowserCanvasAdapter fonts", () => {
     expect(fonts.load).toHaveBeenCalledWith('400 16px "Geist"');
   });
 
+  it("does not ask again for a font that has already been loaded", async () => {
+    const fonts = stubFonts();
+    fonts.load.mockImplementation((() => Promise.resolve([{ family: "Geist" }])) as never);
+    const adapter = new BrowserCanvasAdapter();
+
+    await adapter.loadFonts(['400 16px "Geist"']);
+    await adapter.loadFonts(['400 16px "Geist"', '700 16px "Geist"']);
+
+    expect(fonts.load).toHaveBeenCalledTimes(2);
+    expect(fonts.load).toHaveBeenLastCalledWith('700 16px "Geist"');
+  });
+
+  it("asks again when a font matched nothing, because its @font-face may not exist yet", async () => {
+    const fonts = stubFonts();
+    const adapter = new BrowserCanvasAdapter();
+
+    await adapter.loadFonts(['400 16px "Late"']);
+    await adapter.loadFonts(['400 16px "Late"']);
+
+    expect(fonts.load).toHaveBeenCalledTimes(2);
+  });
+
   it("checks registered families through document.fonts", () => {
     stubFonts();
     const adapter = new BrowserCanvasAdapter();
@@ -196,5 +219,100 @@ describe("BrowserCanvasAdapter images", () => {
     await expect(new BrowserCanvasAdapter().loadImage({} as unknown as string)).rejects.toThrow(
       /Unsupported image source/,
     );
+  });
+});
+
+describe("BrowserCanvasAdapter image cache", () => {
+  it("loads a URL once and hands the same image to every later frame", async () => {
+    const created = stubImage("load");
+    const adapter = new BrowserCanvasAdapter();
+
+    const a = await adapter.loadImage("https://example.com/avatar.png");
+    const b = await adapter.loadImage("https://example.com/avatar.png");
+
+    expect(b).toBe(a);
+    expect(created).toHaveLength(1);
+  });
+
+  it("shares the request between frames that ask while the image is still loading", async () => {
+    const created = stubImage("load");
+    const adapter = new BrowserCanvasAdapter();
+
+    const [a, b] = await Promise.all([
+      adapter.loadImage("https://example.com/avatar.png"),
+      adapter.loadImage("https://example.com/avatar.png"),
+    ]);
+
+    expect(a).toBe(b);
+    expect(created).toHaveLength(1);
+  });
+
+  it("is shared by adapters, since a scene creates a new one when it is remounted", async () => {
+    const created = stubImage("load");
+    await new BrowserCanvasAdapter().loadImage("https://example.com/a.png");
+    await new BrowserCanvasAdapter().loadImage("https://example.com/a.png");
+    expect(created).toHaveLength(1);
+  });
+
+  it("does not keep a failed load, so the next frame tries again", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const adapter = new BrowserCanvasAdapter();
+
+    stubImage("error");
+    await expect(adapter.loadImage("https://example.com/a.png")).rejects.toThrow();
+
+    const created = stubImage("load");
+    await expect(adapter.loadImage("https://example.com/a.png")).resolves.toBeTruthy();
+    expect(created).toHaveLength(1);
+  });
+
+  it("can be switched off for a URL whose picture changes", async () => {
+    const created = stubImage("load");
+    const adapter = new BrowserCanvasAdapter(undefined, { imageCache: false });
+
+    await adapter.loadImage("https://example.com/a.png");
+    await adapter.loadImage("https://example.com/a.png");
+
+    expect(created).toHaveLength(2);
+  });
+
+  it("can be emptied with clearImageCache", async () => {
+    const created = stubImage("load");
+    const adapter = new BrowserCanvasAdapter();
+
+    await adapter.loadImage("https://example.com/a.png");
+    clearImageCache();
+    await adapter.loadImage("https://example.com/a.png");
+
+    expect(created).toHaveLength(2);
+  });
+
+  it("does not cache binary data", async () => {
+    const created = stubImage("load");
+    vi.stubGlobal(
+      "URL",
+      Object.assign(URL, { createObjectURL: () => "blob:fake", revokeObjectURL: vi.fn() }),
+    );
+    const adapter = new BrowserCanvasAdapter();
+    const bytes = new Uint8Array([1, 2, 3]);
+
+    await adapter.loadImage(bytes);
+    await adapter.loadImage(bytes);
+
+    expect(created).toHaveLength(2);
+  });
+
+  it("forgets the least recently used image once it holds too many", async () => {
+    const created = stubImage("load");
+    const adapter = new BrowserCanvasAdapter();
+
+    await adapter.loadImage("https://example.com/first.png");
+    for (let i = 0; i < 64; i++) await adapter.loadImage(`https://example.com/${i}.png`);
+    const before = created.length;
+
+    await adapter.loadImage("https://example.com/first.png"); // evicted: loaded again
+    await adapter.loadImage("https://example.com/63.png"); // still cached
+
+    expect(created.length).toBe(before + 1);
   });
 });

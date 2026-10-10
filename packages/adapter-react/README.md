@@ -65,10 +65,28 @@ Layer props are the same as the props accepted by the layer classes in `@nmmty/l
 | `animated` | `boolean \| number` | `true` loops the scene's animations forever, a number plays that many loops |
 | `adapter` | `ICanvasAdapter` | Use a different adapter than the default `BrowserCanvasAdapter` |
 | `onReady` | `(scene, canvas) => void` | Called once the scene exists — the place to register animations |
-| `onFrame` | `(scene) => void` | Called after every drawn frame |
+| `onFrame` | `(scene) => void` | Called after every drawn frame, before it is copied to the page |
+| `cache` | `boolean \| LayerCacheOptions` (default `true`) | Keep layer pictures between frames, see [Redrawing quickly](#redrawing-quickly) |
 | `debug` | `boolean` | Verbose logging |
 
 A `ref` gives you a `SceneRef` with `renderFrame(time)`, `playAnimation`, `addAnimation`, `clearAnimations`, `resetTimeline`, `getLayer(id)` and the underlying `scene`.
+
+## Redrawing quickly
+
+A scene that is redrawn on every change (a live preview next to a colour picker) can be asked for more frames than it can draw. `<Scene>` handles it so that:
+
+- frames are drawn on a back buffer and copied to the `<canvas>` once finished, so a half-drawn frame is never shown;
+- a frame that has started is finished, and of the changes that arrive meanwhile only the newest is drawn next;
+- the pictures of layers are kept between frames (`cache`, on by default). A layer is found again by what it looks like — its type, its props after layout, the canvas size and the current transform — not by its identity, so a tree that is created anew on every render still finds the pictures of the last one. If every prop is the same, the layer is copied instead of drawn. A blurred shape of one flat colour whose only change is the colour is repainted from its stored blurred outline, without blurring again.
+
+By default only layers with a `filter` are stored (a blur costs far more than the copy). `cache` on a layer overrides that:
+
+```tsx
+<Group cache>{/* a subtree that rarely changes is drawn once */}</Group>
+<Path2D filter={Filters.blur(40)} cache={false} /> {/* never stored */}
+```
+
+Layers whose look cannot be described (a `Link`, a function, a `Buffer` among the props), layers with `clipPath` and images are never stored. Pass `cache={{ maxBytes, maxEntries }}` to change the limits (64 MiB and 64 pictures by default) or `cache={false}` to draw every layer in every frame. `scene.cacheStats()` tells how often it helped.
 
 ## Animation
 

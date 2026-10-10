@@ -3,6 +3,7 @@ import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { findLayer } from "../../utils/tree";
 import { LazyCanvas } from "../LazyCanvas";
 import type { Group } from "../components";
+import type { LayerCache } from "./LayerCache";
 
 /**
  * Interface representing the LayersManager.
@@ -38,6 +39,12 @@ export class LayersManager implements ILayersManager {
    * load images (patterns) reach it through the manager.
    */
   adapter?: ICanvasAdapter;
+
+  /**
+   * Remembers the picture of layers between frames, if the scene asked for it. Layers reach it
+   * through the manager they are drawn with.
+   */
+  cache?: LayerCache;
 
   /**
    * Constructs a new LayersManager instance.

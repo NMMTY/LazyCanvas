@@ -38,7 +38,19 @@ beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
     configurable: true,
     value(this: HTMLCanvasElement) {
-      return surfaceOf(this).getContext("2d");
+      const ctx = surfaceOf(this).getContext("2d") as unknown as {
+        drawImage: (image: unknown, ...rest: unknown[]) => void;
+        __unwrapsCanvases?: boolean;
+      };
+      if (!ctx.__unwrapsCanvases) {
+        // A scene copies its back buffer onto the visible canvas with drawImage(<canvas>),
+        // which napi-rs only understands when given its own surface.
+        const drawImage = ctx.drawImage.bind(ctx);
+        ctx.drawImage = (image, ...rest) =>
+          drawImage(image instanceof HTMLCanvasElement ? surfaceOf(image) : image, ...rest);
+        ctx.__unwrapsCanvases = true;
+      }
+      return ctx;
     },
   });
 });
@@ -148,6 +160,72 @@ describe("<Scene>", () => {
     });
     expect(countPixels(canvasOf(), isGreen)).toBeGreaterThan(3000);
     expect(countPixels(canvasOf(), isRed)).toBe(0);
+  });
+
+  it("shows the last of a burst of changes and draws fewer frames than there were changes", async () => {
+    const colors = ["#ff0000", "#0000ff", "#ffff00", "#ff00ff", "#00ff00"];
+    const onFrame = vi.fn();
+    function Demo({ color }: { color: string }) {
+      return (
+        <Scene width={60} height={60} onFrame={onFrame}>
+          <Morph color={color} size={{ width: 60, height: 60 }} />
+        </Scene>
+      );
+    }
+    await render(<Demo color="#ff0000" />);
+    onFrame.mockClear();
+
+    // The changes land one after another, faster than a frame is drawn.
+    for (const color of colors) {
+      await act(async () => root.render(<Demo color={color} />));
+    }
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    });
+
+    expect(countPixels(canvasOf(), isGreen)).toBeGreaterThan(3000);
+    expect(onFrame.mock.calls.length).toBeLessThanOrEqual(colors.length);
+    expect(onFrame.mock.calls.length).toBeGreaterThan(0);
+  });
+
+  it("copies the finished frame from a back buffer, so the visible canvas is not the scene's canvas", async () => {
+    const onReady = vi.fn();
+    const onFrame = vi.fn();
+    await render(
+      <Scene width={50} height={50} onReady={onReady} onFrame={onFrame}>
+        <Morph color="#00ff00" size={{ width: 50, height: 50 }} />
+      </Scene>,
+    );
+    const [scene, shown] = onReady.mock.calls[0];
+    expect(shown).toBe(canvasOf());
+    expect(scene.lazyCanvas.canvas).not.toBe(canvasOf());
+    // onFrame sees the scene's canvas holding the frame; the page canvas gets it right after.
+    expect(onFrame.mock.calls[0][0]).toBe(scene);
+    expect(countPixels(canvasOf(), isGreen)).toBeGreaterThan(2000);
+  });
+
+  it("keeps layer pictures between frames, and not when asked not to", async () => {
+    const blob = (color: string) => (
+      <Morph color={color} filter="blur(4px)" size={{ width: 40, height: 40 }} />
+    );
+    const statsAfter = async (cache: boolean | undefined) => {
+      const onReady = vi.fn();
+      function Demo({ color }: { color: string }) {
+        return (
+          <Scene width={60} height={60} onReady={onReady} cache={cache}>
+            {blob(color)}
+          </Scene>
+        );
+      }
+      await render(<Demo color="#ff0000" />);
+      await render(<Demo color="#00ff00" />);
+      await render(<Demo color="#0000ff" />);
+      return onReady.mock.calls[0][0].cacheStats();
+    };
+
+    // The blur is computed once; the other two frames only repaint it.
+    expect(await statsAfter(undefined)).toMatchObject({ misses: 1, tinted: 2 });
+    expect(await statsAfter(false)).toBeUndefined();
   });
 
   it("calls onReady once with the scene and canvas, and onFrame after drawing", async () => {

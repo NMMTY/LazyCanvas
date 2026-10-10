@@ -7,6 +7,7 @@ import {
 import { LazyError, LazyLog } from "../../../utils/LazyUtil";
 import type { LazyCanvas } from "../../LazyCanvas";
 import type { Group } from "../../components";
+import { drawLayerCached } from "../LayerCache";
 import type { IRenderManager } from "./index";
 
 /**
@@ -47,7 +48,8 @@ export abstract class BaseRenderPipeline implements IRenderManager {
     if (layer.visible) {
       this.lazyCanvas.ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
 
-      await layer.draw(
+      await drawLayerCached(
+        layer,
         this.lazyCanvas.ctx,
         this.lazyCanvas.canvas,
         this.lazyCanvas.manager.layers,
