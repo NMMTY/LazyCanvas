@@ -1,6 +1,6 @@
 {
   "name": "@nmmty/lazycanvas",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Declarative 2D canvas rendering with flexbox layout, JSX and signal-based animation — for Node.js and the browser.",
   "keywords": [
     "canvas",
