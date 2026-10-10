@@ -1,9 +1,10 @@
 name: Release
 
-# Publishes @nmmty/lazycanvas, @nmmty/adapter-node, @nmmty/adapter-browser and
-# @nmmty/adapter-react together when a version tag is pushed:
+# Publishes the packages whose version is not on npm yet when a version tag is
+# pushed. Packages are versioned independently: bump the ones that changed,
+# and the others are skipped.
 #
-#   git tag v1.0.0 && git push origin v1.0.0
+#   git tag v1.0.1 && git push origin v1.0.1   # v<version of a package being published>
 #
 # Prerelease versions (1.0.0-rc.1) are published under the `next` dist-tag,
 # stable ones under `latest`. Needs an NPM_TOKEN secret with publish rights to
@@ -46,11 +47,13 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      - name: Check versions against the tag
+      - name: Work out what to publish
         id: release
         run: |
-          dist_tag="$(node scripts/check-release.mjs "$GITHUB_REF_NAME")"
-          echo "dist_tag=$dist_tag" >> "$GITHUB_OUTPUT"
+          plan="$(node scripts/check-release.mjs "$GITHUB_REF_NAME")"
+          echo "plan=$plan" >> "$GITHUB_OUTPUT"
+          echo "### Publishing" >> "$GITHUB_STEP_SUMMARY"
+          echo "$plan" | jq -r '.[] | "- `\(.name)@\(.version)` (\(.distTag))"' >> "$GITHUB_STEP_SUMMARY"
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
@@ -61,12 +64,12 @@ jobs:
 
       - name: Publish
         run: |
-          pnpm publish -r \
-            --filter "./packages/*" \
-            --filter "!@hitomihiumi/micro-docgen" \
-            --access public \
-            --tag "${{ steps.release.outputs.dist_tag }}" \
-            --no-git-checks
+          echo '${{ steps.release.outputs.plan }}' | jq -r '.[] | [.name, .distTag] | @tsv' |
+          while IFS=$'\t' read -r name dist_tag; do
+            echo "::group::Publishing $name ($dist_tag)"
+            pnpm --filter "$name" publish --access public --tag "$dist_tag" --no-git-checks
+            echo "::endgroup::"
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
@@ -74,7 +77,7 @@ jobs:
       - name: GitHub release
         run: |
           flags=""
-          if [ "${{ steps.release.outputs.dist_tag }}" = "next" ]; then flags="--prerelease"; fi
+          case "$GITHUB_REF_NAME" in *-*) flags="--prerelease" ;; esac
           gh release create "$GITHUB_REF_NAME" --generate-notes $flags
         env:
           GH_TOKEN: ${{ github.token }}
