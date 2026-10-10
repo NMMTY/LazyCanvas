@@ -221,6 +221,17 @@ function instantiateLayer(
 // Scene component
 // ---------------------------------------------------------------------------
 
+/** Replaces the content of `target` with `source` in one synchronous step. */
+function present(target: HTMLCanvasElement, source: ICanvas): void {
+  const ctx = target.getContext("2d");
+  if (!ctx) return;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  ctx.clearRect(0, 0, target.width, target.height);
+  ctx.drawImage(source as unknown as CanvasImageSource, 0, 0);
+}
+
 /** A function that returns a fresh animation generator, so a looping scene can replay it. */
 export type AnimationFactory = () => ThreadGenerator;
 
@@ -353,12 +364,32 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
 
   // --- Scene lifecycle ------------------------------------------------------
   useEffect(() => {
-    if (!canvasRef.current) return;
+    const visible = canvasRef.current;
+    if (!visible) return;
 
-    const canvasAdapter = adapter ?? new BrowserCanvasAdapter(canvasRef.current);
+    // Frames are drawn layer by layer with awaits in between (images, fonts), and the browser
+    // paints in those gaps. Drawing straight onto the visible canvas therefore shows half-drawn
+    // frames, and on a scene that is redrawn all the time it shows little else. So the scene
+    // draws on a detached back buffer and each finished frame is copied over in one step. A
+    // custom adapter owns its own surface, so it is used as given.
+    const buffered = !adapter;
+    const canvasAdapter = adapter ?? new BrowserCanvasAdapter();
     adapterRef.current = canvasAdapter;
 
-    const sc = new LazyScene(width, height, { adapter: canvasAdapter, debug });
+    const sc: LazyScene = new LazyScene(width, height, {
+      adapter: canvasAdapter,
+      debug,
+      // Runs inside the render queue, so the back buffer still holds this very frame.
+      onFrameDrawn: () => {
+        if (sceneRef.current !== sc) return;
+        try {
+          onFrameRef.current?.(sc);
+        } catch (err) {
+          console.error("[Scene] onFrame error:", err);
+        }
+        if (buffered) present(visible, sc.lazyCanvas.canvas);
+      },
+    });
     sceneRef.current = sc;
     animEntriesRef.current = [];
 
@@ -378,9 +409,11 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
       origAdd(factory());
     };
 
-    setContextValue({ scene: sc, canvas: sc.lazyCanvas.canvas, adapter: canvasAdapter });
+    // The element on the page is the canvas callers know about; the back buffer is an internal detail.
+    const shown = buffered ? (visible as unknown as ICanvas) : sc.lazyCanvas.canvas;
+    setContextValue({ scene: sc, canvas: shown, adapter: canvasAdapter });
     setSceneGeneration((g) => g + 1);
-    onReadyRef.current?.(sc, sc.lazyCanvas.canvas);
+    onReadyRef.current?.(sc, shown);
 
     return () => {
       sc.clearAnimations();
@@ -430,14 +463,14 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
       if (typeof adapter_?.fontsReady === "function") await adapter_.fontsReady();
       if (isCancelled) return;
 
-      scene.lazyCanvas.manager.layers.clear();
-      for (const layer of roots) scene.load(layer);
-
+      // `renderLatest` swaps the trees in between frames and, when several changes arrive while a
+      // frame is being drawn, draws only the newest. A frame that has started is finished and shown
+      // even though `isCancelled` is already set for it: a continuous drag cancels every run, and
+      // dropping each frame would leave the preview frozen until the drag stops.
       try {
-        await scene.renderFrame(0);
-        if (!isCancelled) onFrameRef.current?.(scene);
+        await scene.renderLatest(0, roots);
       } catch (err) {
-        if (!isCancelled) console.error("[Scene] renderFrame error:", err);
+        if (sceneRef.current === scene) console.error("[Scene] renderFrame error:", err);
       }
     })();
 
@@ -487,7 +520,6 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
       sc.renderFrame(elapsed)
         .then(() => {
           if (isCancelled) return;
-          onFrameRef.current?.(sc);
           rafId = requestAnimationFrame(animate);
         })
         .catch(() => {

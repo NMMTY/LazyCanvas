@@ -35,20 +35,29 @@ export class Scene {
    */
   private renderQueue: Promise<void> = Promise.resolve();
 
+  /** Id of the newest {@link Scene.renderLatest | renderLatest} request; older ones are skipped. */
+  private latestRequest = 0;
+
+  private readonly onFrameDrawn?: (time: number) => void;
+
   /**
    * @param {number} width - The canvas width in pixels.
    * @param {number} height - The canvas height in pixels.
    * @param {object} [opts] - Options.
    * @param {ICanvasAdapter} opts.adapter - The canvas adapter for the current environment. Required.
    * @param {boolean} [opts.debug] - Enables verbose logging.
+   * @param {(time: number) => void} [opts.onFrameDrawn] - Called after every frame that was drawn
+   * completely, before the next queued frame starts. The canvas holds exactly that frame at this
+   * point, so it is the place to copy it somewhere (e.g. from an off-screen canvas to a visible one).
    * @throws {LazyError} If no adapter is given.
    */
   constructor(
     width: number,
     height: number,
-    opts: { debug?: boolean; adapter?: ICanvasAdapter } = {},
+    opts: { debug?: boolean; adapter?: ICanvasAdapter; onFrameDrawn?: (time: number) => void } = {},
   ) {
     this.lazyCanvas = new LazyCanvas(ModernRenderPipeline, opts).create(width, height);
+    this.onFrameDrawn = opts.onFrameDrawn;
   }
 
   /**
@@ -77,6 +86,41 @@ export class Scene {
       () => this.drawFrame(time),
     );
     // Keep the queue alive after a failed frame, but let the caller see the error.
+    this.renderQueue = next.then(
+      () => undefined,
+      () => undefined,
+    );
+    return next;
+  }
+
+  /**
+   * Renders a frame that replaces the previous ones, for a scene that is redrawn
+   * faster than it can be drawn (a colour picker being dragged, a live preview).
+   *
+   * Frames still run one at a time and a frame that has started is always finished,
+   * so something reaches the screen even while requests keep coming. Requests that
+   * are waiting behind it are what gets dropped: when the running frame is done,
+   * only the newest waiting request is drawn, so a burst of N changes costs one
+   * frame in flight plus one more, not N.
+   *
+   * @param {number} time - Timeline position, in seconds.
+   * @param {Array<AnyLayer | Group>} [roots] - Layer trees to show instead of the current
+   * ones. They are swapped in right before this frame is drawn, never while another
+   * frame is still using the old trees, and not at all if a newer request replaced this one.
+   * @returns {Promise<boolean>} `true` if the frame was drawn, `false` if a newer request replaced it.
+   */
+  public renderLatest(time: number, roots?: Array<AnyLayer | Group>): Promise<boolean> {
+    const request = ++this.latestRequest;
+    const run = async (): Promise<boolean> => {
+      if (request !== this.latestRequest) return false;
+      if (roots) {
+        this.lazyCanvas.manager.layers.clear();
+        for (const root of roots) this.load(root);
+      }
+      await this.drawFrame(time);
+      return true;
+    };
+    const next = this.renderQueue.then(run, run);
     this.renderQueue = next.then(
       () => undefined,
       () => undefined,
@@ -113,6 +157,7 @@ export class Scene {
     await this.lazyCanvas.manager.render.render(Export.CTX);
 
     this.lastFrameTime = time;
+    this.onFrameDrawn?.(time);
   }
 
   /**

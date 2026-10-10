@@ -146,6 +146,95 @@ describe("Scene.renderFrame serialization", () => {
   });
 });
 
+describe("Scene.renderLatest", () => {
+  const solid = (color: string, id: string) =>
+    new MorphLayer({ color, size: { width: 40, height: 40 } }, { id });
+
+  const pixel = (scene: Scene) => Array.from(scene.getImageData().slice(0, 4));
+
+  const tick = (ms = 2) => new Promise((r) => setTimeout(r, ms));
+
+  it("draws the frame in flight and the newest request, and skips the ones in between", async () => {
+    const scene = new Scene(40, 40, { adapter: makeAdapter(10, { depth: 0, peak: 0 }) });
+    const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff"];
+
+    const first = scene.renderLatest(0, [solid(colors[0], "r0")]);
+    // The first frame is running (waiting for its image) when the rest arrive.
+    await tick();
+    const rest = colors
+      .slice(1)
+      .map((color, i) => scene.renderLatest(0, [solid(color, `r${i + 1}`)]));
+    const results = await Promise.all([first, ...rest]);
+
+    expect(results).toEqual([true, false, false, false, true]);
+    expect(pixel(scene)).toEqual([255, 0, 255, 255]);
+    expect(scene.getLayer("r4")).toBeTruthy();
+    expect(scene.getLayer("r2")).toBeUndefined();
+  });
+
+  it("finishes the frame that has started instead of dropping it", async () => {
+    const drawn: number[] = [];
+    const scene = new Scene(100, 40, {
+      adapter: makeAdapter(10, { depth: 0, peak: 0 }),
+      onFrameDrawn: (time) => drawn.push(time),
+    });
+
+    const first = scene.renderLatest(1, [tree()]);
+    // A new request arrives while the first one is still loading its image.
+    await tick();
+    const second = scene.renderLatest(2, [solid("#00ff00", "later")]);
+
+    await expect(first).resolves.toBe(true);
+    await expect(second).resolves.toBe(true);
+    expect(drawn).toEqual([1, 2]);
+  });
+
+  it("never swaps the layer trees while a frame is using them", async () => {
+    const scene = new Scene(100, 40, { adapter: makeAdapter(10, { depth: 0, peak: 0 }) });
+    const seen: string[] = [];
+    const pipeline = scene.lazyCanvas.manager.render as any;
+    const realRender = pipeline.render.bind(pipeline);
+    pipeline.render = async (format: any) => {
+      const before = scene.lazyCanvas.manager.layers.toArray().map((l) => l.id);
+      const result = await realRender(format);
+      const after = scene.lazyCanvas.manager.layers.toArray().map((l) => l.id);
+      seen.push(before.join() === after.join() ? "stable" : "swapped");
+      return result;
+    };
+
+    const first = scene.renderLatest(0, [tree()]);
+    await tick();
+    await Promise.all([first, scene.renderLatest(0, [solid("#00ff00", "next")])]);
+
+    expect(seen).toEqual(["stable", "stable"]);
+  });
+
+  it("rejects when there is nothing to draw, and keeps working afterwards", async () => {
+    const scene = new Scene(40, 40, { adapter: makeAdapter(0, { depth: 0, peak: 0 }) });
+    await expect(scene.renderLatest(0)).rejects.toThrow(/No root layer/i);
+    await expect(scene.renderLatest(0, [solid("#00ff00", "ok")])).resolves.toBe(true);
+  });
+
+  it("reports every drawn frame through onFrameDrawn, with the frame still on the canvas", async () => {
+    const colors: number[][] = [];
+    const scene: Scene = new Scene(40, 40, {
+      adapter: makeAdapter(5, { depth: 0, peak: 0 }),
+      onFrameDrawn: () => colors.push(Array.from(scene.getImageData().slice(0, 4))),
+    });
+
+    const first = scene.renderLatest(0, [solid("#ff0000", "a")]);
+    await tick();
+    await Promise.all([first, scene.renderLatest(0, [solid("#00ff00", "b")])]);
+    await scene.renderFrame(0);
+
+    expect(colors).toEqual([
+      [255, 0, 0, 255],
+      [0, 255, 0, 255],
+      [0, 255, 0, 255],
+    ]);
+  });
+});
+
 describe("collectFontSpecs", () => {
   const adapter = new NodeCanvasAdapter();
 

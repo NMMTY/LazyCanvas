@@ -11,6 +11,38 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [1.1.0]
+
+`@nmmty/lazycanvas`, `@nmmty/adapter-browser` and `@nmmty/adapter-react`; `@nmmty/adapter-node` stays at 1.0.0.
+
+### Added
+
+- **`Scene.renderLatest(time, roots?)`** (`@nmmty/lazycanvas`): renders a frame that replaces the
+  previous ones, for a scene that is redrawn faster than it can be drawn. A frame that has started is
+  finished; of the requests waiting behind it only the newest is drawn, and the layer trees passed as
+  `roots` are swapped in between frames, never under a running one. Resolves to `false` if a newer
+  request replaced it.
+- **`onFrameDrawn` option of `Scene`** (`@nmmty/lazycanvas`): called after each completely drawn
+  frame, while the canvas still holds exactly that frame.
+- **Image cache** (`@nmmty/adapter-browser`): `loadImage` reuses the image already loaded for a URL
+  (up to 64, least recently used first out), and frames that ask while it is loading share one request.
+  Failed loads are not kept. Turn it off with `new BrowserCanvasAdapter(canvas, { imageCache: false })`
+  or empty it with `clearImageCache()`.
+
+### Changed
+
+- **`<Scene>` no longer shows half-drawn frames** (`@nmmty/adapter-react`): it draws on a detached back
+  buffer and copies each finished frame to the page canvas in one step. A scene redrawn in quick
+  succession (a live preview next to a colour picker) used to show whatever part of the frame had been
+  drawn when the browser painted. `onReady` and `useScene()` still receive the `<canvas>` element on the
+  page; `onFrame` runs before the frame is copied, so anything drawn there on `scene.lazyCanvas` is
+  included. A scene given its own `adapter` draws on that adapter's surface as before.
+- **A burst of changes costs one frame in flight plus one more**, not one per change
+  (`@nmmty/adapter-react`, through `renderLatest`). Previously every change queued a full frame and the
+  final state appeared only after all of them.
+- `BrowserCanvasAdapter.loadFonts` skips fonts the browser has already loaded instead of asking again
+  before every frame.
+
 ## [1.0.1]
 
 `@nmmty/lazycanvas` only; the adapters stay at 1.0.0.

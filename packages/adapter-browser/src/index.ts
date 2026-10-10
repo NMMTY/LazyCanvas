@@ -11,12 +11,45 @@ function toBlob(src: ArrayBuffer | ArrayBufferView): Blob {
   return new Blob([bytes]);
 }
 
+/** How many decoded images {@link BrowserCanvasAdapter} keeps for reuse. */
+const IMAGE_CACHE_LIMIT = 64;
+
+/**
+ * Images by URL, shared by every adapter. A scene is redrawn on every change and each frame asks
+ * for the same avatar again; going back to the network (or at least to the decoder) for it every
+ * time is most of what a redraw costs. The promise is stored, so frames that ask while the image
+ * is still loading share one request. A `Map` iterates in insertion order, which makes the oldest
+ * entry the first key.
+ */
+const imageCache = new Map<string, Promise<HTMLImageElement>>();
+
+/**
+ * Font shorthands the browser has already loaded. Only a spec that matched a face is remembered:
+ * an empty result can mean the `@font-face` is not declared yet, and that must be asked again.
+ */
+const loadedFontSpecs = new Set<string>();
+
+/** Forgets every cached image, e.g. after the file behind a URL was replaced. */
+export function clearImageCache(): void {
+  imageCache.clear();
+}
+
+/** Options of {@link BrowserCanvasAdapter}. */
+export interface BrowserCanvasAdapterOptions {
+  /**
+   * Reuse the image already loaded for a URL instead of loading it again (default `true`).
+   * Turn it off if the picture behind a URL changes while the page is open.
+   */
+  imageCache?: boolean;
+}
+
 /**
  * Browser adapter for LazyCanvas using native HTMLCanvasElement.
  * Provides canvas creation, font management, and image loading for browser environments.
  */
 export class BrowserCanvasAdapter implements ICanvasAdapter {
   private existingCanvas: HTMLCanvasElement | null = null;
+  private readonly useImageCache: boolean;
 
   /**
    * Fonts registered by this adapter that are still loading. Await
@@ -24,8 +57,14 @@ export class BrowserCanvasAdapter implements ICanvasAdapter {
    */
   private pendingFonts: Promise<unknown>[] = [];
 
-  constructor(canvas?: HTMLCanvasElement) {
+  /**
+   * @param {HTMLCanvasElement} [canvas] - A canvas to draw on. Without one, a detached canvas is
+   * created, which is what to use as the back buffer of a visible canvas.
+   * @param {BrowserCanvasAdapterOptions} [options] - Options.
+   */
+  constructor(canvas?: HTMLCanvasElement, options: BrowserCanvasAdapterOptions = {}) {
     this.existingCanvas = canvas || null;
+    this.useImageCache = options.imageCache ?? true;
   }
 
   fonts: IFontsAdapter = {
@@ -88,12 +127,17 @@ export class BrowserCanvasAdapter implements ICanvasAdapter {
     if (typeof document === "undefined" || !document.fonts) return;
 
     await Promise.all(
-      specs.map((spec) =>
-        // An unknown family rejects; that is not fatal, the layer falls back.
-        document.fonts
-          .load(spec)
-          .catch(() => undefined),
-      ),
+      specs
+        .filter((spec) => !loadedFontSpecs.has(spec))
+        .map((spec) =>
+          // An unknown family rejects; that is not fatal, the layer falls back.
+          document.fonts
+            .load(spec)
+            .then((faces) => {
+              if (faces.length > 0) loadedFontSpecs.add(spec);
+            })
+            .catch(() => undefined),
+        ),
     );
   }
 
@@ -110,7 +154,31 @@ export class BrowserCanvasAdapter implements ICanvasAdapter {
     return canvas as unknown as ICanvas;
   }
 
-  loadImage = async (src: ImageSource): Promise<HTMLImageElement> => {
+  loadImage = (src: ImageSource): Promise<HTMLImageElement> => {
+    // Only URLs are cached: binary data has no stable identity to look it up by.
+    if (!this.useImageCache || typeof src !== "string") return this.fetchImage(src);
+
+    const cached = imageCache.get(src);
+    if (cached) {
+      // Move it to the end so the entry evicted first is the one used least recently.
+      imageCache.delete(src);
+      imageCache.set(src, cached);
+      return cached;
+    }
+
+    const loading = this.fetchImage(src);
+    imageCache.set(src, loading);
+    if (imageCache.size > IMAGE_CACHE_LIMIT) {
+      imageCache.delete(imageCache.keys().next().value as string);
+    }
+    // A failure must not stay cached, or a transient network error would break the image for good.
+    loading.catch(() => {
+      if (imageCache.get(src) === loading) imageCache.delete(src);
+    });
+    return loading;
+  };
+
+  private fetchImage = async (src: ImageSource): Promise<HTMLImageElement> => {
     if (typeof Image === "undefined") {
       throw new Error("Image constructor is not available in this environment");
     }
