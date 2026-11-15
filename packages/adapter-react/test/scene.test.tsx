@@ -363,3 +363,47 @@ describe("layer registration", () => {
     expect(a).toBe(b);
   });
 });
+
+describe("refs and parity with the core JSX runtime", () => {
+  it("a ref on a layer component receives the layer instance, as in the core JSX runtime", async () => {
+    const objectRef = createRef<Morph>();
+    let callbackLayer: Text | null = null;
+    await render(
+      <Scene width={50} height={50}>
+        <Morph ref={objectRef} id="boxed" color="#00ff00" size={{ width: 50, height: 50 }} />
+        <Text
+          ref={(layer) => {
+            if (layer) callbackLayer = layer;
+          }}
+          text="hi"
+          font={{ family: "sans-serif", size: 10, weight: 400 }}
+        />
+      </Scene>,
+    );
+    expect(objectRef.current).toBeInstanceOf(lc.Morph);
+    expect(objectRef.current?.id).toBe("boxed");
+    expect(callbackLayer).toBeInstanceOf(lc.Text);
+  });
+
+  it("draws the same pixels as the same tree written with the core JSX runtime", async () => {
+    const size = { width: 40, height: 30 };
+    await render(
+      <Scene width={80} height={60}>
+        <Morph color="#ff0000" size={size} position={{ x: 40, y: 30 }} />
+      </Scene>,
+    );
+    const react = countPixels(canvasOf(), isRed);
+
+    const adapter = new NodeCanvasAdapter();
+    const scene = new lc.Scene(80, 60, { adapter });
+    scene.load(lc.createElement(lc.Morph, { color: "#ff0000", size, position: { x: 40, y: 30 } }));
+    await scene.renderFrame(0);
+    const data = scene.getImageData();
+    let core = 0;
+    for (let i = 0; i < data.length; i += 4)
+      if (isRed(data[i], data[i + 1], data[i + 2], data[i + 3])) core++;
+
+    expect(react).toBeGreaterThan(1000);
+    expect(react).toBe(core);
+  });
+});

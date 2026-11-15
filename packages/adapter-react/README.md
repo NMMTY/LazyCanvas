@@ -53,7 +53,9 @@ export function Badge({ name }: { name: string }) {
 | `Path2D` | An SVG path or a `Path2D` object |
 | `Group` | A flexbox container for other layers |
 
-Every component has the same name as the layer class of `@nmmty/lazycanvas`, so moving code between the two is a change of the import line: `import { Morph, Text } from "@nmmty/lazycanvas"` ⇄ `import { Morph, Text } from "@nmmty/adapter-react"`. Layer props are the same as the props accepted by the layer classes in `@nmmty/lazycanvas`. Only these components, fragments and `registerLayer`/`createLayerComponent` wrappers are drawn; arbitrary React components and DOM elements among the children are ignored.
+Every component has the same name as the layer class of `@nmmty/lazycanvas`, so moving code between the two is a change of the import line: `import { Morph, Text } from "@nmmty/lazycanvas"` ⇄ `import { Morph, Text } from "@nmmty/adapter-react"`. A `ref` on a component receives the layer instance (`useRef<Morph>(null)` — the component names are also types), and the props types (`IMorphProps`, `ITextProps`, …) are re-exported.
+
+Layer props are the same as the props accepted by the layer classes in `@nmmty/lazycanvas`. Only these components, fragments and `registerLayer`/`createLayerComponent` wrappers are drawn; arbitrary React components and DOM elements among the children are ignored.
 
 ### `<Scene>` props
 

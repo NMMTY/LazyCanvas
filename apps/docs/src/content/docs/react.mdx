@@ -26,7 +26,7 @@ import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
 
 Each component has the name of the layer class it wraps, so the same tree works with `@nmmty/lazycanvas` — only the import changes.
 
-The props of each component are the props of its layer class. `<Scene>` children are **not DOM**: nothing inside `<Scene>` is rendered by React itself, only converted into layers. Fragments, `Group` and the layer components are understood; other React components and DOM elements in there are ignored.
+A `ref` on a component receives the layer instance — `useRef<Morph>(null)`: the component names are also types, and `IMorphProps`, `ITextProps` and the other props types are re-exported. The props of each component are the props of its layer class. `<Scene>` children are **not DOM**: nothing inside `<Scene>` is rendered by React itself, only converted into layers. Fragments, `Group` and the layer components are understood; other React components and DOM elements in there are ignored.
 
 ## State drives the picture
 
