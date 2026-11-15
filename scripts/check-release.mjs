@@ -77,14 +77,13 @@ if (plan.length === 0) {
 }
 
 if (tag && !plan.some((pkg) => tag === `v${pkg.version}`)) {
-  const hint =
-      /^v\.\d/.test(tag) ?
-          ` Use v${tag.slice(2)} instead (no dot after "v"; see CONTRIBUTING.md).`
-          : ` Expected v<semver> for one of the versions below (e.g. v${plan[0].version}).`;
+  const hint = /^v\.\d/.test(tag)
+    ? ` Use v${tag.slice(2)} instead (no dot after "v"; see CONTRIBUTING.md).`
+    : ` Expected v<semver> for one of the versions below (e.g. v${plan[0].version}).`;
   fail(
-      `Tag ${tag} matches none of the versions about to be published: ${plan
-          .map((pkg) => `${pkg.name}@${pkg.version}`)
-          .join(", ")}.${hint}`,
+    `Tag ${tag} matches none of the versions about to be published: ${plan
+      .map((pkg) => `${pkg.name}@${pkg.version}`)
+      .join(", ")}.${hint}`,
   );
 }
 
