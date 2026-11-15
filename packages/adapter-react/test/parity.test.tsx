@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import { Canvas } from "@napi-rs/canvas";
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import * as lc from "@nmmty/lazycanvas";
 import { StrictMode, act, createElement as reactElement } from "react";
@@ -22,7 +23,29 @@ type Layers = Pick<
   "Bezier" | "Group" | "Line" | "Morph" | "Path2D" | "Polygon" | "Quadratic" | "Text"
 >;
 type Factory = (type: any, props?: any, ...children: any[]) => any;
-type Case = { width: number; height: number; tree: (L: Layers, h: Factory) => unknown };
+type Case = {
+  width: number;
+  height: number;
+  /** The tree draws text, which needs a system font; skipped where the machine has none. */
+  needsText?: boolean;
+  tree: (L: Layers, h: Factory) => unknown;
+};
+
+/**
+ * Some machines (a few CI runners among them) have no font that `sans-serif` resolves to, and then
+ * every text draws nothing. That is not a difference between the two packages, so the text case is
+ * skipped there instead of failing.
+ */
+const canDrawText = (() => {
+  const probe = new Canvas(80, 40);
+  const ctx = probe.getContext("2d");
+  ctx.font = "18px sans-serif";
+  ctx.fillStyle = "#000000";
+  ctx.fillText("Hello", 4, 24);
+  const { data } = ctx.getImageData(0, 0, 80, 40);
+  for (let i = 3; i < data.length; i += 4) if (data[i] > 0) return true;
+  return false;
+})();
 
 const font = { family: "sans-serif", size: 18, weight: 400 };
 
@@ -108,6 +131,7 @@ const cases: Record<string, Case> = {
       }),
   },
   text: {
+    needsText: true,
     width: 120,
     height: 40,
     tree: (L, h) =>
@@ -160,7 +184,7 @@ const inked = (data: Uint8ClampedArray) => {
 
 describe("the same tree through @nmmty/lazycanvas and @nmmty/adapter-react", () => {
   for (const [name, spec] of Object.entries(cases)) {
-    it(`draws identical pixels for ${name}`, async () => {
+    it.skipIf(spec.needsText && !canDrawText)(`draws identical pixels for ${name}`, async () => {
       const react = await drawWithReact(spec);
       const core = await drawWithCore(spec);
       // Guards against both sides drawing nothing and "matching".
