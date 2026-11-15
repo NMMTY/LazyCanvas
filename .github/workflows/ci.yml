@@ -44,15 +44,26 @@ jobs:
         continue-on-error: true
         working-directory: packages/adapter-node
         run: |
-          fc-list : family | sort -u | head -20
+          fc-list : family | sort -u | head -12
           node -e "
-          const {GlobalFonts,createCanvas}=require('@napi-rs/canvas');
+          const lc=require('../lazycanvas/dist/index.js');
           const {Fonts}=require('../lazycanvas/dist/fonts/index.js');
-          const ink=(fam,dir)=>{const c=createCanvas(200,100),x=c.getContext('2d');x.fillStyle='#fff';x.font='700 30px '+fam;if(dir)x.direction=dir;x.fillText('Hello',10,50);const d=x.getImageData(0,0,200,100).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i]>0)n++;return n};
-          console.log('families before', GlobalFonts.families.length, JSON.stringify(GlobalFonts.families.slice(0,8)));
-          console.log('sans-serif ink', ink('sans-serif'), 'DejaVu Sans ink', ink('DejaVu Sans'));
-          for (const [fam,w] of Object.entries(Fonts)) for (const [wt,b64] of Object.entries(w)) console.log('register',fam,wt,!!GlobalFonts.register(Buffer.from(b64,'base64'),fam));
-          console.log('Geist ink', ink('Geist'), 'Geist has', GlobalFonts.has('Geist'));
+          const {NodeCanvasAdapter}=require('./dist/index.js');
+          (async()=>{
+            for (const direction of ['ltr','ttb']) {
+              const scene=new lc.Scene(400,300,{adapter:new NodeCanvasAdapter()});
+              scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
+              const t=new lc.Text({text:'one two three',color:'#ffffff',font:{family:'Geist',size:20,weight:400},position:{x:10,y:10},align:'left',baseline:'top',centring:lc.Centring.None,direction,vertical:{mode:'words'}});
+              scene.load(new lc.Group().add(t));
+              const ctx=scene.lazyCanvas.ctx; ctx.font='400 20px Geist';
+              const m=ctx.measureText('one');
+              console.log(direction,'measure',JSON.stringify({w:m.width,asc:m.fontBoundingBoxAscent,desc:m.fontBoundingBoxDescent,aa:m.actualBoundingBoxAscent}));
+              if (direction==='ttb') console.log('units',JSON.stringify(t.layoutVertical(ctx,scene.lazyCanvas.canvas)).slice(0,600));
+              await scene.renderFrame(0);
+              const d=scene.getImageData(); let n=0; for(let i=3;i<d.length;i+=4) if(d[i]>40) n++;
+              console.log(direction,'ink',n, 'props.position', JSON.stringify(t.props.position));
+            }
+          })().catch(e=>console.log('ERR',e));
           "
 
       - name: Test
