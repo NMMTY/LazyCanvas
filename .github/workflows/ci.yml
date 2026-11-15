@@ -47,10 +47,12 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          echo "== alone"; pnpm vitest run packages/lazycanvas/test/vertical-layer.test.ts 2>&1 | grep -E "Tests " || true
-          echo "== all files, one at a time"; pnpm vitest run --no-file-parallelism 2>&1 | grep -E "Tests " || true
-          echo "== all, threads pool"; pnpm vitest run --pool=threads 2>&1 | grep -E "Tests " || true
-          nproc
+          git fetch --depth=1 origin bd7548e70e12fd16c2c09b3650de93272f361dbc
+          git worktree add ../base FETCH_HEAD
+          cd ../base
+          pnpm install --frozen-lockfile > /dev/null 2>&1
+          echo "== main (bd7548e) on this runner"
+          pnpm vitest run 2>&1 | grep -E "Tests |×" || true
 
       # Packs the four public packages, installs the tarballs into a clean
       # project and loads every entry point as both ESM and CJS.
