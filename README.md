@@ -65,8 +65,8 @@ await new Exporter(scene).export("png", { name: "badge", saveAsFile: true });
 
 ## Documentation
 
-- [Guides and API reference](./apps/docs/src/content/docs)
-- [Migrating from 0.6.x](./apps/docs/src/content/docs/migration-from-0.6.mdx)
+- [Guides and API reference](https://docs.hitomihiumi.xyz/docs/introduction)
+- [Migrating from 0.6.x](https://docs.hitomihiumi.xyz/docs/migration-from-0.6)
 - [Changelog](./CHANGELOG.md)
 
 ## Development
