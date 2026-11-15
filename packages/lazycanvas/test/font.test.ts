@@ -4,7 +4,7 @@ import {
   FontsManager,
   Group,
   Scene,
-  TextLayer,
+  Text,
   cssFont,
   cssFontFamily,
 } from "@nmmty/lazycanvas";
@@ -97,12 +97,12 @@ describe("text rendering falls back predictably", () => {
     expect(geist).not.toBeCloseTo(fallback, 1);
   });
 
-  it("renders a TextLayer with a multi-word family", async () => {
+  it("renders a Text with a multi-word family", async () => {
     const scene = new Scene(300, 80, { adapter });
     scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
     scene.load(
       new Group().add(
-        new TextLayer({
+        new Text({
           text: "Geist Mono",
           color: "#ffffff",
           font: { family: "Geist Mono", size: 28, weight: 400 },

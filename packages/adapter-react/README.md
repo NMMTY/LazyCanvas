@@ -43,15 +43,17 @@ export function Badge({ name }: { name: string }) {
 
 ## Components
 
-| Component | Layer |
+| Component | Description |
 | --- | --- |
-| `Morph` | `MorphLayer` — rectangles with rounded corners and strokes |
-| `Text` | `TextLayer` |
-| `Image` | `ImageLayer` |
-| `Line`, `Bezier`, `Quadratic` | `LineLayer`, `BezierLayer`, `QuadraticLayer` |
-| `Polygon` | `PolygonLayer` |
-| `Path2D` | `Path2DLayer` |
-| `Group` | The core `Group` — a flexbox container for other layers |
+| `Morph` | Rectangles with rounded corners and strokes |
+| `Text` | Single or multi-line text, horizontal or vertical |
+| `Image` | An image, optionally with rounded corners |
+| `Line`, `Bezier`, `Quadratic` | Straight and curved lines |
+| `Polygon` | A regular polygon |
+| `Path2D` | An SVG path or a `Path2D` object |
+| `Group` | A flexbox container for other layers |
+
+Every component has the same name as the layer class of `@nmmty/lazycanvas`, so moving code between the two is a change of the import line: `import { Morph, Text } from "@nmmty/lazycanvas"` ⇄ `import { Morph, Text } from "@nmmty/adapter-react"`. A `ref` on a component receives the layer instance (`useRef<Morph>(null)` — the component names are also types), and the props types (`IMorphProps`, `ITextProps`, …) are re-exported.
 
 Layer props are the same as the props accepted by the layer classes in `@nmmty/lazycanvas`. Only these components, fragments and `registerLayer`/`createLayerComponent` wrappers are drawn; arbitrary React components and DOM elements among the children are ignored.
 

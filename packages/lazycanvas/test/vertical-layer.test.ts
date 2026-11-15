@@ -1,11 +1,11 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Centring, Group, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Centring, Group, Scene, Text } from "@nmmty/lazycanvas";
 import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
 
-function sceneWith(layer: TextLayer, w = 400, h = 300) {
+function sceneWith(layer: Text, w = 400, h = 300) {
   const scene = new Scene(w, h, { adapter });
   scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
   scene.load(new Group().add(layer));
@@ -13,7 +13,7 @@ function sceneWith(layer: TextLayer, w = 400, h = 300) {
 }
 
 const text = (props: Record<string, any>) =>
-  new TextLayer({
+  new Text({
     text: "one two three",
     color: "#ffffff",
     font: { family: "Geist", size: 20, weight: 400 },
@@ -45,7 +45,7 @@ function inkBounds(data: Uint8ClampedArray, w: number, h: number) {
     : { empty: false, width: maxX - minX + 1, height: maxY - minY + 1, minX, minY, maxX, maxY };
 }
 
-describe("TextLayer measurement in vertical directions", () => {
+describe("Text measurement in vertical directions", () => {
   it("reports a tall narrow box instead of a wide one", () => {
     const horizontal = text({ direction: "ltr" });
     const vertical = text({ direction: "ttb", vertical: { mode: "words" } });
@@ -92,7 +92,7 @@ describe("TextLayer measurement in vertical directions", () => {
   });
 });
 
-describe("TextLayer rendering in vertical directions", () => {
+describe("Text rendering in vertical directions", () => {
   it("draws a tall narrow block instead of a wide one", async () => {
     const wide = sceneWith(text({ direction: "ltr" }));
     await wide.renderFrame(0);
@@ -200,7 +200,7 @@ describe("TextLayer rendering in vertical directions", () => {
 
 describe("vertical text in a flex layout", () => {
   it("is measured as a tall narrow box, so the row lays out around it", async () => {
-    const vertical = new TextLayer(
+    const vertical = new Text(
       {
         text: "one two three",
         color: "#ffffff",
@@ -210,7 +210,7 @@ describe("vertical text in a flex layout", () => {
       } as any,
       { id: "vtext" },
     );
-    const after = new (await import("@nmmty/lazycanvas")).MorphLayer(
+    const after = new (await import("@nmmty/lazycanvas")).Morph(
       { color: "#ff0000", layout: { width: 30, height: 30 } },
       { id: "after" },
     );
@@ -229,7 +229,7 @@ describe("vertical text in a flex layout", () => {
 
 describe("serialization", () => {
   it("round-trips the vertical options", () => {
-    const layer = new TextLayer(
+    const layer = new Text(
       {
         text: "abc",
         color: "#fff",
@@ -246,7 +246,7 @@ describe("serialization", () => {
   });
 
   it("fills in defaults for a layer that does not configure vertical text", () => {
-    const layer = new TextLayer({
+    const layer = new Text({
       text: "abc",
       color: "#fff",
       font: { family: "Geist", size: 20, weight: 400 },
@@ -261,7 +261,7 @@ describe("vertical text under the layout engine", () => {
     // no width — which for vertical text meant measuring one very tall column
     // while draw wrapped it into several short ones. The node then got a height
     // the text never actually occupied.
-    const layer = new TextLayer(
+    const layer = new Text(
       {
         text: "abcdefghijkl",
         color: "#ffffff",
@@ -294,7 +294,7 @@ describe("vertical text under the layout engine", () => {
     // A stretching parent overrides the authored height, and that computed box
     // becomes the wrap constraint — the same way horizontal multiline text
     // wraps to its computed width.
-    const layer = new TextLayer(
+    const layer = new Text(
       {
         text: "abcdefghijkl",
         color: "#ffffff",

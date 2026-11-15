@@ -13,7 +13,7 @@
 
 Declarative 2D canvas rendering with flexbox layout, JSX and signal-based animation. One scene description, rendered the same way on **Node.js**, in the **browser** and in **React**.
 
-- **Layers** — `MorphLayer` (rounded shapes), `TextLayer`, `ImageLayer`, `LineLayer`, `BezierLayer`, `QuadraticLayer`, `PolygonLayer`, `Path2DLayer`, grouped with `Group`.
+- **Layers** — `Morph` (rounded shapes), `Text`, `Image`, `Line`, `Bezier`, `Quadratic`, `Polygon`, `Path2D`, grouped with `Group`.
 - **Flexbox layout** — powered by [Yoga](https://www.yogalayout.dev/): `flexDirection`, `gap`, `padding`, `justifyContent`, `alignItems`, absolute positioning and more.
 - **JSX** — write scenes as JSX, with the classic or the automatic runtime (`jsxImportSource`).
 - **Signals & animation** — `createSignal`, tweens, easing and generator-based timelines (`all`, `chain`, `loop`, `waitFor`, …).
@@ -39,7 +39,7 @@ Requires Node.js 18 or newer. The core ships as ESM and CommonJS with full TypeS
 
 ```ts
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Group, Morph, Scene, Text } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
 
 const scene = new Scene(600, 300, { adapter: new NodeCanvasAdapter() });
@@ -48,12 +48,12 @@ scene.load(
   new Group({
     layout: { width: 600, height: 300, justifyContent: "center", alignItems: "center" },
   }).add(
-    new MorphLayer({
+    new Morph({
       color: "#7c3aed",
       size: { width: 600, height: 300, radius: { all: 24 } },
       layout: { position: "absolute", top: 0, left: 0 },
     }),
-    new TextLayer({
+    new Text({
       text: "Hello, LazyCanvas!",
       color: "#ffffff",
       font: { family: "sans-serif", size: 44, weight: 700 },
@@ -69,13 +69,13 @@ await new Exporter(scene).export("png", { name: "hello", saveAsFile: true });
 
 ```ts
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
-import { Group, MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Group, Morph, Scene } from "@nmmty/lazycanvas";
 
 const canvas = document.querySelector("canvas")!;
 const scene = new Scene(400, 200, { adapter: new BrowserCanvasAdapter(canvas) });
 
 scene.load(
-  new Group().add(new MorphLayer({ color: "#22c55e", size: { width: 400, height: 200 } })),
+  new Group().add(new Morph({ color: "#22c55e", size: { width: 400, height: 200 } })),
 );
 
 await scene.renderFrame(0);
@@ -88,7 +88,7 @@ For React, see [`@nmmty/adapter-react`](https://github.com/NMMTY/LazyCanvas/tree
 Layer props accept signals. Animate them from a generator and let the scene drive the timeline:
 
 ```ts
-import { Group, Easing, MorphLayer, Scene, all, createSignal } from "@nmmty/lazycanvas";
+import { Group, Easing, Morph, Scene, all, createSignal } from "@nmmty/lazycanvas";
 
 const x = createSignal(20);
 const color = createSignal("#ef4444");
@@ -96,7 +96,7 @@ const color = createSignal("#ef4444");
 const scene = new Scene(300, 100, { adapter });
 scene.load(
   new Group().add(
-    new MorphLayer({
+    new Morph({
       position: { x, y: 30 },
       size: { width: 40, height: 40, radius: { all: 8 } },
       color,
@@ -118,12 +118,12 @@ await scene.renderFrame(0.5);
 
 ```tsx
 /** @jsxImportSource @nmmty/lazycanvas */
-import { Group, MorphLayer, TextLayer } from "@nmmty/lazycanvas";
+import { Group, Morph, Text } from "@nmmty/lazycanvas";
 
 scene.load(
   <Group layout={{ flexDirection: "row", gap: 12, padding: 16 }}>
-    <MorphLayer color="#7c3aed" layout={{ width: 80, height: 80 }} />
-    <TextLayer text="JSX" color="#111827" font={{ family: "sans-serif", size: 32, weight: 700 }} align="left" />
+    <Morph color="#7c3aed" layout={{ width: 80, height: 80 }} />
+    <Text text="JSX" color="#111827" font={{ family: "sans-serif", size: 32, weight: 700 }} align="left" />
   </Group>,
 );
 ```

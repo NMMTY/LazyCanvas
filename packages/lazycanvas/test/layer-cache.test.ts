@@ -1,19 +1,19 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Group, Link, MorphLayer, Path2DLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Group, Link, Morph, Path2D, Scene, Text } from "@nmmty/lazycanvas";
 import { describe, expect, it, vi } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
 const BLOB = "M10 10H70V50H10Z";
 
 const blob = (props: Record<string, unknown> = {}) =>
-  new Path2DLayer({
+  new Path2D({
     path2D: BLOB,
     color: "#ff0000",
     filter: "blur(6px)",
     ...props,
   } as never);
 
-const bg = () => new MorphLayer({ color: "#101030", size: { width: 80, height: 60 } });
+const bg = () => new Morph({ color: "#101030", size: { width: 80, height: 60 } });
 
 /** A scene with two root layers, built anew for every frame like a React tree is. */
 const frame = (blobProps: Record<string, unknown> = {}) => [bg(), blob(blobProps)];
@@ -41,7 +41,7 @@ describe("LayerCache", () => {
   });
 
   it("copies a layer that has not changed instead of drawing it again", async () => {
-    const draws = vi.spyOn(Path2DLayer.prototype, "draw");
+    const draws = vi.spyOn(Path2D.prototype, "draw");
     const scene = cached();
 
     const first = await draw(scene, frame());
@@ -64,7 +64,7 @@ describe("LayerCache", () => {
   });
 
   it("only repaints the stored shape when just the colour changed", async () => {
-    const draws = vi.spyOn(Path2DLayer.prototype, "draw");
+    const draws = vi.spyOn(Path2D.prototype, "draw");
     const scene = cached();
     await draw(scene, frame({ color: "#ff0000" }));
     const green = await draw(scene, frame({ color: "#00ff00" }));
@@ -99,7 +99,7 @@ describe("LayerCache", () => {
     ["the opacity", { opacity: 0.5 }],
     ["the stroke", { stroke: { width: 3 } }],
   ])("draws the layer again when %s changes", async (_name, change) => {
-    const draws = vi.spyOn(Path2DLayer.prototype, "draw");
+    const draws = vi.spyOn(Path2D.prototype, "draw");
     const scene = cached();
     await draw(scene, frame());
     await draw(scene, frame(change));
@@ -109,7 +109,7 @@ describe("LayerCache", () => {
   });
 
   it("does not take a layer at another place for the same picture", async () => {
-    const draws = vi.spyOn(Path2DLayer.prototype, "draw");
+    const draws = vi.spyOn(Path2D.prototype, "draw");
     const scene = cached();
     // The inner group is moved by the layout, so the blob is drawn with a translated context.
     const at = (x: number) => [
@@ -138,7 +138,7 @@ describe("LayerCache", () => {
   it("stores a layer without a filter only when asked to", async () => {
     const scene = cached();
     const roots = (cache?: boolean) => [
-      new MorphLayer({ color: "#00ff00", size: { width: 40, height: 40 }, cache }),
+      new Morph({ color: "#00ff00", size: { width: 40, height: 40 }, cache }),
     ];
     await draw(scene, roots());
     expect(scene.cacheStats()).toMatchObject({ misses: 0, bypassed: 0 });
@@ -149,7 +149,7 @@ describe("LayerCache", () => {
   });
 
   it("never stores a layer that opts out", async () => {
-    const draws = vi.spyOn(Path2DLayer.prototype, "draw");
+    const draws = vi.spyOn(Path2D.prototype, "draw");
     const scene = cached();
     await draw(scene, frame({ cache: false }));
     await draw(scene, frame({ cache: false }));
@@ -174,12 +174,12 @@ describe("LayerCache", () => {
   });
 
   it("stores a whole group when asked to, and draws it again when a child changes", async () => {
-    const draws = vi.spyOn(MorphLayer.prototype, "draw");
+    const draws = vi.spyOn(Morph.prototype, "draw");
     const scene = cached();
     const group = (color: string) =>
       new Group({ cache: true }).add(
-        new MorphLayer({ color, size: { width: 20, height: 20 } }),
-        new MorphLayer({ color: "#ffffff", size: { width: 10, height: 10 } }),
+        new Morph({ color, size: { width: 20, height: 20 } }),
+        new Morph({ color: "#ffffff", size: { width: 10, height: 10 } }),
       );
 
     await draw(scene, [group("#ff0000")]);
@@ -196,7 +196,7 @@ describe("LayerCache", () => {
   it("does not store a text layer unless asked to", async () => {
     const scene = cached();
     const text = () =>
-      new TextLayer({
+      new Text({
         text: "hi",
         color: "#fff",
         font: { family: "sans-serif", size: 20, weight: 400 },
@@ -229,7 +229,7 @@ describe("LayerCache", () => {
   });
 
   it("forgets everything on clearCache and when the canvas is resized", async () => {
-    const draws = vi.spyOn(Path2DLayer.prototype, "draw");
+    const draws = vi.spyOn(Path2D.prototype, "draw");
     const scene = cached();
     await draw(scene, frame());
     scene.clearCache();

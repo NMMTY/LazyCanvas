@@ -55,18 +55,18 @@ import { Group, Morph, Scene, Text } from "@nmmty/adapter-react";
 ```ts
 // Node.js — the same layers, exported to a PNG
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Group, MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Group, Morph, Scene } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
 
 const scene = new Scene(320, 96, { adapter: new NodeCanvasAdapter() });
-scene.load(new Group().add(new MorphLayer({ color: "#7c3aed", size: { width: 320, height: 96 } })));
+scene.load(new Group().add(new Morph({ color: "#7c3aed", size: { width: 320, height: 96 } })));
 await new Exporter(scene).export("png", { name: "badge", saveAsFile: true });
 ```
 
 ## Documentation
 
-- [Guides and API reference](./apps/docs/src/content/docs)
-- [Migrating from 0.6.x](./apps/docs/src/content/docs/migration-from-0.6.mdx)
+- [Guides and API reference](https://docs.hitomihiumi.xyz/docs/introduction)
+- [Migrating from 0.6.x](https://docs.hitomihiumi.xyz/docs/migration-from-0.6)
 - [Changelog](./CHANGELOG.md)
 
 ## Development

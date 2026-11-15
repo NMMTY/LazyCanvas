@@ -19,7 +19,7 @@ import { ThreadScheduler } from "./ThreadScheduler";
  * @example
  * ```ts
  * const scene = new Scene(400, 200, { adapter: new NodeCanvasAdapter() });
- * scene.load(new MorphLayer({ color: "#22c55e", size: { width: 400, height: 200 } }));
+ * scene.load(new Morph({ color: "#22c55e", size: { width: 400, height: 200 } }));
  * await scene.renderFrame(0);
  * ```
  */

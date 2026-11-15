@@ -1,4 +1,4 @@
-import { Group, ImageLayer, LineLayer, MorphLayer, TextLayer } from "../structures/components";
+import { Group, Image, Line, Morph, Text } from "../structures/components";
 import {
   type AnyTextAlign,
   type AnyWeight,
@@ -36,7 +36,7 @@ const Utils = {
           { length: Math.ceil((options.endX - options.startX) / options.cellWith) },
           (_, i) => {
             const x = options.startX + i * options.cellWith;
-            return new LineLayer()
+            return new Line()
               .setPosition(x, options.startY, x, options.endY)
               .setColor(options.color)
               .setStroke(options.lineWidth);
@@ -46,7 +46,7 @@ const Utils = {
           { length: Math.ceil((options.endY - options.startY) / options.cellHeight) },
           (_, i) => {
             const y = options.startY + i * options.cellHeight;
-            return new LineLayer()
+            return new Line()
               .setPosition(options.startX, y, options.endX, y)
               .setColor(options.color)
               .setStroke(options.lineWidth);
@@ -72,19 +72,19 @@ const Utils = {
     return new Group()
       .setID(`box-${start.x}-${start.y}-${end.x}-${end.y}`)
       .add(
-        new LineLayer()
+        new Line()
           .setPosition(start.x, start.y, end.x, start.y)
           .setColor(opts.color)
           .setStroke(opts.lineWidth),
-        new LineLayer()
+        new Line()
           .setPosition(end.x, start.y, end.x, end.y)
           .setColor(opts.color)
           .setStroke(opts.lineWidth),
-        new LineLayer()
+        new Line()
           .setPosition(end.x, end.y, start.x, end.y)
           .setColor(opts.color)
           .setStroke(opts.lineWidth),
-        new LineLayer()
+        new Line()
           .setPosition(start.x, end.y, start.x, start.y)
           .setColor(opts.color)
           .setStroke(opts.lineWidth),
@@ -276,8 +276,8 @@ const Utils = {
     color: ColorType,
     radius?: { [corner in RadiusCorner]?: ScaleType },
     opts?: { id?: string; zIndex?: number },
-  ): MorphLayer {
-    const layer = new MorphLayer(undefined, opts)
+  ): Morph {
+    const layer = new Morph(undefined, opts)
       .setPosition(x, y)
       .setSize(width, height, radius)
       .setColor(color);
@@ -290,8 +290,8 @@ const Utils = {
     size: ScaleType,
     color: ColorType,
     opts?: { id?: string; zIndex?: number },
-  ): MorphLayer {
-    const layer = new MorphLayer(undefined, opts)
+  ): Morph {
+    const layer = new Morph(undefined, opts)
       .setPosition(x, y)
       .setSize(size, size, { all: size })
       .setColor(color);
@@ -306,8 +306,8 @@ const Utils = {
     color: ColorType,
     strokeWidth?: number,
     opts?: { id?: string; zIndex?: number },
-  ): LineLayer {
-    const layer = new LineLayer(undefined, opts)
+  ): Line {
+    const layer = new Line(undefined, opts)
       .setPosition(x1, y1, x2, y2)
       .setColor(color)
       .setStroke(strokeWidth || 1);
@@ -326,8 +326,8 @@ const Utils = {
       align?: AnyTextAlign;
       multiline?: { width: ScaleType; height: ScaleType; spacing?: number };
     },
-  ): TextLayer {
-    const layer = new TextLayer(undefined, {
+  ): Text {
+    const layer = new Text(undefined, {
       id: opts?.id,
       zIndex: opts?.zIndex,
     })
@@ -354,8 +354,8 @@ const Utils = {
     height: ScaleType,
     radius?: { [corner in RadiusCorner]?: ScaleType },
     opts?: { id?: string; zIndex?: number },
-  ): ImageLayer {
-    const layer = new ImageLayer(undefined, opts)
+  ): Image {
+    const layer = new Image(undefined, opts)
       .setPosition(x, y)
       .setSrc(src)
       .setSize(width, height, radius);

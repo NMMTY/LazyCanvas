@@ -22,7 +22,7 @@ export interface IPattern {
  *
  * @example
  * ```ts
- * new MorphLayer({
+ * new Morph({
  *   color: new Pattern().setSrc("https://example.com/tile.png").setType("repeat"),
  *   size: { width: 200, height: 200 },
  * });

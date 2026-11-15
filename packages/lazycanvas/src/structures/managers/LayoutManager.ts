@@ -13,7 +13,7 @@ import {
   restoreAuthoredProps,
   walkLayers,
 } from "../../utils";
-import { Group, type TextLayer } from "../components";
+import { Group, type Text } from "../components";
 
 // Define minimal types for Yoga to avoid import issues
 type YogaNode = any;
@@ -136,7 +136,7 @@ export class LayoutManager {
     if (layout.width !== undefined) {
       this.setDimension(node, "width", layout.width);
     } else if (size.width !== undefined && layer.type !== LayerType.Text) {
-      // For TextLayer, skip size.width to allow measureFunc to work
+      // For Text, skip size.width to allow measureFunc to work
       this.setDimension(node, "width", size.width);
     } else if ((layer instanceof Group || layer.type === "group") && !layout.flexDirection) {
       // For Group without explicit width and not a flex container, stretch to parent
@@ -147,7 +147,7 @@ export class LayoutManager {
     if (layout.height !== undefined) {
       this.setDimension(node, "height", layout.height);
     } else if (size.height !== undefined && layer.type !== LayerType.Text) {
-      // For TextLayer, skip size.height to allow measureFunc to work
+      // For Text, skip size.height to allow measureFunc to work
       this.setDimension(node, "height", size.height);
     } else if ((layer instanceof Group || layer.type === "group") && !layout.flexDirection) {
       // For Group without explicit height and not a flex container, stretch to parent
@@ -181,10 +181,10 @@ export class LayoutManager {
     }
     // If not absolute, ignore top/left/right/bottom as they break flexbox layout
 
-    // Handle TextLayer measurement
+    // Handle Text measurement
     if (layer.type === LayerType.Text && ctx && canvas) {
       node.setMeasureFunc((width: number, widthMode: any, height: number, heightMode: any) => {
-        const textLayer = layer as TextLayer;
+        const textLayer = layer as Text;
 
         // Save original align/baseline for accurate measurement
         const originalAlign = textLayer.props.align;
@@ -258,7 +258,7 @@ export class LayoutManager {
     if (!layer.props) layer.props = {} as any;
     const props = layer.props as any;
 
-    // Tells TextLayer to align from the top-left, matching Yoga's coordinates.
+    // Tells Text to align from the top-left, matching Yoga's coordinates.
     props._computedLayout = true;
 
     props.position = { ...props.position, x: layout.left, y: layout.top };

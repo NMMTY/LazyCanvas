@@ -2,7 +2,7 @@ import {
   Centring,
   Group,
   LayersManager,
-  MorphLayer,
+  Morph,
   findLayer,
   getChildren,
   walkLayers,
@@ -10,7 +10,7 @@ import {
 import { beforeEach, describe, expect, it } from "vitest";
 
 const morph = (id: string, zIndex = 1) =>
-  new MorphLayer(
+  new Morph(
     { color: "#ffffff", size: { width: 10, height: 10 }, centring: Centring.None },
     { id, zIndex },
   );

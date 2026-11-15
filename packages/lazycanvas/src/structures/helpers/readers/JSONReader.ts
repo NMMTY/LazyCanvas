@@ -4,25 +4,25 @@ import { type AnyLayer, type ICanvasAdapter, type JSONLayer, LayerType } from ".
 import { LazyError, LazyLog } from "../../../utils";
 import { type IOLazyCanvas, LazyCanvas } from "../../LazyCanvas";
 import {
-  BezierLayer,
+  Bezier,
   Group,
   type IBaseLayerMisc,
-  type IBezierLayerProps,
+  type IBezierProps,
   type IGroup,
-  type IImageLayerProps,
-  type ILineLayerProps,
-  type IMorphLayerProps,
-  type IPath2DLayerProps,
-  type IPolygonLayerProps,
-  type IQuadraticLayerProps,
-  type ITextLayerProps,
-  ImageLayer,
-  LineLayer,
-  MorphLayer,
-  Path2DLayer,
-  PolygonLayer,
-  QuadraticLayer,
-  TextLayer,
+  type IImageProps,
+  type ILineProps,
+  type IMorphProps,
+  type IPath2DProps,
+  type IPolygonProps,
+  type IQuadraticProps,
+  type ITextProps,
+  Image,
+  Line,
+  Morph,
+  Path2D,
+  Polygon,
+  Quadratic,
+  Text,
 } from "../../components";
 import { ClassicRenderPipeline } from "../../managers";
 
@@ -117,33 +117,23 @@ export class JSONReader {
     }
     switch (layer.type) {
       case LayerType.BezierCurve:
-        return new BezierLayer(layer.props as IBezierLayerProps, misc).setColor(
-          JSONReader.fillParse(layer),
-        );
+        return new Bezier(layer.props as IBezierProps, misc).setColor(JSONReader.fillParse(layer));
       case LayerType.QuadraticCurve:
-        return new QuadraticLayer(layer.props as IQuadraticLayerProps, misc).setColor(
+        return new Quadratic(layer.props as IQuadraticProps, misc).setColor(
           JSONReader.fillParse(layer),
         );
       case LayerType.Image:
-        return new ImageLayer(layer.props as IImageLayerProps, misc);
+        return new Image(layer.props as IImageProps, misc);
       case LayerType.Text:
-        return new TextLayer(layer.props as ITextLayerProps, misc).setColor(
-          JSONReader.fillParse(layer),
-        );
+        return new Text(layer.props as ITextProps, misc).setColor(JSONReader.fillParse(layer));
       case LayerType.Morph:
-        return new MorphLayer(layer.props as IMorphLayerProps, misc).setColor(
-          JSONReader.fillParse(layer),
-        );
+        return new Morph(layer.props as IMorphProps, misc).setColor(JSONReader.fillParse(layer));
       case LayerType.Line:
-        return new LineLayer(layer.props as ILineLayerProps, misc).setColor(
-          JSONReader.fillParse(layer),
-        );
+        return new Line(layer.props as ILineProps, misc).setColor(JSONReader.fillParse(layer));
       case LayerType.Path:
-        return new Path2DLayer(layer.props as IPath2DLayerProps, misc).setColor(
-          JSONReader.fillParse(layer),
-        );
+        return new Path2D(layer.props as IPath2DProps, misc).setColor(JSONReader.fillParse(layer));
       case LayerType.Polygon:
-        return new PolygonLayer(layer.props as IPolygonLayerProps, misc).setColor(
+        return new Polygon(layer.props as IPolygonProps, misc).setColor(
           JSONReader.fillParse(layer),
         );
       case LayerType.Group:

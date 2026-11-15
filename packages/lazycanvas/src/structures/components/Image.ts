@@ -31,7 +31,7 @@ function describeSource(src: unknown): string {
 /**
  * Interface representing an Image Layer.
  */
-export interface IImageLayer extends IBaseLayer {
+export interface IImage extends IBaseLayer {
   /**
    * The type of the layer, which is `Image`.
    */
@@ -40,13 +40,13 @@ export interface IImageLayer extends IBaseLayer {
   /**
    * The properties specific to the Image Layer.
    */
-  props: IImageLayerProps;
+  props: IImageProps;
 }
 
 /**
  * Interface representing the properties of an Image Layer.
  */
-export interface IImageLayerProps extends IBaseLayerProps {
+export interface IImageProps extends IBaseLayerProps {
   /**
    * The source of the image, which can be a URL or a Buffer.
    */
@@ -84,20 +84,20 @@ export interface IImageLayerProps extends IBaseLayerProps {
 /**
  * Class representing an Image Layer, extending the BaseLayer class.
  */
-export class ImageLayer extends BaseLayer<IImageLayerProps> {
+export class Image extends BaseLayer<IImageProps> {
   /**
    * The properties of the Image Layer.
    */
-  props: IImageLayerProps;
+  props: IImageProps;
 
   /**
-   * Constructs a new ImageLayer instance.
-   * @param {IImageLayerProps} [props] - The properties of the Image Layer.
+   * Constructs a new Image instance.
+   * @param {IImageProps} [props] - The properties of the Image Layer.
    * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
    */
-  constructor(props?: IImageLayerProps, misc?: IBaseLayerMisc) {
-    super(LayerType.Image, props || ({} as IImageLayerProps), misc);
-    this.props = props ? props : ({} as IImageLayerProps);
+  constructor(props?: IImageProps, misc?: IBaseLayerMisc) {
+    super(LayerType.Image, props || ({} as IImageProps), misc);
+    this.props = props ? props : ({} as IImageProps);
     this.props = this.validateProps(this.props);
   }
 
@@ -182,7 +182,7 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
       }
     }
 
-    if (debug) LazyLog.log("none", "ImageLayer:", { x, y, w, h, rad });
+    if (debug) LazyLog.log("none", "Image:", { x, y, w, h, rad });
 
     // Load before saving the context: holding a save() across a network fetch
     // leaves the state stack open for as long as the image takes to arrive.
@@ -200,11 +200,11 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
       const reason =
         failure instanceof Error ? failure.message : "the image loader returned nothing";
       if (this.props.placeholder === false) {
-        throw new LazyError(`ImageLayer "${this.id}": the image could not be loaded (${reason})`);
+        throw new LazyError(`Image "${this.id}": the image could not be loaded (${reason})`);
       }
       LazyLog.log(
         "warn",
-        `ImageLayer "${this.id}": could not load ${describeSource(this.props.src)} (${reason}); drawing a placeholder`,
+        `Image "${this.id}": could not load ${describeSource(this.props.src)} (${reason}); drawing a placeholder`,
       );
     }
 
@@ -265,9 +265,9 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
 
   /**
    * Converts the Image Layer to a JSON representation.
-   * @returns {IImageLayer} The JSON representation of the Image Layer.
+   * @returns {IImage} The JSON representation of the Image Layer.
    */
-  toJSON(): IImageLayer {
+  toJSON(): IImage {
     const data = super.toJSON();
     const copy: any = { ...data.props };
 
@@ -277,15 +277,15 @@ export class ImageLayer extends BaseLayer<IImageLayerProps> {
       }
     }
 
-    return { ...data } as IImageLayer;
+    return { ...data } as IImage;
   }
 
   /**
    * Validates the properties of the Image Layer.
-   * @param {IImageLayerProps} [data] - The properties to validate.
-   * @returns {IImageLayerProps} The validated properties.
+   * @param {IImageProps} [data] - The properties to validate.
+   * @returns {IImageProps} The validated properties.
    */
-  protected validateProps(data: IImageLayerProps): IImageLayerProps {
+  protected validateProps(data: IImageProps): IImageProps {
     return {
       ...super.validateProps(data),
       src: data.src || "",

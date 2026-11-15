@@ -1,6 +1,6 @@
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
+import * as lc from "@nmmty/lazycanvas";
 import {
-  Group as GroupLayer,
   type ICanvas,
   type ICanvasAdapter,
   type LayerCacheOptions,
@@ -30,7 +30,7 @@ import React, {
 
 interface LayerMeta {
   classRef: any;
-  component?: React.ComponentType<any>;
+  component?: ForwardRefExoticComponent<any>;
 }
 
 const LAYER_REGISTRY: Record<string, LayerMeta> = {};
@@ -47,19 +47,18 @@ const LAZY_LAYER_CLASS = Symbol.for("@nmmty/adapter-react:layerClass");
  * @example
  * ```tsx
  * import { registerLayer } from "@nmmty/adapter-react";
- * import { MorphLayer, TextLayer } from "@nmmty/lazycanvas";
+ * import { Badge } from "./Badge"; // your own layer class
  *
- * const Morph = registerLayer("MorphLayer", MorphLayer);
- * const Text = registerLayer("TextLayer", TextLayer);
+ * const BadgeComponent = registerLayer("Badge", Badge);
  *
  * // Use in JSX:
- * <Morph color="#ff0000" size={{ width: 200, height: 100 }} />
+ * <BadgeComponent color="#ff0000" size={{ width: 200, height: 100 }} />
  * ```
  */
 export function registerLayer<T extends Record<string, any>>(
   name: string,
   LayerClass: new (props?: T, misc?: any) => any,
-): React.ComponentType<T> {
+): ForwardRefExoticComponent<T & { children?: React.ReactNode } & RefAttributes<any>> {
   if (!LAYER_REGISTRY[name]) {
     const component = createLayerComponent(LayerClass, name);
     LAYER_REGISTRY[name] = { classRef: LayerClass, component };
@@ -70,28 +69,29 @@ export function registerLayer<T extends Record<string, any>>(
 /**
  * Create a React component wrapper around a LazyCanvas layer class.
  * The wrapper stores props and attaches a `__lazyLayerClass` marker so that
- * the Scene's tree converter can instantiate the real layer.
+ * the Scene's tree converter can instantiate the real layer. A `ref` on the
+ * component receives that layer instance, as it does with the core JSX runtime.
  *
  * @example
  * ```tsx
  * import { createLayerComponent } from "@nmmty/adapter-react";
- * import { MorphLayer } from "@nmmty/lazycanvas";
+ * import { Badge } from "./Badge"; // your own layer class
  *
- * const Morph = createLayerComponent(MorphLayer);
+ * const BadgeComponent = createLayerComponent(Badge);
  *
  * // Use in JSX:
- * <Morph color="#ff0000" size={{ width: 200, height: 100 }} />
+ * <BadgeComponent color="#ff0000" size={{ width: 200, height: 100 }} />
  * ```
  */
-export function createLayerComponent<T extends Record<string, any>>(
-  LayerClass: new (props?: T, misc?: any) => any,
+export function createLayerComponent<T extends Record<string, any>, I extends object = any>(
+  LayerClass: new (props?: T, misc?: any) => I,
   displayName?: string,
-): React.ComponentType<T & { children?: React.ReactNode }> {
+): ForwardRefExoticComponent<T & { children?: React.ReactNode } & RefAttributes<I>> {
   // The component never renders DOM: `createElementTree` reads the marker below
   // and instantiates the real layer from the element's props.
-  const Wrapper = forwardRef<any, T & { children?: React.ReactNode }>(
+  const Wrapper = forwardRef<I, T & { children?: React.ReactNode }>(
     () => null,
-  ) as ForwardRefExoticComponent<T & { children?: React.ReactNode } & RefAttributes<any>> & {
+  ) as ForwardRefExoticComponent<T & { children?: React.ReactNode } & RefAttributes<I>> & {
     [LAZY_LAYER_CLASS]: any;
   };
 
@@ -99,7 +99,7 @@ export function createLayerComponent<T extends Record<string, any>>(
   Wrapper.displayName = name;
   (Wrapper as any)[LAZY_LAYER_CLASS] = LayerClass;
 
-  return Wrapper as React.FC<T>;
+  return Wrapper;
 }
 
 /**
@@ -180,7 +180,13 @@ function createElementTree(
 
   const LayerClass = getLayerClass(type);
   if (LayerClass) {
-    return instantiateLayer(LayerClass, elementProps, elementChildren, adapter);
+    return instantiateLayer(
+      LayerClass,
+      elementProps,
+      elementChildren,
+      adapter,
+      elementRef(element),
+    );
   }
 
   // Function / class component: look it up in the registry by display name.
@@ -189,7 +195,13 @@ function createElementTree(
     const name = (type as any).displayName || (type as any).name || "";
     const meta = LAYER_REGISTRY[name];
     if (meta) {
-      return instantiateLayer(meta.classRef, elementProps, elementChildren, adapter);
+      return instantiateLayer(
+        meta.classRef,
+        elementProps,
+        elementChildren,
+        adapter,
+        elementRef(element),
+      );
     }
     return null;
   }
@@ -197,14 +209,31 @@ function createElementTree(
   return null;
 }
 
+/** The `ref` of an element: a prop from React 19 on, a field of the element before that. */
+function elementRef(element: React.ReactElement): unknown {
+  const fromProps = (element.props as any)?.ref;
+  if (fromProps !== undefined) return fromProps;
+  // Reading `element.ref` warns in React 19, where it no longer exists.
+  return Number.parseInt(React.version, 10) < 19 ? (element as any).ref : undefined;
+}
+
+/** Hands `instance` to a callback ref or a ref object, as the core JSX runtime does. */
+function setRef(ref: unknown, instance: unknown): void {
+  if (typeof ref === "function") ref(instance);
+  else if (ref && typeof ref === "object" && "current" in ref)
+    (ref as { current: unknown }).current = instance;
+}
+
 function instantiateLayer(
   LayerClass: any,
   props: Record<string, any>,
   children: any,
   adapter: ICanvasAdapter,
+  ref?: unknown,
 ): any {
   const { children: _c, ref: _r, ...layerProps } = props;
   const instance = new LayerClass(layerProps, {});
+  setRef(ref, instance);
 
   if (children) {
     const lcChildren = React.Children.toArray(children)
@@ -561,32 +590,50 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
 // Pre-made wrappers for built-in layers
 // ---------------------------------------------------------------------------
 
-import {
-  BezierLayer,
-  ImageLayer,
-  LineLayer,
-  MorphLayer,
-  Path2DLayer,
-  PolygonLayer,
-  QuadraticLayer,
-  TextLayer,
+/**
+ * Each component below has the name of the layer class it wraps, and the same name is also a type:
+ * `useRef<Morph>(null)` is a ref to the layer, the way it is in `@nmmty/lazycanvas`. The props types
+ * (`IMorphProps`, …) are re-exported too, so code moves between the two packages by changing only
+ * the import.
+ */
+export type {
+  IBaseLayerProps,
+  IBezierProps,
+  IGroupProps,
+  IImageProps,
+  ILineProps,
+  IMorphProps,
+  IPath2DProps,
+  IPolygonProps,
+  IQuadraticProps,
+  ITextProps,
 } from "@nmmty/lazycanvas";
 
-/** `MorphLayer` as a React component. */
-export const Morph = createLayerComponent(MorphLayer, "MorphLayer");
-/** `TextLayer` as a React component. */
-export const Text = createLayerComponent(TextLayer, "TextLayer");
-/** `ImageLayer` as a React component. */
-export const Image = createLayerComponent(ImageLayer, "ImageLayer");
-/** `LineLayer` as a React component. */
-export const Line = createLayerComponent(LineLayer, "LineLayer");
-/** `BezierLayer` as a React component. */
-export const Bezier = createLayerComponent(BezierLayer, "BezierLayer");
-/** `QuadraticLayer` as a React component. */
-export const Quadratic = createLayerComponent(QuadraticLayer, "QuadraticLayer");
-/** `PolygonLayer` as a React component. */
-export const Polygon = createLayerComponent(PolygonLayer, "PolygonLayer");
-/** `Path2DLayer` as a React component. */
-export const Path2D = createLayerComponent(Path2DLayer, "Path2DLayer");
+export type Morph = lc.Morph;
+export type Text = lc.Text;
+export type Image = lc.Image;
+export type Line = lc.Line;
+export type Bezier = lc.Bezier;
+export type Quadratic = lc.Quadratic;
+export type Polygon = lc.Polygon;
+export type Path2D = lc.Path2D;
+export type Group = lc.Group;
+
+/** `Morph` as a React component. */
+export const Morph = createLayerComponent(lc.Morph, "Morph");
+/** `Text` as a React component. */
+export const Text = createLayerComponent(lc.Text, "Text");
+/** `Image` as a React component. */
+export const Image = createLayerComponent(lc.Image, "Image");
+/** `Line` as a React component. */
+export const Line = createLayerComponent(lc.Line, "Line");
+/** `Bezier` as a React component. */
+export const Bezier = createLayerComponent(lc.Bezier, "Bezier");
+/** `Quadratic` as a React component. */
+export const Quadratic = createLayerComponent(lc.Quadratic, "Quadratic");
+/** `Polygon` as a React component. */
+export const Polygon = createLayerComponent(lc.Polygon, "Polygon");
+/** `Path2D` as a React component. */
+export const Path2D = createLayerComponent(lc.Path2D, "Path2D");
 /** `Group`, the flexbox container layer, as a React component. */
-export const Group = createLayerComponent(GroupLayer, "Group");
+export const Group = createLayerComponent(lc.Group, "Group");

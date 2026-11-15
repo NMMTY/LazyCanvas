@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
-import { Canvas } from "@napi-rs/canvas";
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { MorphLayer } from "@nmmty/lazycanvas";
+import { FontsManager } from "@nmmty/lazycanvas";
+import * as lc from "@nmmty/lazycanvas";
+import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { StrictMode, act, createRef, useState } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,44 +16,16 @@ import {
   registerLayer,
   useScene,
 } from "../src";
+import { installCanvasSurfaces, surfaceOf } from "./helpers";
 
 // React only flushes effects inside act() when this flag is set.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/**
- * happy-dom has no 2D context, so each <canvas> element is backed by a real
- * @napi-rs/canvas surface: the scene draws pixels we can read back.
- */
-const surfaces = new WeakMap<HTMLCanvasElement, Canvas>();
-
-function surfaceOf(element: HTMLCanvasElement): Canvas {
-  let surface = surfaces.get(element);
-  if (!surface || surface.width !== element.width || surface.height !== element.height) {
-    surface = new Canvas(element.width || 300, element.height || 150);
-    surfaces.set(element, surface);
-  }
-  return surface;
-}
-
 beforeAll(() => {
-  Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
-    configurable: true,
-    value(this: HTMLCanvasElement) {
-      const ctx = surfaceOf(this).getContext("2d") as unknown as {
-        drawImage: (image: unknown, ...rest: unknown[]) => void;
-        __unwrapsCanvases?: boolean;
-      };
-      if (!ctx.__unwrapsCanvases) {
-        // A scene copies its back buffer onto the visible canvas with drawImage(<canvas>),
-        // which napi-rs only understands when given its own surface.
-        const drawImage = ctx.drawImage.bind(ctx);
-        ctx.drawImage = (image, ...rest) =>
-          drawImage(image instanceof HTMLCanvasElement ? surfaceOf(image) : image, ...rest);
-        ctx.__unwrapsCanvases = true;
-      }
-      return ctx;
-    },
-  });
+  installCanvasSurfaces();
+  // Register bundled fonts with @napi-rs/canvas (the patched 2D backend). CI runners
+  // often have no fontconfig entry for `sans-serif`, so text tests use Geist.
+  new FontsManager({ adapter: new NodeCanvasAdapter() }).loadFonts(Fonts);
 });
 
 /** Counts pixels of the surface behind `element` that match a predicate. */
@@ -312,10 +285,10 @@ describe("<Scene>", () => {
   it("renders text layers", async () => {
     await render(
       <Scene width={200} height={60}>
-        <Text text="Hello" color="#00ff00" font={{ family: "sans-serif", size: 32, weight: 400 }} />
+        <Text text="Hello" color="#00ff00" font={{ family: "Geist", size: 32, weight: 400 }} />
       </Scene>,
     );
-    // No guarantee which glyph shapes the system font has, only that ink was drawn.
+    // No guarantee which glyph shapes the font has, only that ink was drawn.
     expect(countPixels(canvasOf(), (_r, _g, _b, a) => a > 0)).toBeGreaterThan(0);
   });
 });
@@ -334,7 +307,7 @@ describe("useScene", () => {
 
 describe("layer registration", () => {
   it("registerLayer makes a custom layer class usable in a <Scene>", async () => {
-    const Tile = registerLayer("TestTile", MorphLayer as never) as React.ComponentType<
+    const Tile = registerLayer("TestTile", lc.Morph as never) as React.ComponentType<
       Record<string, unknown>
     >;
     await render(
@@ -346,7 +319,7 @@ describe("layer registration", () => {
   });
 
   it("createLayerComponent wraps a layer class the same way", async () => {
-    const Tile = createLayerComponent(MorphLayer as never, "TestTile2") as React.ComponentType<
+    const Tile = createLayerComponent(lc.Morph as never, "TestTile2") as React.ComponentType<
       Record<string, unknown>
     >;
     await render(
@@ -358,8 +331,30 @@ describe("layer registration", () => {
   });
 
   it("registerLayer returns the same component for the same name", () => {
-    const a = registerLayer("SameName", MorphLayer as never);
-    const b = registerLayer("SameName", MorphLayer as never);
+    const a = registerLayer("SameName", lc.Morph as never);
+    const b = registerLayer("SameName", lc.Morph as never);
     expect(a).toBe(b);
+  });
+});
+
+describe("refs", () => {
+  it("a ref on a layer component receives the layer instance, as in the core JSX runtime", async () => {
+    const objectRef = createRef<Morph>();
+    let callbackLayer: Text | null = null;
+    await render(
+      <Scene width={50} height={50}>
+        <Morph ref={objectRef} id="boxed" color="#00ff00" size={{ width: 50, height: 50 }} />
+        <Text
+          ref={(layer) => {
+            if (layer) callbackLayer = layer;
+          }}
+          text="hi"
+          font={{ family: "sans-serif", size: 10, weight: 400 }}
+        />
+      </Scene>,
+    );
+    expect(objectRef.current).toBeInstanceOf(lc.Morph);
+    expect(objectRef.current?.id).toBe("boxed");
+    expect(callbackLayer).toBeInstanceOf(lc.Text);
   });
 });

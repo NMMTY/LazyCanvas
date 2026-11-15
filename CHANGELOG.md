@@ -9,7 +9,27 @@ packages it applies to.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0]
+
+`@nmmty/lazycanvas` and `@nmmty/adapter-react`.
+
+### Changed
+
+- **Breaking: layer classes lost the `Layer` suffix** (`@nmmty/lazycanvas`): `MorphLayer`, `TextLayer`,
+  `ImageLayer`, `LineLayer`, `BezierLayer`, `QuadraticLayer`, `PolygonLayer` and `Path2DLayer` are now
+  `Morph`, `Text`, `Image`, `Line`, `Bezier`, `Quadratic`, `Polygon` and `Path2D`, with `IMorphProps`,
+  `IMorph`, … instead of `IMorphLayerProps`, `IMorphLayer`, …. They match the components of
+  `@nmmty/adapter-react` (and `Group`, which never had the suffix), so a layer tree moves between the core
+  JSX and React by changing only the import. `Image` and `Path2D` shadow the browser globals of the same
+  name in a module that imports them; import under another name (`import { Image as ImageLayer }`) there.
+  `BaseLayer` keeps its name.
+- **`ref` on layer components** (`@nmmty/adapter-react`): `<Morph ref={r} />` now hands the layer
+  instance to the ref, as the JSX runtime of `@nmmty/lazycanvas` does. It was dropped before.
+  `createLayerComponent` and `registerLayer` return a component whose `ref` is typed as the layer class.
+- **Types under the component names** (`@nmmty/adapter-react`): `Morph`, `Text`, `Image`, `Line`,
+  `Bezier`, `Quadratic`, `Polygon`, `Path2D` and `Group` are also types (`useRef<Morph>(null)`), and
+  `IMorphProps`, `ITextProps`, … `IBaseLayerProps` are re-exported, so a file moves between
+  `@nmmty/lazycanvas` and `@nmmty/adapter-react` by changing only its import line.
 
 ## [1.1.0]
 

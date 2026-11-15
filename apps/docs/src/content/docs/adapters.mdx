@@ -50,5 +50,5 @@ Things worth knowing:
 
 - The 2D context only needs the subset of `CanvasRenderingContext2D` in `ICanvasRenderingContext2D`; any implementation of the standard canvas API satisfies it.
 - Methods on `fonts` return a boolean instead of throwing, so a missing font file never aborts a render.
-- The adapter is also handed to `Pattern` and `ImageLayer`, so `loadImage` must accept every `ImageSource` you want to support.
+- The adapter is also handed to `Pattern` and `Image`, so `loadImage` must accept every `ImageSource` you want to support.
 - Export (`Exporter`, `scene.encode`) uses `canvas.toBuffer(mime)` when the canvas has it and `canvas.toDataURL(mime)` otherwise.

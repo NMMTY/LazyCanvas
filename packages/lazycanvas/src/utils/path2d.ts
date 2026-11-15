@@ -45,7 +45,7 @@ export function createPath2D(path?: string, adapter?: { Path2D?: any }): any {
   if (!Ctor) {
     throw new LazyError(
       "No Path2D implementation available. Node has no global Path2D — create the " +
-        "LazyCanvas/Scene with an adapter (e.g. NodeCanvasAdapter) before using Path2DLayer.",
+        "LazyCanvas/Scene with an adapter (e.g. NodeCanvasAdapter) before using Path2D.",
     );
   }
   return path === undefined ? new Ctor() : new Ctor(path);

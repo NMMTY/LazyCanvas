@@ -15,13 +15,13 @@ npm install @nmmty/lazycanvas @nmmty/adapter-browser
 
 ```ts
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
-import { MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Morph, Scene } from "@nmmty/lazycanvas";
 
 const canvas = document.querySelector("canvas")!;
 const adapter = new BrowserCanvasAdapter(canvas); // omit the argument to create a detached canvas
 const scene = new Scene(400, 200, { adapter });
 
-scene.load(new MorphLayer({ color: "#22c55e", size: { width: 400, height: 200 } }));
+scene.load(new Morph({ color: "#22c55e", size: { width: 400, height: 200 } }));
 await scene.renderFrame(0);
 ```
 

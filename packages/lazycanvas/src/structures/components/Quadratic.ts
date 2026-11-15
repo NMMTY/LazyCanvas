@@ -4,6 +4,7 @@ import {
   type ICanvas,
   type ICanvasRenderingContext2D,
   LayerType,
+  type Point,
   type ScaleType,
   type StrokeOptions,
 } from "../../types";
@@ -12,6 +13,7 @@ import {
   LazyError,
   LazyLog,
   defaultArg,
+  getBoundingBoxBezier,
   isColor,
   parseFillStyle,
   parser,
@@ -19,46 +21,52 @@ import {
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
+
 /**
- * Interface representing a Line Layer.
+ * Interface representing a Quadratic layer.
  */
-export interface ILineLayer extends IBaseLayer {
+export interface IQuadratic extends IBaseLayer {
   /**
-   * The type of the layer, which is `Line`.
+   * The type of the layer, which is `QuadraticCurve`.
    */
-  type: LayerType.Line;
+  type: LayerType.QuadraticCurve;
 
   /**
-   * The properties specific to the Line Layer.
+   * The properties specific to the Quadratic layer.
    */
-  props: ILineLayerProps;
+  props: IQuadraticProps;
 }
 
 /**
- * Interface representing the properties of a Line Layer.
+ * Interface representing the properties of a Quadratic layer.
  */
-export interface ILineLayerProps extends IBaseLayerProps {
+export interface IQuadraticProps extends IBaseLayerProps {
   position: {
     /**
-     * The x-coordinate of the start point of the line.
+     * The x coordinate of the quadratic curve's starting point.
      */
     x: ScaleType;
 
     /**
-     * The y-coordinate of the start point of the line.
+     * The y coordinate of the quadratic curve's starting point.
      */
     y: ScaleType;
 
     /**
-     * The x-coordinate of the end point of the line.
+     * The end x coordinate of the quadratic curve.
      */
     endX: ScaleType;
 
     /**
-     * The y-coordinate of the end point of the line.
+     * The end y coordinate of the quadratic curve.
      */
     endY: ScaleType;
   };
+
+  /**
+   * The control point of the quadratic curve, including x and y coordinates.
+   */
+  controlPoints: Array<Point>;
 
   /**
    * Whether the layer is filled.
@@ -71,33 +79,44 @@ export interface ILineLayerProps extends IBaseLayerProps {
   color: ColorType;
 
   /**
-   * The stroke properties of the line.
+   * The stroke properties of the quadratic curve.
    */
   stroke: StrokeOptions;
 }
 
 /**
- * Class representing a Line Layer, extending the BaseLayer class.
+ * Class representing a Quadratic layer, extending the BaseLayer class.
  */
-export class LineLayer extends BaseLayer<ILineLayerProps> {
+export class Quadratic extends BaseLayer<IQuadraticProps> {
   /**
-   * The properties of the Line Layer.
+   * The properties of the Quadratic layer.
    */
-  props: ILineLayerProps;
+  props: IQuadraticProps;
 
   /**
-   * Constructs a new LineLayer instance.
-   * @param {ILineLayerProps} [props] - The properties of the Line Layer.
+   * Constructs a new Quadratic instance.
+   * @param {IQuadraticProps} [props] - The properties of the Quadratic layer.
    * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
    */
-  constructor(props?: ILineLayerProps, misc?: IBaseLayerMisc) {
-    super(LayerType.Line, props || ({} as ILineLayerProps), misc);
-    this.props = props ? props : ({} as ILineLayerProps);
+  constructor(props?: IQuadraticProps, misc?: IBaseLayerMisc) {
+    super(LayerType.QuadraticCurve, props || ({} as IQuadraticProps), misc);
+    this.props = props ? props : ({} as IQuadraticProps);
     this.props = this.validateProps(this.props);
   }
 
   /**
-   * Sets the position of the line layer.
+   * Sets the control point of the quadratic layer.
+   * @param {ScaleType} [x] - The x-coordinate of the control point.
+   * @param {ScaleType} [y] - The y-coordinate of the control point.
+   * @returns {this} The current instance for chaining.
+   */
+  setControlPoint(x: ScaleType, y: ScaleType) {
+    this.props.controlPoints = [{ x, y }];
+    return this;
+  }
+
+  /**
+   * Sets the position of the quadratic layer.
    * @param {ScaleType} [x] - The x-coordinate of the end point.
    * @param {ScaleType} [y] - The y-coordinate of the end point.
    * @param {ScaleType} [endX] - The x-coordinate of the end point.
@@ -110,12 +129,12 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
   }
 
   /**
-   * Sets the color of the line layer.
+   * Sets the color of the layer.
    * @param {ColorType} [color] - The color of the layer.
    * @returns {this} The current instance for chaining.
    * @throws {LazyError} If the color is not provided or invalid.
    */
-  setColor(color: ColorType): this {
+  setColor(color: ColorType) {
     if (!color) throw new LazyError("The color of the layer must be provided");
     if (!isColor(color)) throw new LazyError("The color of the layer must be a valid color");
     this.props.color = color;
@@ -123,7 +142,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
   }
 
   /**
-   * Sets the stroke properties of the line layer.
+   * Sets the stroke properties of the layer.
    * @param {number} [width] - The width of the stroke.
    * @param {string} [cap] - The cap style of the stroke.
    * @param {string} [join] - The join style of the stroke.
@@ -139,7 +158,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
     dash?: number[],
     dashOffset?: number,
     miterLimit?: number,
-  ): this {
+  ) {
     this.props.stroke = {
       width,
       cap: cap || "butt",
@@ -152,33 +171,34 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
   }
 
   /**
-   * Calculates the bounding box of the line layer.
+   * Calculates the bounding box of the quadratic curve.
    * @param {SKRSContext2D} [ctx] - The canvas rendering context.
    * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
    * @param {LayersManager} [manager] - The layer's manager.
-   * @returns {Object} The bounding box details including start and end points, width, and height.
+   * @returns {Object} The bounding box details including max, min, center, width, and height.
    */
-  getBoundingBox(
-    ctx: ICanvasRenderingContext2D,
-    canvas: ICanvas,
-    manager: LayersManager,
-  ): { xs: number; ys: number; xe: number; ye: number; width: number; height: number } {
+  getBoundingBox(ctx: ICanvasRenderingContext2D, canvas: ICanvas, manager: LayersManager) {
     const parcer = parser(ctx, canvas, manager);
 
-    const { xs, ys, xe, ye } = parcer.parseBatch({
+    const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
       xs: { v: this.props.position.x },
       ys: { v: this.props.position.y, options: defaultArg.vl(true) },
+      cx: { v: this.props.controlPoints[0].x },
+      cy: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
       xe: { v: this.props.position.endX },
       ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
     });
 
-    const width = xe - xs;
-    const height = ye - ys;
-    return { xs, ys, xe, ye, width, height };
+    const { max, min, center, width, height } = getBoundingBoxBezier([
+      { x: xs, y: ys },
+      { x: cx, y: cy },
+      { x: xe, y: ye },
+    ]);
+    return { max, min, center, width, height };
   }
 
   /**
-   * Draws the line layer on the canvas.
+   * Draws the quadratic curve on the canvas.
    * @param {SKRSContext2D} [ctx] - The canvas rendering context.
    * @param {Canvas | SvgCanvas} [canvas] - The canvas instance.
    * @param {LayersManager} [manager] - The layer's manager.
@@ -192,27 +212,52 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
   ): Promise<void> {
     const parcer = parser(ctx, canvas, manager);
 
-    const { xs, ys, xe, ye } = parcer.parseBatch({
+    const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
       xs: { v: this.props.position.x },
       ys: { v: this.props.position.y, options: defaultArg.vl(true) },
+      cx: { v: this.props.controlPoints[0].x },
+      cy: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
       xe: { v: this.props.position.endX },
       ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
     });
 
-    const width = Math.abs(xe - xs);
-    const height = Math.abs(ye - ys);
+    const { max, min, center, width, height } = getBoundingBoxBezier([
+      { x: xs, y: ys },
+      { x: cx, y: cy },
+      { x: xe, y: ye },
+    ]);
     const fillStyle = await parseFillStyle(ctx, this.props.color, {
       debug,
-      layer: { width, height, x: Math.min(xs, xe), y: Math.min(ys, ye), align: "none" },
+      layer: { width, height, x: min.x, y: min.y, align: "none" },
       manager,
     });
 
-    if (debug) LazyLog.log("none", "LineLayer:", { xs, ys, xe, ye, width, height });
+    if (debug)
+      LazyLog.log("none", "Bezier:", {
+        xs,
+        ys,
+        cx,
+        cy,
+        xe,
+        ye,
+        max,
+        min,
+        center,
+        width,
+        height,
+        fillStyle,
+      });
 
     ctx.save();
     try {
       if (this.props.transform) {
-        transform(ctx, this.props.transform, { x: xs, y: ys, width, height, type: this.type });
+        transform(ctx, this.props.transform, {
+          x: center.x,
+          y: center.y,
+          width,
+          height,
+          type: this.type,
+        });
       }
       DrawUtils.drawShadow(ctx, this.props.shadow);
       DrawUtils.opacity(ctx, this.props.opacity);
@@ -221,7 +266,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
 
       ctx.beginPath();
       ctx.moveTo(xs, ys);
-      ctx.lineTo(xe, ye);
+      ctx.quadraticCurveTo(cx, cy, xe, ye);
       ctx.stroke();
       ctx.closePath();
     } finally {
@@ -230,28 +275,36 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
   }
 
   /**
-   * Converts the Line Layer to a JSON representation.
-   * @returns {ILineLayer} The JSON representation of the Line Layer.
+   * Converts the Quadratic layer to a JSON representation.
+   * @returns {IQuadratic} The JSON representation of the Quadratic layer.
    */
-  toJSON(): ILineLayer {
+  public toJSON(): IQuadratic {
     const data = super.toJSON();
     const copy: any = { ...data.props };
 
-    for (const key of ["x", "y", "endPoint.x", "endPoint.y", "fillStyle"]) {
+    for (const key of [
+      "x",
+      "y",
+      "endPoint.x",
+      "endPoint.y",
+      "controlPoint.x",
+      "controlPoint.y",
+      "fillStyle",
+    ]) {
       if (copy[key] && typeof copy[key] === "object" && "toJSON" in copy[key]) {
         copy[key] = copy[key].toJSON();
       }
     }
 
-    return { ...data, props: copy } as ILineLayer;
+    return { ...data, props: copy } as IQuadratic;
   }
 
   /**
-   * Validates the properties of the Line Layer.
-   * @param {ILineLayerProps} [data] - The properties to validate.
-   * @returns {ILineLayerProps} The validated properties.
+   * Validates the properties of the Quadratic layer.
+   * @param {IQuadraticProps} [data] - The properties to validate.
+   * @returns {IQuadraticProps} The validated properties.
    */
-  protected validateProps(data: ILineLayerProps): ILineLayerProps {
+  protected validateProps(data: IQuadraticProps): IQuadraticProps {
     return {
       ...super.validateProps(data),
       position: {
@@ -262,6 +315,7 @@ export class LineLayer extends BaseLayer<ILineLayerProps> {
       },
       color: data.color || "#000000",
       centring: data.centring || Centring.None,
+      controlPoints: data.controlPoints || [{ x: 0, y: 0 }],
       stroke: {
         width: data.stroke?.width || 1,
         cap: data.stroke?.cap || "butt",
