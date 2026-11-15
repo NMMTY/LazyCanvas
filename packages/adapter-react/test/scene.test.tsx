@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
+import { FontsManager } from "@nmmty/lazycanvas";
+import { Fonts } from "@nmmty/lazycanvas/fonts";
 import * as lc from "@nmmty/lazycanvas";
 import { StrictMode, act, createRef, useState } from "react";
 import { type Root, createRoot } from "react-dom/client";
@@ -19,7 +21,12 @@ import { installCanvasSurfaces, surfaceOf } from "./helpers";
 // React only flushes effects inside act() when this flag is set.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-beforeAll(installCanvasSurfaces);
+beforeAll(() => {
+  installCanvasSurfaces();
+  // Register bundled fonts with @napi-rs/canvas (the patched 2D backend). CI runners
+  // often have no fontconfig entry for `sans-serif`, so text tests use Geist.
+  new FontsManager({ adapter: new NodeCanvasAdapter() }).loadFonts(Fonts);
+});
 
 /** Counts pixels of the surface behind `element` that match a predicate. */
 function countPixels(
@@ -278,10 +285,10 @@ describe("<Scene>", () => {
   it("renders text layers", async () => {
     await render(
       <Scene width={200} height={60}>
-        <Text text="Hello" color="#00ff00" font={{ family: "sans-serif", size: 32, weight: 400 }} />
+        <Text text="Hello" color="#00ff00" font={{ family: "Geist", size: 32, weight: 400 }} />
       </Scene>,
     );
-    // No guarantee which glyph shapes the system font has, only that ink was drawn.
+    // No guarantee which glyph shapes the font has, only that ink was drawn.
     expect(countPixels(canvasOf(), (_r, _g, _b, a) => a > 0)).toBeGreaterThan(0);
   });
 });

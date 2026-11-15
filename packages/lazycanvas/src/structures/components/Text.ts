@@ -573,6 +573,7 @@ export class Text extends BaseLayer<ITextProps> {
         manager,
       });
       if (vertical) {
+        ctx.font = cssFont(this.props.font);
         const layout = this.layoutVertical(ctx, canvas);
         const origin = useLayoutAlignment
           ? { x, y }
