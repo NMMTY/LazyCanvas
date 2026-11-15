@@ -40,6 +40,16 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Diagnose (temporary)
+        continue-on-error: true
+        run: |
+          node -v
+          cat /etc/os-release | head -2
+          fc-list | wc -l || true
+          ls /usr/share/fonts /usr/local/share/fonts || true
+          node -e "const {GlobalFonts}=require('@napi-rs/canvas');console.log(GlobalFonts.families.length, GlobalFonts.families.slice(0,10).map(f=>f.family))"
+          pnpm vitest run packages/lazycanvas/test/vertical-layer.test.ts || true
+
       - name: Test
         run: pnpm test
 
