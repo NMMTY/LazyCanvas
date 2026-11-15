@@ -40,16 +40,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Diagnose (temporary)
-        continue-on-error: true
-        run: |
-          echo "== alone"; pnpm vitest run packages/lazycanvas/test/vertical-layer.test.ts 2>&1 | grep -E "Tests |×" || true
-          echo "== all files, one at a time"; pnpm vitest run --no-file-parallelism 2>&1 | grep -E "Tests |×" || true
-          echo "== all, threads pool"; pnpm vitest run --pool=threads 2>&1 | grep -E "Tests |×" || true
-          nproc
-
       - name: Test
         run: pnpm test
+
+      - name: Diagnose (temporary)
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "== alone"; pnpm vitest run packages/lazycanvas/test/vertical-layer.test.ts 2>&1 | grep -E "Tests " || true
+          echo "== all files, one at a time"; pnpm vitest run --no-file-parallelism 2>&1 | grep -E "Tests " || true
+          echo "== all, threads pool"; pnpm vitest run --pool=threads 2>&1 | grep -E "Tests " || true
+          nproc
 
       # Packs the four public packages, installs the tarballs into a clean
       # project and loads every entry point as both ESM and CJS.
