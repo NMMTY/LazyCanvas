@@ -43,6 +43,20 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Diagnose (temporary)
+        if: always()
+        continue-on-error: true
+        run: |
+          git fetch --depth=1 origin bd7548e70e12fd16c2c09b3650de93272f361dbc
+          git worktree add ../base FETCH_HEAD
+          cd ../base
+          pnpm install --frozen-lockfile > /dev/null 2>&1
+          echo "== main (bd7548e): vertical-layer + scene text on this runner"
+          pnpm vitest run packages/lazycanvas/test/vertical-layer.test.ts packages/adapter-react 2>&1 | grep -E "Tests |×" || true
+          echo "== this branch, same files"
+          cd -
+          pnpm vitest run packages/lazycanvas/test/vertical-layer.test.ts packages/adapter-react 2>&1 | grep -E "Tests |×" || true
+
       # Packs the four public packages, installs the tarballs into a clean
       # project and loads every entry point as both ESM and CJS.
       - name: Check the published packages
