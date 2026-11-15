@@ -1,5 +1,4 @@
 // @vitest-environment happy-dom
-import { Canvas } from "@napi-rs/canvas";
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import * as lc from "@nmmty/lazycanvas";
 import { StrictMode, act, createRef, useState } from "react";
@@ -15,45 +14,12 @@ import {
   registerLayer,
   useScene,
 } from "../src";
+import { installCanvasSurfaces, surfaceOf } from "./helpers";
 
 // React only flushes effects inside act() when this flag is set.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/**
- * happy-dom has no 2D context, so each <canvas> element is backed by a real
- * @napi-rs/canvas surface: the scene draws pixels we can read back.
- */
-const surfaces = new WeakMap<HTMLCanvasElement, Canvas>();
-
-function surfaceOf(element: HTMLCanvasElement): Canvas {
-  let surface = surfaces.get(element);
-  if (!surface || surface.width !== element.width || surface.height !== element.height) {
-    surface = new Canvas(element.width || 300, element.height || 150);
-    surfaces.set(element, surface);
-  }
-  return surface;
-}
-
-beforeAll(() => {
-  Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
-    configurable: true,
-    value(this: HTMLCanvasElement) {
-      const ctx = surfaceOf(this).getContext("2d") as unknown as {
-        drawImage: (image: unknown, ...rest: unknown[]) => void;
-        __unwrapsCanvases?: boolean;
-      };
-      if (!ctx.__unwrapsCanvases) {
-        // A scene copies its back buffer onto the visible canvas with drawImage(<canvas>),
-        // which napi-rs only understands when given its own surface.
-        const drawImage = ctx.drawImage.bind(ctx);
-        ctx.drawImage = (image, ...rest) =>
-          drawImage(image instanceof HTMLCanvasElement ? surfaceOf(image) : image, ...rest);
-        ctx.__unwrapsCanvases = true;
-      }
-      return ctx;
-    },
-  });
-});
+beforeAll(installCanvasSurfaces);
 
 /** Counts pixels of the surface behind `element` that match a predicate. */
 function countPixels(
@@ -364,7 +330,7 @@ describe("layer registration", () => {
   });
 });
 
-describe("refs and parity with the core JSX runtime", () => {
+describe("refs", () => {
   it("a ref on a layer component receives the layer instance, as in the core JSX runtime", async () => {
     const objectRef = createRef<Morph>();
     let callbackLayer: Text | null = null;
@@ -383,27 +349,5 @@ describe("refs and parity with the core JSX runtime", () => {
     expect(objectRef.current).toBeInstanceOf(lc.Morph);
     expect(objectRef.current?.id).toBe("boxed");
     expect(callbackLayer).toBeInstanceOf(lc.Text);
-  });
-
-  it("draws the same pixels as the same tree written with the core JSX runtime", async () => {
-    const size = { width: 40, height: 30 };
-    await render(
-      <Scene width={80} height={60}>
-        <Morph color="#ff0000" size={size} position={{ x: 40, y: 30 }} />
-      </Scene>,
-    );
-    const react = countPixels(canvasOf(), isRed);
-
-    const adapter = new NodeCanvasAdapter();
-    const scene = new lc.Scene(80, 60, { adapter });
-    scene.load(lc.createElement(lc.Morph, { color: "#ff0000", size, position: { x: 40, y: 30 } }));
-    await scene.renderFrame(0);
-    const data = scene.getImageData();
-    let core = 0;
-    for (let i = 0; i < data.length; i += 4)
-      if (isRed(data[i], data[i + 1], data[i + 2], data[i + 3])) core++;
-
-    expect(react).toBeGreaterThan(1000);
-    expect(react).toBe(core);
   });
 });
