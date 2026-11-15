@@ -1,13 +1,5 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import {
-  Centring,
-  Group,
-  ImageLayer,
-  MorphLayer,
-  Scene,
-  TextLayer,
-  collectFontSpecs,
-} from "@nmmty/lazycanvas";
+import { Centring, Group, Image, Morph, Scene, Text, collectFontSpecs } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
 
 /** A 64x64 red PNG, used as an image source without touching the filesystem. */
@@ -56,8 +48,8 @@ function makeAdapter(delayMs: number, probe: { depth: number; peak: number }) {
 
 const tree = () =>
   new Group({ layout: { flexDirection: "row", alignItems: "center", padding: 20 } }).add(
-    new MorphLayer({ color: "#1e293b", layout: { width: 120, height: 80 } }, { id: "bg" }),
-    new ImageLayer(
+    new Morph({ color: "#1e293b", layout: { width: 120, height: 80 } }, { id: "bg" }),
+    new Image(
       {
         src: "memory",
         size: { width: 64, height: 64, radius: { all: 32 } },
@@ -148,7 +140,7 @@ describe("Scene.renderFrame serialization", () => {
 
 describe("Scene.renderLatest", () => {
   const solid = (color: string, id: string) =>
-    new MorphLayer({ color, size: { width: 40, height: 40 } }, { id });
+    new Morph({ color, size: { width: 40, height: 40 } }, { id });
 
   const pixel = (scene: Scene) => Array.from(scene.getImageData().slice(0, 4));
 
@@ -242,20 +234,20 @@ describe("collectFontSpecs", () => {
     const scene = new Scene(200, 200, { adapter });
     scene.load(
       new Group().add(
-        new TextLayer({
+        new Text({
           text: "a",
           color: "#fff",
           font: { family: "Geist Mono", size: 36, weight: 400 },
           centring: Centring.None,
         }),
         new Group().add(
-          new TextLayer({
+          new Text({
             text: "b",
             color: "#fff",
             font: { family: "Geist Mono", size: 36, weight: 400 },
             centring: Centring.None,
           }),
-          new TextLayer({
+          new Text({
             text: "c",
             color: "#fff",
             font: { family: "Geist", size: 14, weight: 700 },
@@ -271,7 +263,7 @@ describe("collectFontSpecs", () => {
 
   it("ignores layers without a font", () => {
     const root = new Group().add(
-      new MorphLayer({ color: "#fff", size: { width: 1, height: 1 } }, { id: "m" }),
+      new Morph({ color: "#fff", size: { width: 1, height: 1 } }, { id: "m" }),
     );
     expect(collectFontSpecs(root)).toEqual([]);
   });

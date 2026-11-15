@@ -11,7 +11,7 @@ Every environment follows the same three steps: **create a scene** with an adapt
 
 ```ts
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Group, Morph, Scene, Text } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
 
 const scene = new Scene(600, 300, { adapter: new NodeCanvasAdapter() });
@@ -20,12 +20,12 @@ scene.load(
   new Group({
     layout: { width: 600, height: 300, justifyContent: "center", alignItems: "center" },
   }).add(
-    new MorphLayer({
+    new Morph({
       color: "#7c3aed",
       size: { width: 600, height: 300, radius: { all: 24 } },
       layout: { position: "absolute", top: 0, left: 0 },
     }),
-    new TextLayer({
+    new Text({
       text: "Hello, LazyCanvas!",
       color: "#ffffff",
       font: { family: "sans-serif", size: 44, weight: 700 },
@@ -43,13 +43,13 @@ This writes `hello.png`. Without `saveAsFile`, `export` resolves to a `Buffer` y
 
 ```ts
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
-import { Group, MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Group, Morph, Scene } from "@nmmty/lazycanvas";
 
 const canvas = document.querySelector("canvas")!;
 const scene = new Scene(400, 200, { adapter: new BrowserCanvasAdapter(canvas) });
 
 scene.load(
-  new Group().add(new MorphLayer({ color: "#22c55e", size: { width: 400, height: 200 } })),
+  new Group().add(new Morph({ color: "#22c55e", size: { width: 400, height: 200 } })),
 );
 
 await scene.renderFrame(0);
@@ -91,6 +91,6 @@ export function Hello() {
 
 - A **`Scene`** owns a canvas (made by the adapter) and a tree of layers.
 - **`Group`** is a container. Together with the `layout` prop it positions its children with flexbox.
-- **`MorphLayer`** draws a (rounded) rectangle; **`TextLayer`** draws text. Their props are plain objects, so a scene is easy to generate from data.
+- **`Morph`** draws a (rounded) rectangle; **`Text`** draws text. Their props are plain objects, so a scene is easy to generate from data.
 
 Continue with [Core concepts](/docs/core-concepts).

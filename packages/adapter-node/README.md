@@ -17,11 +17,11 @@ Requires Node.js 18 or newer. `@napi-rs/canvas` is installed automatically.
 
 ```ts
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Morph, Scene } from "@nmmty/lazycanvas";
 import { Exporter } from "@nmmty/lazycanvas/node";
 
 const scene = new Scene(400, 200, { adapter: new NodeCanvasAdapter() });
-scene.load(new MorphLayer({ color: "#22c55e", size: { width: 400, height: 200 } }));
+scene.load(new Morph({ color: "#22c55e", size: { width: 400, height: 200 } }));
 
 await new Exporter(scene).export("png", { name: "out", saveAsFile: true });
 ```

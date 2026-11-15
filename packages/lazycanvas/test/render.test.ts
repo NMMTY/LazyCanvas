@@ -5,11 +5,11 @@ import {
   Group,
   JSONReader,
   LazyCanvas,
-  MorphLayer,
-  Path2DLayer,
+  Morph,
+  Path2D,
   Pattern,
   Scene,
-  TextLayer,
+  Text,
 } from "@nmmty/lazycanvas";
 import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { Exporter } from "@nmmty/lazycanvas/node";
@@ -47,7 +47,7 @@ describe("Scene rendering in Node", () => {
     const scene = new Scene(100, 100, { adapter });
     scene.load(
       new Group().add(
-        new MorphLayer({
+        new Morph({
           color: "#00ff00",
           size: { width: 50, height: 50 },
           position: { x: 0, y: 0 },
@@ -61,11 +61,11 @@ describe("Scene rendering in Node", () => {
     expect(green).toBeGreaterThan(2000);
   });
 
-  it("renders Path2DLayer from an SVG path string", async () => {
+  it("renders Path2D from an SVG path string", async () => {
     const scene = new Scene(200, 200, { adapter });
     scene.load(
       new Group().add(
-        new Path2DLayer({ color: "#ff0000", centring: Centring.None }).setPath(
+        new Path2D({ color: "#ff0000", centring: Centring.None }).setPath(
           "M 20 20 L 180 20 L 100 180 Z",
         ),
       ),
@@ -76,9 +76,9 @@ describe("Scene rendering in Node", () => {
     expect(red).toBeGreaterThan(5000);
   });
 
-  it("renders Path2DLayer built through the imperative API", async () => {
+  it("renders Path2D built through the imperative API", async () => {
     const scene = new Scene(100, 100, { adapter });
-    const layer = new Path2DLayer({ color: "#0000ff", centring: Centring.None });
+    const layer = new Path2D({ color: "#0000ff", centring: Centring.None });
     layer.rect(10, 10, 50, 50);
     scene.load(new Group().add(layer));
     await scene.renderFrame(0);
@@ -88,7 +88,7 @@ describe("Scene rendering in Node", () => {
   });
 
   it("finds nested layers through getLayer", async () => {
-    const deep = new MorphLayer(
+    const deep = new Morph(
       { color: "#ffffff", size: { width: 5, height: 5 }, centring: Centring.None },
       { id: "deep" },
     );
@@ -98,8 +98,8 @@ describe("Scene rendering in Node", () => {
   });
 
   it("applies flex layout to children", async () => {
-    const a = new MorphLayer({ color: "#111111", layout: { width: 40, height: 40 } }, { id: "a" });
-    const b = new MorphLayer({ color: "#222222", layout: { width: 40, height: 40 } }, { id: "b" });
+    const a = new Morph({ color: "#111111", layout: { width: 40, height: 40 } }, { id: "a" });
+    const b = new Morph({ color: "#222222", layout: { width: 40, height: 40 } }, { id: "b" });
     const scene = new Scene(200, 100, { adapter });
     scene.load(new Group({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" }).add(a, b));
     await scene.renderFrame(0);
@@ -115,7 +115,7 @@ describe("Exporter formats", () => {
     const s = new Scene(60, 40, { adapter });
     s.load(
       new Group().add(
-        new MorphLayer({
+        new Morph({
           color: "#123456",
           size: { width: 60, height: 40 },
           position: { x: 0, y: 0 },
@@ -155,7 +155,7 @@ describe("JSON round-trip", () => {
       { id: "g1" },
     );
     group.add(
-      new MorphLayer(
+      new Morph(
         { color: "#00ff00", size: { width: 10, height: 10 }, centring: Centring.None },
         { id: "m1" },
       ),
@@ -176,7 +176,7 @@ describe("JSON round-trip", () => {
     const build = () => {
       const c = new LazyCanvas(ClassicRenderPipeline, { adapter }).create(80, 80);
       c.manager.layers.add(
-        new MorphLayer(
+        new Morph(
           {
             color: "#ff8800",
             size: { width: 40, height: 20, radius: { all: 4 } },
@@ -213,7 +213,7 @@ describe("Text rendering", () => {
     expect(scene.lazyCanvas.manager.fonts.has("Geist")).toBe(true);
     scene.load(
       new Group().add(
-        new TextLayer({
+        new Text({
           text: "LazyCanvas",
           color: "#ffffff",
           font: { family: "Geist", size: 28, weight: 700 },
@@ -242,7 +242,7 @@ describe("Pattern fills", () => {
     const scene = new Scene(8, 4, { adapter });
     scene.load(
       new Group().add(
-        new MorphLayer({
+        new Morph({
           color: new Pattern().setSrc(tile.toDataURL("image/png")).setType("repeat"),
           size: { width: 8, height: 4 },
           position: { x: 0, y: 0 },

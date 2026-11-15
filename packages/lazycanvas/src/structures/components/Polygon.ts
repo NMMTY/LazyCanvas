@@ -20,7 +20,7 @@ import {
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
-export interface IPolygonLayer extends IBaseLayer {
+export interface IPolygon extends IBaseLayer {
   /**
    * The type of the layer, which is `Polygon`.
    */
@@ -29,10 +29,10 @@ export interface IPolygonLayer extends IBaseLayer {
   /**
    * The properties specific to the Polygon Layer.
    */
-  props: IPolygonLayerProps;
+  props: IPolygonProps;
 }
 
-export interface IPolygonLayerProps extends IBaseLayerProps {
+export interface IPolygonProps extends IBaseLayerProps {
   /**
    * The size of the Polygon Layer, including width, height, and radius.
    */
@@ -69,12 +69,12 @@ export interface IPolygonLayerProps extends IBaseLayerProps {
   stroke?: StrokeOptions;
 }
 
-export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
-  props: IPolygonLayerProps;
+export class Polygon extends BaseLayer<IPolygonProps> {
+  props: IPolygonProps;
 
-  constructor(props?: IPolygonLayerProps, misc?: IBaseLayerMisc) {
-    super(LayerType.Polygon, props || ({} as IPolygonLayerProps), misc);
-    this.props = props ? props : ({} as IPolygonLayerProps);
+  constructor(props?: IPolygonProps, misc?: IBaseLayerMisc) {
+    super(LayerType.Polygon, props || ({} as IPolygonProps), misc);
+    this.props = props ? props : ({} as IPolygonProps);
     this.props = this.validateProps(this.props);
   }
 
@@ -169,7 +169,7 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
     });
 
     if (debug)
-      LazyLog.log("none", "PolygonLayer:", {
+      LazyLog.log("none", "Polygon:", {
         x,
         y,
         w,
@@ -266,9 +266,9 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
 
   /**
    * Converts the Polygon layer to a JSON representation.
-   * @returns {IPolygonLayer} The JSON representation of the Polygon layer.
+   * @returns {IPolygon} The JSON representation of the Polygon layer.
    */
-  toJSON(): IPolygonLayer {
+  toJSON(): IPolygon {
     const data = super.toJSON();
     const copy: any = { ...data.props };
 
@@ -278,15 +278,15 @@ export class PolygonLayer extends BaseLayer<IPolygonLayerProps> {
       }
     }
 
-    return { ...data, props: copy } as IPolygonLayer;
+    return { ...data, props: copy } as IPolygon;
   }
 
   /**
    * Validates the properties of the Morph Layer.
-   * @param {IPolygonLayerProps} [data] - The properties to validate.
-   * @returns {IPolygonLayerProps} The validated properties.
+   * @param {IPolygonProps} [data] - The properties to validate.
+   * @returns {IPolygonProps} The validated properties.
    */
-  protected validateProps(data: IPolygonLayerProps): IPolygonLayerProps {
+  protected validateProps(data: IPolygonProps): IPolygonProps {
     return {
       ...super.validateProps(data),
       size: {

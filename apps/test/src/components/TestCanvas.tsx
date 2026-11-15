@@ -2,7 +2,7 @@
 
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
 import {
-  BezierLayer,
+  Bezier,
   Centring,
   Easing,
   FillType,
@@ -11,13 +11,13 @@ import {
   GradientType,
   Group,
   Scene as LazyScene,
-  LineLayer,
-  MorphLayer,
-  Path2DLayer,
+  Line,
+  Morph,
+  Path2D,
   PatternType,
-  PolygonLayer,
+  Polygon,
   Signal,
-  TextLayer,
+  Text,
 } from "@nmmty/lazycanvas";
 import { useEffect, useRef, useState } from "react";
 
@@ -31,19 +31,19 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
 
   switch (test) {
     case "morph": {
-      const r1 = new MorphLayer({
+      const r1 = new Morph({
         color: "#3b82f6",
         size: { width: 200, height: 100, radius: { all: 16 } },
         position: { x: 10, y: 20 },
         centring: NC,
       });
-      const r2 = new MorphLayer({
+      const r2 = new Morph({
         color: "#ef4444",
         size: { width: 150, height: 80, radius: { all: 12 } },
         position: { x: 250, y: 50 },
         centring: NC,
       });
-      const r3 = new MorphLayer({
+      const r3 = new Morph({
         color: "#22c55e",
         size: { width: 120, height: 120, radius: { all: 60 } },
         position: { x: 120, y: 140 },
@@ -54,14 +54,14 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "morph-stroke": {
-      const s1 = new MorphLayer({
+      const s1 = new Morph({
         color: "#3b82f6",
         size: { width: 200, height: 100, radius: { all: 8 } },
         position: { x: 10, y: 20 },
         centring: NC,
         stroke: { width: 3, cap: "round", join: "round", dash: [], dashOffset: 0, miterLimit: 10 },
       });
-      const s2 = new MorphLayer({
+      const s2 = new Morph({
         color: "#f59e0b",
         size: { width: 150, height: 80, radius: { all: 4 } },
         position: { x: 240, y: 40 },
@@ -80,7 +80,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "text": {
-      const t1 = new TextLayer({
+      const t1 = new Text({
         text: "Hello World",
         color: "#ffffff",
         font: { family: "sans-serif", size: 32, weight: FontWeight.Bold },
@@ -89,7 +89,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         size: { width: "vw", height: 0 },
         centring: NC,
       });
-      const t2 = new TextLayer({
+      const t2 = new Text({
         text: "Small text",
         color: "#94a3b8",
         font: { family: "sans-serif", size: 14, weight: FontWeight.Regular },
@@ -97,7 +97,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         position: { x: 20, y: 80 },
         centring: NC,
       });
-      const t3 = new TextLayer({
+      const t3 = new Text({
         text: "Right aligned",
         color: "#60a5fa",
         font: { family: "sans-serif", size: 18, weight: FontWeight.Medium },
@@ -111,7 +111,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "multiline": {
-      const ml = new TextLayer({
+      const ml = new Text({
         text: "This is a multiline text that should wrap across multiple lines and test the multiline rendering functionality",
         color: "#e2e8f0",
         font: { family: "sans-serif", size: 16, weight: FontWeight.Regular },
@@ -126,13 +126,13 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "line": {
-      const l1 = new LineLayer({
+      const l1 = new Line({
         position: { x: 50, y: 50, endX: 350, endY: 150 },
         color: "#3b82f6",
         stroke: { width: 3, cap: "round", join: "round", dash: [], dashOffset: 0, miterLimit: 10 },
         filled: false,
       });
-      const l2 = new LineLayer({
+      const l2 = new Line({
         position: { x: 50, y: 150, endX: 350, endY: 50 },
         color: "#ef4444",
         stroke: {
@@ -150,7 +150,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "bezier": {
-      const b1 = new BezierLayer({
+      const b1 = new Bezier({
         position: { x: 30, y: 150, endX: 370, endY: 150 },
         controlPoints: [
           { x: 120, y: 20 },
@@ -164,19 +164,19 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "polygon": {
-      const p1 = new PolygonLayer({
+      const p1 = new Polygon({
         size: { width: 120, height: 120, count: 3, radius: 0 },
         color: "#f59e0b",
         position: { x: 10, y: 10 },
         centring: NC,
       });
-      const p2 = new PolygonLayer({
+      const p2 = new Polygon({
         size: { width: 120, height: 120, count: 5, radius: 10 },
         color: "#06b6d4",
         position: { x: 160, y: 10 },
         centring: NC,
       });
-      const p3 = new PolygonLayer({
+      const p3 = new Polygon({
         size: { width: 120, height: 120, count: 6, radius: 0 },
         color: "#ec4899",
         position: { x: 80, y: 110 },
@@ -187,13 +187,13 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "path2d": {
-      const path = new Path2DLayer({
+      const path = new Path2D({
         path2D: null,
         color: "#22c55e",
       });
       path.setPath("M 50 50 L 150 50 L 150 150 L 50 150 Z");
 
-      const circle = new Path2DLayer({
+      const circle = new Path2D({
         path2D: null,
         color: "#3b82f6",
         position: { x: 180, y: 50 },
@@ -208,7 +208,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "gradient": {
-      const g1 = new MorphLayer({
+      const g1 = new Morph({
         color: new Gradient({
           props: {
             fillType: FillType.Gradient,
@@ -227,7 +227,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
         position: { x: 10, y: 10 },
         centring: NC,
       });
-      const g2 = new MorphLayer({
+      const g2 = new Morph({
         color: new Gradient({
           props: {
             fillType: FillType.Gradient,
@@ -251,19 +251,19 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "centring": {
-      const c1 = new MorphLayer({
+      const c1 = new Morph({
         color: "#3b82f6",
         size: { width: 100, height: 60 },
         position: { x: 200, y: 100 },
         centring: Centring.Center,
       });
-      const c2 = new MorphLayer({
+      const c2 = new Morph({
         color: "#ef4444",
         size: { width: 60, height: 60, radius: { all: 30 } },
         position: { x: 100, y: 50 },
         centring: Centring.Start,
       });
-      const c3 = new MorphLayer({
+      const c3 = new Morph({
         color: "#22c55e",
         size: { width: 80, height: 40 },
         position: { x: 300, y: 200 },
@@ -274,14 +274,14 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "shadow": {
-      const sh1 = new MorphLayer({
+      const sh1 = new Morph({
         color: "#3b82f6",
         size: { width: 150, height: 100, radius: { all: 12 } },
         position: { x: 20, y: 20 },
         centring: NC,
         shadow: { offsetX: 4, offsetY: 4, blur: 12, color: "rgba(59,130,246,0.5)" },
       });
-      const sh2 = new MorphLayer({
+      const sh2 = new Morph({
         color: "#ef4444",
         size: { width: 150, height: 100, radius: { all: 12 } },
         position: { x: 220, y: 60 },
@@ -293,21 +293,21 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "opacity": {
-      const o1 = new MorphLayer({
+      const o1 = new Morph({
         color: "#3b82f6",
         size: { width: 120, height: 120 },
         position: { x: 10, y: 20 },
         centring: NC,
         opacity: 1.0,
       });
-      const o2 = new MorphLayer({
+      const o2 = new Morph({
         color: "#3b82f6",
         size: { width: 120, height: 120 },
         position: { x: 150, y: 20 },
         centring: NC,
         opacity: 0.6,
       });
-      const o3 = new MorphLayer({
+      const o3 = new Morph({
         color: "#3b82f6",
         size: { width: 120, height: 120 },
         position: { x: 290, y: 20 },
@@ -319,7 +319,7 @@ function createTestScene(canvas: HTMLCanvasElement, test: string): LazyScene {
     }
 
     case "toJSON": {
-      const tj = new MorphLayer({
+      const tj = new Morph({
         color: "#3b82f6",
         size: { width: 200, height: 100, radius: { all: 8 } },
         position: { x: 50, y: 50 },

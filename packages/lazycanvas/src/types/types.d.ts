@@ -7,22 +7,22 @@ import {
   unwrap,
 } from "../core/Signal";
 import type {
-  BezierLayer,
-  IBezierLayer,
-  IImageLayer,
-  ILineLayer,
-  IMorphLayer,
-  IPath2DLayer,
-  IPolygonLayer,
-  IQuadraticLayer,
-  ITextLayer,
-  ImageLayer,
-  LineLayer,
-  MorphLayer,
-  Path2DLayer,
-  PolygonLayer,
-  QuadraticLayer,
-  TextLayer,
+  Bezier,
+  IBezier,
+  IImage,
+  ILine,
+  IMorph,
+  IPath2D,
+  IPolygon,
+  IQuadratic,
+  IText,
+  Image,
+  Line,
+  Morph,
+  Path2D,
+  Polygon,
+  Quadratic,
+  Text,
 } from "../structures/components";
 import type { Gradient, Link, Pattern } from "../structures/helpers";
 import type {
@@ -77,25 +77,9 @@ export type StringColorType =
 
 export type ColorType = Gradient | Pattern | StringColorType;
 
-export type JSONLayer =
-  | IMorphLayer
-  | IImageLayer
-  | ITextLayer
-  | IBezierLayer
-  | IQuadraticLayer
-  | ILineLayer
-  | IPath2DLayer
-  | IPolygonLayer;
+export type JSONLayer = IMorph | IImage | IText | IBezier | IQuadratic | ILine | IPath2D | IPolygon;
 
-export type AnyLayer =
-  | MorphLayer
-  | ImageLayer
-  | TextLayer
-  | BezierLayer
-  | QuadraticLayer
-  | LineLayer
-  | Path2DLayer
-  | PolygonLayer;
+export type AnyLayer = Morph | Image | Text | Bezier | Quadratic | Line | Path2D | Polygon;
 
 export type AnyWeight = FontWeight | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 

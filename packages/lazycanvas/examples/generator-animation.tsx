@@ -2,8 +2,8 @@
 import {
   createElement,
   Scene,
-  MorphLayer,
-  TextLayer,
+  Morph,
+  Text,
   Group,
   createSignal,
   Easing,
@@ -77,7 +77,7 @@ export async function run() {
         height: "100%",
       }}
     >
-      <MorphLayer
+      <Morph
         position={{
           x: boxX,
           y: boxY,
@@ -90,7 +90,7 @@ export async function run() {
         opacity={boxOpacity}
         centring="center"
       />
-      <TextLayer
+      <Text
         position={{
           x: textX,
           y: textY,

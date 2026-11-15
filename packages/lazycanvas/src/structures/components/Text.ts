@@ -42,7 +42,7 @@ import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps }
 /**
  * Interface representing a Text layer.
  */
-export interface ITextLayer extends IBaseLayer {
+export interface IText extends IBaseLayer {
   /**
    * The type of the layer, which is `Text`.
    */
@@ -51,13 +51,13 @@ export interface ITextLayer extends IBaseLayer {
   /**
    * The properties specific to the Text layer.
    */
-  props: ITextLayerProps;
+  props: ITextProps;
 }
 
 /**
  * Interface representing the properties of a Text layer.
  */
-export interface ITextLayerProps extends IBaseLayerProps {
+export interface ITextProps extends IBaseLayerProps {
   /**
    * The text content of the layer.
    */
@@ -188,20 +188,20 @@ export interface ITextLayerProps extends IBaseLayerProps {
 /**
  * Class representing a Text layer, extending the BaseLayer class.
  */
-export class TextLayer extends BaseLayer<ITextLayerProps> {
+export class Text extends BaseLayer<ITextProps> {
   /**
    * The properties of the Text Layer.
    */
-  props: ITextLayerProps;
+  props: ITextProps;
 
   /**
-   * Constructs a new TextLayer instance.
-   * @param {ITextLayerProps} [props] - The properties of the Text layer.
+   * Constructs a new Text instance.
+   * @param {ITextProps} [props] - The properties of the Text layer.
    * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
    */
-  constructor(props?: ITextLayerProps, misc?: IBaseLayerMisc) {
-    super(LayerType.Text, props || ({} as ITextLayerProps), misc);
-    this.props = props ? props : ({} as ITextLayerProps);
+  constructor(props?: ITextProps, misc?: IBaseLayerMisc) {
+    super(LayerType.Text, props || ({} as ITextProps), misc);
+    this.props = props ? props : ({} as ITextProps);
     this.props = this.validateProps(this.props);
   }
 
@@ -527,7 +527,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
     const h = parcer.parse(this.props.size?.height || 0, defaultArg.wh(w), defaultArg.vl(true));
 
-    if (debug) LazyLog.log("none", "TextLayer:", { x, y, w, h });
+    if (debug) LazyLog.log("none", "Text:", { x, y, w, h });
 
     ctx.save();
     try {
@@ -636,7 +636,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
   /**
    * Draws the text on the canvas.
-   * @param {ITextLayerProps} [props] - The properties of the text layer.
+   * @param {ITextProps} [props] - The properties of the text layer.
    * @param {SKRSContext2D} [ctx] - The canvas rendering context.
    * @param {string | CanvasGradient | CanvasPattern}  [fillStyle] - The fill style for the text.
    * @param {string} [text] - The text content.
@@ -648,7 +648,7 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
    * passes `left` because the layout has already resolved the final position.
    */
   private drawText(
-    props: ITextLayerProps,
+    props: ITextProps,
     ctx: ICanvasRenderingContext2D,
     fillStyle: string | CanvasGradient | CanvasPattern,
     text: string,
@@ -773,9 +773,9 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
 
   /**
    * Converts the Text layer to a JSON representation.
-   * @returns {ITextLayer} The JSON representation of the Text layer.
+   * @returns {IText} The JSON representation of the Text layer.
    */
-  public toJSON(): ITextLayer {
+  public toJSON(): IText {
     const data = super.toJSON();
     const copy: any = { ...data.props };
 
@@ -785,15 +785,15 @@ export class TextLayer extends BaseLayer<ITextLayerProps> {
       }
     }
 
-    return { ...data, props: copy } as ITextLayer;
+    return { ...data, props: copy } as IText;
   }
 
   /**
    * Validates the properties of the Text layer.
-   * @param {ITextLayerProps} [data] - The properties to validate.
-   * @returns {ITextLayerProps} The validated properties.
+   * @param {ITextProps} [data] - The properties to validate.
+   * @returns {ITextProps} The validated properties.
    */
-  protected validateProps(data: ITextLayerProps): ITextLayerProps {
+  protected validateProps(data: ITextProps): ITextProps {
     return {
       ...super.validateProps(data),
       color: data.color || "#000000",

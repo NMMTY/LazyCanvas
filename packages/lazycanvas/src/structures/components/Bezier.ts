@@ -25,7 +25,7 @@ import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps }
 /**
  * Interface representing a Bezier layer.
  */
-export interface IBezierLayer extends IBaseLayer {
+export interface IBezier extends IBaseLayer {
   /**
    * The type of the layer, which is a Bézier curve.
    */
@@ -34,13 +34,13 @@ export interface IBezierLayer extends IBaseLayer {
   /**
    * The properties specific to the Bezier layer.
    */
-  props: IBezierLayerProps;
+  props: IBezierProps;
 }
 
 /**
  * Interface representing the properties of a Bezier layer.
  */
-export interface IBezierLayerProps extends IBaseLayerProps {
+export interface IBezierProps extends IBaseLayerProps {
   position: {
     /**
      * The start x of the Bézier curve.
@@ -82,20 +82,20 @@ export interface IBezierLayerProps extends IBaseLayerProps {
 /**
  * Class representing a Bezier layer, extending the BaseLayer class.
  */
-export class BezierLayer extends BaseLayer<IBezierLayerProps> {
+export class Bezier extends BaseLayer<IBezierProps> {
   /**
    * The properties of the Bezier layer.
    */
-  props: IBezierLayerProps;
+  props: IBezierProps;
 
   /**
-   * Constructs a new BezierLayer instance.
-   * @param {IBezierLayerProps} [props] - The properties of the Bezier layer.
+   * Constructs a new Bezier instance.
+   * @param {IBezierProps} [props] - The properties of the Bezier layer.
    * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
    */
-  constructor(props?: IBezierLayerProps, misc?: IBaseLayerMisc) {
-    super(LayerType.BezierCurve, props || ({} as IBezierLayerProps), misc);
-    this.props = props ? props : ({} as IBezierLayerProps);
+  constructor(props?: IBezierProps, misc?: IBaseLayerMisc) {
+    super(LayerType.BezierCurve, props || ({} as IBezierProps), misc);
+    this.props = props ? props : ({} as IBezierProps);
     this.props = this.validateProps(this.props);
   }
 
@@ -240,7 +240,7 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
     });
 
     if (debug)
-      LazyLog.log("none", "BezierLayer:", {
+      LazyLog.log("none", "Bezier:", {
         xs,
         ys,
         cp1x,
@@ -285,9 +285,9 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
 
   /**
    * Converts the Bezier layer to a JSON representation.
-   * @returns {IBezierLayer} The JSON representation of the Bezier layer.
+   * @returns {IBezier} The JSON representation of the Bezier layer.
    */
-  public toJSON(): IBezierLayer {
+  public toJSON(): IBezier {
     const data = super.toJSON();
     const copy: any = { ...data.props };
 
@@ -311,15 +311,15 @@ export class BezierLayer extends BaseLayer<IBezierLayerProps> {
       });
     }
 
-    return { ...data, props: copy } as IBezierLayer;
+    return { ...data, props: copy } as IBezier;
   }
 
   /**
    * Validates the properties of the Bezier layer.
-   * @param {IBezierLayerProps} [data] - The properties to validate.
-   * @returns {IBezierLayerProps} The validated properties.
+   * @param {IBezierProps} [data] - The properties to validate.
+   * @returns {IBezierProps} The validated properties.
    */
-  protected validateProps(data: IBezierLayerProps): IBezierLayerProps {
+  protected validateProps(data: IBezierProps): IBezierProps {
     return {
       ...super.validateProps(data),
       position: {

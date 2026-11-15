@@ -1,12 +1,5 @@
 import { isSignal, unwrap } from "../core";
-import {
-  BezierLayer,
-  Group,
-  LineLayer,
-  Path2DLayer,
-  QuadraticLayer,
-  TextLayer,
-} from "../structures/components";
+import { Bezier, Group, Line, Path2D, Quadratic, Text } from "../structures/components";
 import { Gradient, Link, Pattern } from "../structures/helpers";
 import type { LayersManager } from "../structures/managers";
 import {
@@ -117,7 +110,7 @@ export function parseToNormal(
       if (!manager) return 0;
 
       const anyLayer = manager.get(match[2], true);
-      if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
+      if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2D) return 0;
 
       const parserInstance = parser(ctx, canvas, manager);
       const additionalSpacing = Number.parseInt(match[3]) || 0;
@@ -139,7 +132,7 @@ export function parseToNormal(
     if (!manager) return 0;
 
     const anyLayer = manager.get(v.source, true);
-    if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2DLayer) return 0;
+    if (!anyLayer || anyLayer instanceof Group || anyLayer instanceof Path2D) return 0;
 
     const parserInstance = parser(ctx, canvas, manager);
     const additionalSpacing =
@@ -171,17 +164,13 @@ function getLayerWidth(
   manager: LayersManager,
   parserInstance: any,
 ): number {
-  if (
-    anyLayer instanceof LineLayer ||
-    anyLayer instanceof BezierLayer ||
-    anyLayer instanceof QuadraticLayer
-  ) {
+  if (anyLayer instanceof Line || anyLayer instanceof Bezier || anyLayer instanceof Quadratic) {
     return anyLayer.getBoundingBox(ctx, canvas, manager).width;
   }
-  if (anyLayer instanceof TextLayer) {
+  if (anyLayer instanceof Text) {
     return anyLayer.measureText(ctx, canvas).width;
   }
-  return anyLayer instanceof Path2DLayer ? 0 : parserInstance.parse(anyLayer.props.size.width) || 0;
+  return anyLayer instanceof Path2D ? 0 : parserInstance.parse(anyLayer.props.size.width) || 0;
 }
 
 function getLayerHeight(
@@ -191,19 +180,13 @@ function getLayerHeight(
   manager: LayersManager,
   parserInstance: any,
 ): number {
-  if (
-    anyLayer instanceof LineLayer ||
-    anyLayer instanceof BezierLayer ||
-    anyLayer instanceof QuadraticLayer
-  ) {
+  if (anyLayer instanceof Line || anyLayer instanceof Bezier || anyLayer instanceof Quadratic) {
     return anyLayer.getBoundingBox(ctx, canvas, manager).height;
   }
-  if (anyLayer instanceof TextLayer) {
+  if (anyLayer instanceof Text) {
     return anyLayer.measureText(ctx, canvas).height;
   }
-  return anyLayer instanceof Path2DLayer
-    ? 0
-    : parserInstance.parse(anyLayer.props.size.height) || 0;
+  return anyLayer instanceof Path2D ? 0 : parserInstance.parse(anyLayer.props.size.height) || 0;
 }
 
 export function parser(ctx: ICanvasRenderingContext2D, canvas: ICanvas, manager?: LayersManager) {
@@ -595,7 +578,7 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
   const newLayers: Array<AnyLayer | Group> = [];
   if (layers.length > 0) {
     for (const layer of layers) {
-      if (!(layer instanceof Group || layer instanceof Path2DLayer)) {
+      if (!(layer instanceof Group || layer instanceof Path2D)) {
         if (layer.props.position) {
           layer.props.position.x = resize(layer.props.position.x, ratio) as ScaleType;
           layer.props.position.y = resize(layer.props.position.y, ratio) as ScaleType;

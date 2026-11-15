@@ -1,16 +1,16 @@
 ---
 title: "Text and fonts"
-summary: "TextLayer: fonts, alignment, wrapping, letter spacing, per-range colors, vertical writing and font loading."
+summary: "Text: fonts, alignment, wrapping, letter spacing, per-range colors, vertical writing and font loading."
 updatedAt: "2026-10-09T12:00:00.000Z"
 navIcon: "code"
 ---
 
 <Example name="text" />
 
-## TextLayer
+## Text
 
 ```ts
-new TextLayer({
+new Text({
   text: "Hello",
   color: "#ffffff",
   font: { family: "sans-serif", size: 32, weight: 700 },
@@ -39,7 +39,7 @@ Inside a flex [layout](/docs/layout) a text layer is measured and positioned for
 `direction: "ttb"` (top to bottom) and `"btt"` lay characters out in columns. `vertical` refines how:
 
 ```ts
-new TextLayer({
+new Text({
   text: "Top to bottom",
   direction: "ttb",
   vertical: { mode: "words", columns: "rl", gap: 8 },

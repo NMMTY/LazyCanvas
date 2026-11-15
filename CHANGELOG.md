@@ -11,6 +11,19 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+`@nmmty/lazycanvas` and `@nmmty/adapter-react`.
+
+### Changed
+
+- **Breaking: layer classes lost the `Layer` suffix** (`@nmmty/lazycanvas`): `MorphLayer`, `TextLayer`,
+  `ImageLayer`, `LineLayer`, `BezierLayer`, `QuadraticLayer`, `PolygonLayer` and `Path2DLayer` are now
+  `Morph`, `Text`, `Image`, `Line`, `Bezier`, `Quadratic`, `Polygon` and `Path2D`, with `IMorphProps`,
+  `IMorph`, … instead of `IMorphLayerProps`, `IMorphLayer`, …. They match the components of
+  `@nmmty/adapter-react` (and `Group`, which never had the suffix), so a layer tree moves between the core
+  JSX and React by changing only the import. `Image` and `Path2D` shadow the browser globals of the same
+  name in a module that imports them; import under another name (`import { Image as ImageLayer }`) there.
+  `BaseLayer` keeps its name.
+
 ## [1.1.0]
 
 `@nmmty/lazycanvas`, `@nmmty/adapter-browser` and `@nmmty/adapter-react`; `@nmmty/adapter-node` stays at 1.0.0.

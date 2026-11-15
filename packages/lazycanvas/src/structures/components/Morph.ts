@@ -26,7 +26,7 @@ import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps }
 /**
  * Interface representing a Morph Layer.
  */
-export interface IMorphLayer extends IBaseLayer {
+export interface IMorph extends IBaseLayer {
   /**
    * The type of the layer, which is `Morph`.
    */
@@ -35,13 +35,13 @@ export interface IMorphLayer extends IBaseLayer {
   /**
    * The properties specific to the Morph Layer.
    */
-  props: IMorphLayerProps;
+  props: IMorphProps;
 }
 
 /**
  * Interface representing the properties of a Morph Layer.
  */
-export interface IMorphLayerProps extends IBaseLayerProps {
+export interface IMorphProps extends IBaseLayerProps {
   /**
    * The size of the Morph Layer, including width, height, and radius.
    */
@@ -76,20 +76,20 @@ export interface IMorphLayerProps extends IBaseLayerProps {
 /**
  * Class representing a Morph Layer, extending the BaseLayer class.
  */
-export class MorphLayer extends BaseLayer<IMorphLayerProps> {
+export class Morph extends BaseLayer<IMorphProps> {
   /**
    * The properties of the Morph Layer.
    */
-  props: IMorphLayerProps;
+  props: IMorphProps;
 
   /**
-   * Constructs a new MorphLayer instance.
-   * @param {IMorphLayerProps} [props] - The properties of the Morph Layer.
+   * Constructs a new Morph instance.
+   * @param {IMorphProps} [props] - The properties of the Morph Layer.
    * @param {IBaseLayerMisc} [misc] - Miscellaneous options for the layer.
    */
-  constructor(props?: IMorphLayerProps, misc?: IBaseLayerMisc) {
-    super(LayerType.Morph, props || ({} as IMorphLayerProps), misc);
-    this.props = props ? props : ({} as IMorphLayerProps);
+  constructor(props?: IMorphProps, misc?: IBaseLayerMisc) {
+    super(LayerType.Morph, props || ({} as IMorphProps), misc);
+    this.props = props ? props : ({} as IMorphProps);
     this.props = this.validateProps(this.props);
   }
 
@@ -198,7 +198,7 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
       manager,
     });
 
-    if (debug) LazyLog.log("none", "MorphLayer:", { x, y, w, h, rad });
+    if (debug) LazyLog.log("none", "Morph:", { x, y, w, h, rad });
 
     ctx.save();
     try {
@@ -234,9 +234,9 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
 
   /**
    * Converts the Morph Layer to a JSON representation.
-   * @returns {IMorphLayer} The JSON representation of the Morph Layer.
+   * @returns {IMorph} The JSON representation of the Morph Layer.
    */
-  toJSON(): IMorphLayer {
+  toJSON(): IMorph {
     const data = super.toJSON();
     const copy: any = { ...data.props };
 
@@ -246,15 +246,15 @@ export class MorphLayer extends BaseLayer<IMorphLayerProps> {
       }
     }
 
-    return { ...data, props: copy } as IMorphLayer;
+    return { ...data, props: copy } as IMorph;
   }
 
   /**
    * Validates the properties of the Morph Layer.
-   * @param {IMorphLayerProps} [data] - The properties to validate.
-   * @returns {IMorphLayerProps} The validated properties.
+   * @param {IMorphProps} [data] - The properties to validate.
+   * @returns {IMorphProps} The validated properties.
    */
-  protected validateProps(data: IMorphLayerProps): IMorphLayerProps {
+  protected validateProps(data: IMorphProps): IMorphProps {
     return {
       ...super.validateProps(data),
       color: data.color || "#000000",

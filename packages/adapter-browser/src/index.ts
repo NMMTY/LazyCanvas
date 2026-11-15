@@ -209,7 +209,7 @@ export class BrowserCanvasAdapter implements ICanvasAdapter {
   };
 
   /**
-   * Native browser `Path2D`, used by `Path2DLayer`.
+   * Native browser `Path2D`, used by `Path2D`.
    */
   Path2D = typeof Path2D !== "undefined" ? Path2D : undefined;
 }

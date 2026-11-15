@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { Canvas } from "@napi-rs/canvas";
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { MorphLayer } from "@nmmty/lazycanvas";
+import * as lc from "@nmmty/lazycanvas";
 import { StrictMode, act, createRef, useState } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -334,7 +334,7 @@ describe("useScene", () => {
 
 describe("layer registration", () => {
   it("registerLayer makes a custom layer class usable in a <Scene>", async () => {
-    const Tile = registerLayer("TestTile", MorphLayer as never) as React.ComponentType<
+    const Tile = registerLayer("TestTile", lc.Morph as never) as React.ComponentType<
       Record<string, unknown>
     >;
     await render(
@@ -346,7 +346,7 @@ describe("layer registration", () => {
   });
 
   it("createLayerComponent wraps a layer class the same way", async () => {
-    const Tile = createLayerComponent(MorphLayer as never, "TestTile2") as React.ComponentType<
+    const Tile = createLayerComponent(lc.Morph as never, "TestTile2") as React.ComponentType<
       Record<string, unknown>
     >;
     await render(
@@ -358,8 +358,8 @@ describe("layer registration", () => {
   });
 
   it("registerLayer returns the same component for the same name", () => {
-    const a = registerLayer("SameName", MorphLayer as never);
-    const b = registerLayer("SameName", MorphLayer as never);
+    const a = registerLayer("SameName", lc.Morph as never);
+    const b = registerLayer("SameName", lc.Morph as never);
     expect(a).toBe(b);
   });
 });

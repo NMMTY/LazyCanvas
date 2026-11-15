@@ -1,6 +1,6 @@
 import { BrowserCanvasAdapter } from "@nmmty/adapter-browser";
+import * as lc from "@nmmty/lazycanvas";
 import {
-  Group as GroupLayer,
   type ICanvas,
   type ICanvasAdapter,
   type LayerCacheOptions,
@@ -47,13 +47,12 @@ const LAZY_LAYER_CLASS = Symbol.for("@nmmty/adapter-react:layerClass");
  * @example
  * ```tsx
  * import { registerLayer } from "@nmmty/adapter-react";
- * import { MorphLayer, TextLayer } from "@nmmty/lazycanvas";
+ * import { Badge } from "./Badge"; // your own layer class
  *
- * const Morph = registerLayer("MorphLayer", MorphLayer);
- * const Text = registerLayer("TextLayer", TextLayer);
+ * const BadgeComponent = registerLayer("Badge", Badge);
  *
  * // Use in JSX:
- * <Morph color="#ff0000" size={{ width: 200, height: 100 }} />
+ * <BadgeComponent color="#ff0000" size={{ width: 200, height: 100 }} />
  * ```
  */
 export function registerLayer<T extends Record<string, any>>(
@@ -75,12 +74,12 @@ export function registerLayer<T extends Record<string, any>>(
  * @example
  * ```tsx
  * import { createLayerComponent } from "@nmmty/adapter-react";
- * import { MorphLayer } from "@nmmty/lazycanvas";
+ * import { Badge } from "./Badge"; // your own layer class
  *
- * const Morph = createLayerComponent(MorphLayer);
+ * const BadgeComponent = createLayerComponent(Badge);
  *
  * // Use in JSX:
- * <Morph color="#ff0000" size={{ width: 200, height: 100 }} />
+ * <BadgeComponent color="#ff0000" size={{ width: 200, height: 100 }} />
  * ```
  */
 export function createLayerComponent<T extends Record<string, any>>(
@@ -561,32 +560,21 @@ export const Scene = forwardRef<SceneRef, SceneProps>(function Scene(
 // Pre-made wrappers for built-in layers
 // ---------------------------------------------------------------------------
 
-import {
-  BezierLayer,
-  ImageLayer,
-  LineLayer,
-  MorphLayer,
-  Path2DLayer,
-  PolygonLayer,
-  QuadraticLayer,
-  TextLayer,
-} from "@nmmty/lazycanvas";
-
-/** `MorphLayer` as a React component. */
-export const Morph = createLayerComponent(MorphLayer, "MorphLayer");
-/** `TextLayer` as a React component. */
-export const Text = createLayerComponent(TextLayer, "TextLayer");
-/** `ImageLayer` as a React component. */
-export const Image = createLayerComponent(ImageLayer, "ImageLayer");
-/** `LineLayer` as a React component. */
-export const Line = createLayerComponent(LineLayer, "LineLayer");
-/** `BezierLayer` as a React component. */
-export const Bezier = createLayerComponent(BezierLayer, "BezierLayer");
-/** `QuadraticLayer` as a React component. */
-export const Quadratic = createLayerComponent(QuadraticLayer, "QuadraticLayer");
-/** `PolygonLayer` as a React component. */
-export const Polygon = createLayerComponent(PolygonLayer, "PolygonLayer");
-/** `Path2DLayer` as a React component. */
-export const Path2D = createLayerComponent(Path2DLayer, "Path2DLayer");
+/** `Morph` as a React component. */
+export const Morph = createLayerComponent(lc.Morph, "Morph");
+/** `Text` as a React component. */
+export const Text = createLayerComponent(lc.Text, "Text");
+/** `Image` as a React component. */
+export const Image = createLayerComponent(lc.Image, "Image");
+/** `Line` as a React component. */
+export const Line = createLayerComponent(lc.Line, "Line");
+/** `Bezier` as a React component. */
+export const Bezier = createLayerComponent(lc.Bezier, "Bezier");
+/** `Quadratic` as a React component. */
+export const Quadratic = createLayerComponent(lc.Quadratic, "Quadratic");
+/** `Polygon` as a React component. */
+export const Polygon = createLayerComponent(lc.Polygon, "Polygon");
+/** `Path2D` as a React component. */
+export const Path2D = createLayerComponent(lc.Path2D, "Path2D");
 /** `Group`, the flexbox container layer, as a React component. */
-export const Group = createLayerComponent(GroupLayer, "Group");
+export const Group = createLayerComponent(lc.Group, "Group");

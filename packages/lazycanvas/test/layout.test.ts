@@ -1,11 +1,11 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Centring, Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Centring, Group, Morph, Scene, Text } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
 
 const box = (id: string, extra: Record<string, any> = {}) =>
-  new MorphLayer({ color: "#ffffff", layout: { width: 40, height: 40 }, ...extra }, { id });
+  new Morph({ color: "#ffffff", layout: { width: 40, height: 40 }, ...extra }, { id });
 
 describe("LayoutManager", () => {
   it("lays a row out with the requested gap", async () => {
@@ -40,8 +40,8 @@ describe("LayoutManager", () => {
   });
 
   it("relayouts when a layout prop changes after the first frame", async () => {
-    const a = new MorphLayer({ color: "#fff", size: { width: 40, height: 40 } }, { id: "a" });
-    const b = new MorphLayer({ color: "#fff", size: { width: 40, height: 40 } }, { id: "b" });
+    const a = new Morph({ color: "#fff", size: { width: 40, height: 40 } }, { id: "a" });
+    const b = new Morph({ color: "#fff", size: { width: 40, height: 40 } }, { id: "b" });
     const row = new Group({ layout: { flexDirection: "row", gap: 20 } }, { id: "row" });
     row.add(a, b);
 
@@ -63,7 +63,7 @@ describe("LayoutManager", () => {
 
   it("leaves manually positioned layers out of the flex flow", async () => {
     const flowed = box("flowed");
-    const manual = new MorphLayer(
+    const manual = new Morph(
       {
         color: "#ffffff",
         size: { width: 10, height: 10 },
@@ -84,7 +84,7 @@ describe("LayoutManager", () => {
   });
 
   it("measures text so it participates in the flow", async () => {
-    const label = new TextLayer(
+    const label = new Text(
       {
         text: "wide enough to measure",
         color: "#ffffff",
@@ -105,7 +105,7 @@ describe("LayoutManager", () => {
 
 describe("toJSON after layout", () => {
   it("serializes the props the caller wrote, not the computed ones", async () => {
-    const layer = new MorphLayer(
+    const layer = new Morph(
       {
         color: "#ffffff",
         layout: { width: 40, height: 40 },

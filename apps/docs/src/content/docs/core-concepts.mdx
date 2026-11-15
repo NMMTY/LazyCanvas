@@ -25,18 +25,18 @@ Everything you draw is a layer.
 
 | Layer | Draws |
 | --- | --- |
-| `MorphLayer` | A rectangle with per-corner radii: rectangles, rounded rectangles, circles. |
-| `TextLayer` | Text — single or multi-line, horizontal or vertical. |
-| `ImageLayer` | A bitmap from a URL or bytes, optionally with rounded corners. |
-| `LineLayer`, `QuadraticLayer`, `BezierLayer` | Straight and curved lines. |
-| `PolygonLayer` | A regular polygon. |
-| `Path2DLayer` | An arbitrary path, from an SVG path string or built with `moveTo`/`lineTo`/… |
+| `Morph` | A rectangle with per-corner radii: rectangles, rounded rectangles, circles. |
+| `Text` | Text — single or multi-line, horizontal or vertical. |
+| `Image` | A bitmap from a URL or bytes, optionally with rounded corners. |
+| `Line`, `Quadratic`, `Bezier` | Straight and curved lines. |
+| `Polygon` | A regular polygon. |
+| `Path2D` | An arbitrary path, from an SVG path string or built with `moveTo`/`lineTo`/… |
 | `Group` | A container. Holds other layers and lays them out. |
 
 Layers take a **props object**:
 
 ```ts
-new MorphLayer({
+new Morph({
   color: "#22c55e",
   size: { width: 200, height: 100, radius: { all: 16 } },
   position: { x: 100, y: 60 },
@@ -46,13 +46,13 @@ new MorphLayer({
 and, if you prefer chaining, also have fluent setters that return the layer:
 
 ```ts
-new MorphLayer()
+new Morph()
   .setColor("#22c55e")
   .setSize(200, 100, { all: 16 })
   .setPosition(100, 60);
 ```
 
-A second constructor argument carries the layer's identity: `new MorphLayer(props, { id: "hero", visible: true, zIndex: 2 })`. Give a layer an `id` to find it later with `scene.getLayer("hero")`.
+A second constructor argument carries the layer's identity: `new Morph(props, { id: "hero", visible: true, zIndex: 2 })`. Give a layer an `id` to find it later with `scene.getLayer("hero")`.
 
 ### Trees
 
@@ -78,7 +78,7 @@ Children are drawn in order, lower `zIndex` first. A `Group` itself draws nothin
 
 ### Centring
 
-By default `MorphLayer`, `ImageLayer`, `PolygonLayer` and `Group` are **centred** on their `position`: `{ x: 100, y: 60 }` is where the *middle* of the shape goes. Set `centring: "none"` to use the top-left corner instead, or pick `start`, `end`, `center-top`, `end-bottom`, … for finer control.
+By default `Morph`, `Image`, `Polygon` and `Group` are **centred** on their `position`: `{ x: 100, y: 60 }` is where the *middle* of the shape goes. Set `centring: "none"` to use the top-left corner instead, or pick `start`, `end`, `center-top`, `end-bottom`, … for finer control.
 
 Lines and curves default to `none`. Text is anchored by its `align` and `baseline` instead (see [Text](/docs/text)).
 

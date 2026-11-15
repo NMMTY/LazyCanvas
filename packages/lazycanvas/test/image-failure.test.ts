@@ -1,5 +1,5 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Group, ImageLayer, MorphLayer, Scene } from "@nmmty/lazycanvas";
+import { Group, Image, Morph, Scene } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
@@ -7,7 +7,7 @@ const adapter = new NodeCanvasAdapter();
 const BAD = "https://invalid.invalid/does-not-exist.png";
 
 const box = (x: number, color: string) =>
-  new MorphLayer({
+  new Morph({
     color,
     size: { width: 20, height: 20 },
     position: { x, y: 20 },
@@ -15,7 +15,7 @@ const box = (x: number, color: string) =>
   });
 
 const image = (extra: Record<string, unknown> = {}) =>
-  new ImageLayer({
+  new Image({
     src: BAD,
     size: { width: 20, height: 20 },
     position: { x: 40, y: 20 },
@@ -55,8 +55,8 @@ describe("a layer that fails to draw", () => {
     scene.load(
       new Group({ layout: { width: 100, height: 80, padding: 15 } }).add(
         new Group({ layout: { flexDirection: "row" } }).add(
-          new MorphLayer(sized({ color: "#ff0000", size: { width: 20, height: 20 } }) as never),
-          new ImageLayer(sized({ src: BAD, size: { width: 20, height: 20 } }) as never),
+          new Morph(sized({ color: "#ff0000", size: { width: 20, height: 20 } }) as never),
+          new Image(sized({ src: BAD, size: { width: 20, height: 20 } }) as never),
         ),
       ),
     );
@@ -71,7 +71,7 @@ describe("a layer that fails to draw", () => {
   });
 });
 
-describe("ImageLayer placeholder", () => {
+describe("Image placeholder", () => {
   it("draws a placeholder where the image should be when it cannot be loaded", async () => {
     const scene = new Scene(100, 60, { adapter });
     scene.load(new Group().add(box(10, "#ff0000"), image(), box(70, "#0000ff")));

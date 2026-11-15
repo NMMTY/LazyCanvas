@@ -23,7 +23,7 @@ const gradient = new Gradient()
   .setPoints({ x: 20, y: 20 }, { x: 140, y: 140 })    // start, end
   .setStops({ color: "#f43f5e", offset: 0 }, { color: "#6366f1", offset: 1 });
 
-new MorphLayer({ color: gradient, size: { width: 120, height: 120 } });
+new Morph({ color: gradient, size: { width: 120, height: 120 } });
 ```
 
 | Type | Points | Notes |
@@ -53,7 +53,7 @@ The image is loaded through the scene's adapter, so the same rules as for [image
 Give a layer a `stroke` and it is **outlined instead of filled**:
 
 ```ts
-new MorphLayer({
+new Morph({
   color: "#6366f1",
   size: { width: 100, height: 100, radius: { all: 20 } },
   stroke: { width: 4, cap: "round", join: "round", dash: [8, 4] },

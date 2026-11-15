@@ -20,12 +20,12 @@ import {
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
 
-export interface IPath2DLayer extends IBaseLayer {
+export interface IPath2D extends IBaseLayer {
   type: LayerType.Path;
-  props: IPath2DLayerProps;
+  props: IPath2DProps;
 }
 
-export interface IPath2DLayerProps extends IBaseLayerProps {
+export interface IPath2DProps extends IBaseLayerProps {
   path2D: any;
   color: ColorType;
   stroke?: StrokeOptions;
@@ -37,19 +37,19 @@ export interface IPath2DLayerProps extends IBaseLayerProps {
  * A layer that draws a `Path2D`: build it from an SVG path string or with the
  * path-building methods (`moveTo`, `lineTo`, `rect`, ...).
  */
-export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
+export class Path2D extends BaseLayer<IPath2DProps> {
   id: string;
   type: LayerType.Path = LayerType.Path;
   zIndex: number;
   visible: boolean;
-  props: IPath2DLayerProps;
+  props: IPath2DProps;
 
-  constructor(props?: IPath2DLayerProps, misc?: IBaseLayerMisc) {
-    super(LayerType.Path, props || ({} as IPath2DLayerProps), misc);
+  constructor(props?: IPath2DProps, misc?: IBaseLayerMisc) {
+    super(LayerType.Path, props || ({} as IPath2DProps), misc);
     this.id = misc?.id || generateID(LayerType.Path);
     this.zIndex = misc?.zIndex || 1;
     this.visible = misc?.visible || true;
-    this.props = props ? props : ({} as IPath2DLayerProps);
+    this.props = props ? props : ({} as IPath2DProps);
     this.props = this.validateProps(this.props);
   }
 
@@ -296,7 +296,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     return this;
   }
 
-  equals(other: Path2DLayer): boolean {
+  equals(other: Path2D): boolean {
     const self = this.ensurePath();
     if (self && typeof self.equals === "function") {
       return self.equals(other.props.path2D);
@@ -323,7 +323,7 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
     const path = this.ensurePath(adapter);
     if (!path) {
       throw new LazyError(
-        `Path2DLayer "${this.id}" cannot be drawn: no Path2D implementation available from the canvas adapter`,
+        `Path2D "${this.id}" cannot be drawn: no Path2D implementation available from the canvas adapter`,
       );
     }
 
@@ -368,11 +368,11 @@ export class Path2DLayer extends BaseLayer<IPath2DLayerProps> {
   }
 
   /** Serialises the layer. */
-  toJSON(): IPath2DLayer {
-    return super.toJSON() as IPath2DLayer;
+  toJSON(): IPath2D {
+    return super.toJSON() as IPath2D;
   }
 
-  protected validateProps(data: IPath2DLayerProps): IPath2DLayerProps {
+  protected validateProps(data: IPath2DProps): IPath2DProps {
     return {
       ...super.validateProps(data),
       color: data.color || "#000000",

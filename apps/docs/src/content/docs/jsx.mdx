@@ -25,12 +25,12 @@ or per file:
 
 ```tsx
 /** @jsxImportSource @nmmty/lazycanvas */
-import { Group, MorphLayer, Scene, TextLayer } from "@nmmty/lazycanvas";
+import { Group, Morph, Scene, Text } from "@nmmty/lazycanvas";
 
 scene.load(
   <Group layout={{ flexDirection: "row", gap: 12, padding: 16 }}>
-    <MorphLayer color="#7c3aed" layout={{ width: 80, height: 80 }} />
-    <TextLayer
+    <Morph color="#7c3aed" layout={{ width: 80, height: 80 }} />
+    <Text
       text="JSX"
       color="#111827"
       font={{ family: "sans-serif", size: 32, weight: 700 }}
@@ -45,14 +45,14 @@ scene.load(
 ```tsx
 /** @jsx createElement */
 /** @jsxFrag Fragment */
-import { Fragment, createElement, Group, MorphLayer } from "@nmmty/lazycanvas";
+import { Fragment, createElement, Group, Morph } from "@nmmty/lazycanvas";
 ```
 
 with `"jsx": "react"` in `tsconfig.json`.
 
 ## Details
 
-- JSX expressions evaluate to **layer instances**: `<MorphLayer … />` is `new MorphLayer(props)`. You can pass them straight to `scene.load`.
+- JSX expressions evaluate to **layer instances**: `<Morph … />` is `new Morph(props)`. You can pass them straight to `scene.load`.
 - `id`, `visible` and `zIndex` are lifted out of the props and given to the layer as its identity.
 - Children become `.add(...)` calls. Falsy children (`false`, `null`, `undefined`) are skipped and arrays and fragments are flattened, so `{items.map(…)}` and `{cond && <… />}` work as you expect.
 - `ref` can be a callback or an object with `current`; it receives the created layer.

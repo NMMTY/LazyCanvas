@@ -82,7 +82,7 @@ function createGroupInstance(props: any, children: any[]): Group {
 }
 
 /**
- * Create a Layer instance (MorphLayer, TextLayer, etc.)
+ * Create a Layer instance (Morph, Text, etc.)
  */
 function createLayerInstance(LayerClass: any, props: any, children: any[]): any {
   // Extract misc props that go to the second constructor parameter

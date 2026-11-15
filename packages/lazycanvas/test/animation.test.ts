@@ -1,5 +1,5 @@
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
-import { Easing, Group, MorphLayer, Scene, Signal } from "@nmmty/lazycanvas";
+import { Easing, Group, Morph, Scene, Signal } from "@nmmty/lazycanvas";
 import { describe, expect, it } from "vitest";
 
 const adapter = new NodeCanvasAdapter();
@@ -7,7 +7,7 @@ const adapter = new NodeCanvasAdapter();
 describe("signal-driven props", () => {
   it("animates a manually positioned layer across frames", async () => {
     const x = new Signal(60);
-    const box = new MorphLayer(
+    const box = new Morph(
       {
         color: "#ff0000",
         size: { width: 20, height: 20 },
