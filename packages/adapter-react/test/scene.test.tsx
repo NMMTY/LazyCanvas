@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 import { NodeCanvasAdapter } from "@nmmty/adapter-node";
 import { FontsManager } from "@nmmty/lazycanvas";
-import { Fonts } from "@nmmty/lazycanvas/fonts";
 import * as lc from "@nmmty/lazycanvas";
+import { Fonts } from "@nmmty/lazycanvas/fonts";
 import { StrictMode, act, createRef, useState } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
