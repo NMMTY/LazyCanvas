@@ -1,6 +1,7 @@
 import { withDuration } from "./Duration";
 import { type Interpolator, getInterpolator, lerpColorHSL, lerpColorRGB } from "./Interpolation";
 import { type Keyframe, Keyframes, type KeyframesOptions } from "./Keyframes";
+import type { TraceListener } from "./SignalTrace";
 import { type SpringConfig, type SpringPresetName, solveSpring } from "./Spring";
 
 /**
@@ -161,6 +162,8 @@ export class Signal<T = number> {
   private _initialValue: T;
   private _velocity = 0;
   private _currentThread: ThreadGenerator | null = null;
+  /** Timelines following this signal. Weak, so a signal does not keep a finished scene's history alive. */
+  private _traces: Array<WeakRef<TraceListener>> | undefined;
   private _interpolator: Interpolator<T>;
   private _colorSpace: "rgb" | "hsl";
 
@@ -203,6 +206,7 @@ export class Signal<T = number> {
     this._value = value;
     this._velocity = 0;
     this._currentThread = null;
+    this.changed();
   }
 
   /**
@@ -224,6 +228,28 @@ export class Signal<T = number> {
     this._value = this._initialValue;
     this._velocity = 0;
     this._currentThread = null;
+    this.changed();
+  }
+
+  /**
+   * Has a timeline follow this signal: it is told whenever the value changes.
+   * @internal
+   */
+  public addTrace(trace: TraceListener): void {
+    this._traces ??= [];
+    if (!this._traces.some((ref) => ref.deref() === trace)) {
+      this._traces.push(new WeakRef(trace));
+    }
+  }
+
+  private changed(): void {
+    const traces = this._traces;
+    if (traces === undefined) return;
+    for (let i = traces.length - 1; i >= 0; i--) {
+      const trace = traces[i].deref();
+      if (trace) trace.dirty(this);
+      else traces.splice(i, 1);
+    }
   }
 
   /**
@@ -337,6 +363,7 @@ export class Signal<T = number> {
     if (motion.duration <= 0) {
       this.assign(target, 0);
       this._velocity = 0;
+      this.changed();
       return;
     }
 
@@ -351,10 +378,12 @@ export class Signal<T = number> {
       const position = motion.position(elapsed);
       this._value = numeric ? (position as unknown as T) : interpolator(from, target, position);
       this._velocity = numeric ? motion.velocity(elapsed) : 0;
+      this.changed();
     }
 
     this._value = target;
     this._velocity = 0;
+    this.changed();
   }
 
   private *keyframesRun(
@@ -382,6 +411,7 @@ export class Signal<T = number> {
 
     this.assign(track.valueAt(track.duration), 0);
     this._velocity = 0;
+    this.changed();
   }
 
   private *waitRun(duration: number): ThreadGenerator {
@@ -433,6 +463,7 @@ export class Signal<T = number> {
       delta > 0 && typeof previous === "number" && typeof value === "number"
         ? (value - previous) / delta
         : 0;
+    this.changed();
   }
 
   /** Solves a spring from where this signal is now. */

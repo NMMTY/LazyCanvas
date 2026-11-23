@@ -19,10 +19,10 @@ export interface ThreadSchedulerOptions {
 
   /**
    * Whether to remember signal values so the timeline can be moved backwards.
-   * `true` keeps ten minutes, `false` turns it off (moving backwards then throws),
-   * an object sets the number of seconds to keep.
+   * `true` keeps ten minutes or a million recorded values, whichever is reached first; `false`
+   * turns it off (moving backwards then throws); an object sets `maxSeconds` and `maxEntries`.
    */
-  history?: boolean | { maxSeconds?: number };
+  history?: boolean | { maxSeconds?: number; maxEntries?: number };
 }
 
 /**
@@ -58,8 +58,11 @@ export class ThreadScheduler {
     if (history === false) {
       this.trace = null;
     } else {
-      const seconds = typeof history === "object" ? (history.maxSeconds ?? 600) : 600;
-      this.trace = new SignalTrace(Math.ceil(seconds / this.stepSize));
+      const limits = typeof history === "object" ? history : {};
+      this.trace = new SignalTrace({
+        maxSteps: Math.ceil((limits.maxSeconds ?? 600) / this.stepSize),
+        maxEntries: limits.maxEntries,
+      });
     }
   }
 

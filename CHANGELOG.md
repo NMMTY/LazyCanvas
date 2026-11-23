@@ -17,9 +17,13 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 - **Moving the timeline to any time** (`@nmmty/lazycanvas`): `scene.renderFrame(t)` now accepts any
   `t`, in any order, and shows what playing from the start would show at `t`. The scheduler remembers
-  the values of animated signals (ten minutes by default; `new Scene(w, h, { history: { maxSeconds } })`
-  to change it, `history: false` to turn it off, after which going back in time throws).
+  the values of animated signals, ten minutes or a million recorded values, whichever is reached first
+  (`new Scene(w, h, { history: { maxSeconds, maxEntries } })` to change it, `history: false` to turn it
+  off, after which going back in time throws). Only signals that changed are recorded, so a scene with
+  thousands of moving signals keeps seconds of history and a small one keeps minutes.
   `ThreadScheduler` and `SignalTrace` are exported.
+- **`new Scene(w, h, { timeStep })`**: the length of one simulation step, `1/240` s by default. A longer
+  step costs less when many animations run (every running animation is advanced once per step).
 - **`scene.duration`**: the length of the animations added as functions, measured without leaving the
   signals at their end values. `Exporter` uses it as the default `duration` of an APNG export.
 - `Signal.restore(value, velocity?)`, `BaseLayer.listSignals()`.

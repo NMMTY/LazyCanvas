@@ -196,11 +196,18 @@ await scene.renderFrame(0.5);  // back to 0.5 s: same picture as playing from th
 await scene.renderFrame(3);    // and on
 ```
 
-The history keeps ten minutes by default. `new Scene(w, h, { adapter, history: { maxSeconds: 60 } })` changes that, `history: false` turns it off (going back then throws). Only the signals the scene knows about are restored: those used as layer props, and those passed to `playAnimation`.
+The history keeps ten minutes or a million recorded values, whichever comes first, and only records the signals that changed. A scene with a few dozen signals keeps all ten minutes; one with thousands of moving signals keeps a few seconds. `new Scene(w, h, { adapter, history: { maxSeconds: 60, maxEntries: 5_000_000 } })` changes that, `history: false` turns it off (going back then throws). Only the signals the scene knows about are restored: those used as layer props, and those passed to `playAnimation`. Going back further than the history reaches throws an error that says so.
 
 If you move back and then add a new animation while others are still running, `addAnimation` throws, because the running ones cannot be moved back. Call `scene.clearAnimations()` and `scene.resetTimeline()` first.
 
 `scene.duration` is the length of the animations added **as functions** (`scene.addAnimation(() => intro())`). A generator that was already created cannot be run twice to measure it, so it is not counted.
+
+### What it costs
+
+Time moves in steps of 1/240 s, and every running animation is advanced once per step: at 60 fps that is four steps per frame. For a typical scene this is far below the cost of drawing, but with thousands of animated signals it adds up, and the history adds a little more. Two options trade accuracy for speed:
+
+- `new Scene(w, h, { adapter, timeStep: 1 / 60 })` advances once per 60 fps frame (a frame at another rate is rounded down to a step).
+- `history: false` stops recording; going back in time then throws.
 
 ## Playing a scene
 

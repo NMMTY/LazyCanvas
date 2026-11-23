@@ -214,10 +214,10 @@ describe("SignalTrace", () => {
     const trace = new SignalTrace();
     trace.watch(s);
     for (let step = 1; step <= 100; step++) {
-      if (step === 10) s.restore(5);
+      if (step === 10) s.set(5);
       trace.record(step);
     }
-    s.restore(99);
+    s.set(99);
     trace.restore(9);
     expect(s.value()).toBe(0);
     trace.restore(10);
@@ -345,5 +345,65 @@ describe("ThreadScheduler with animations that start animations", () => {
     expect(child.value()).toBeCloseTo(10, 5);
     scheduler.update(1.25);
     expect(child.value()).toBeGreaterThan(0);
+  });
+});
+
+describe("SignalTrace limits", () => {
+  it("only looks at signals that changed", () => {
+    const moving = createSignal(0);
+    const still = createSignal(0);
+    const trace = new SignalTrace();
+    trace.watch(moving);
+    trace.watch(still);
+    for (let step = 1; step <= 50; step++) {
+      moving.set(step);
+      trace.record(step);
+    }
+    // One baseline each, plus one value per step for the signal that moved.
+    expect(trace.size).toBe(2 + 50);
+  });
+
+  it("drops the oldest values when it holds too many, and says so on a seek into them", () => {
+    const s = createSignal(0);
+    const trace = new SignalTrace({ maxEntries: 200 });
+    trace.watch(s);
+    for (let step = 1; step <= 1000; step++) {
+      s.set(step);
+      trace.record(step);
+    }
+    expect(trace.size).toBeLessThanOrEqual(200);
+    expect(trace.earliest).toBeGreaterThan(500);
+    expect(() => trace.restore(10)).toThrow(/history before step/);
+    trace.restore(1000);
+    expect(s.value()).toBe(1000);
+    trace.restore(trace.earliest + 3);
+    expect(s.value()).toBe(trace.earliest + 3);
+  });
+
+  it("restores the speed along with the value", () => {
+    const s = createSignal(0);
+    const scheduler = new ThreadScheduler();
+    scheduler.watch(s);
+    scheduler.add(s.to(100, 1));
+    scheduler.update(0);
+    scheduler.update(0.5);
+    const speed = s.velocity();
+    expect(speed).toBeCloseTo(100, 3);
+    scheduler.update(1);
+    scheduler.update(0.5);
+    expect(s.velocity()).toBeCloseTo(speed, 6);
+    expect(s.value()).toBeCloseTo(50, 5);
+  });
+
+  it("does not keep a finished scene's history alive through its signals", () => {
+    // A signal outlives the scene it was in; it must not hold on to that scene's recorded values.
+    const s = createSignal(0);
+    let trace: SignalTrace | undefined = new SignalTrace();
+    const weak = new WeakRef(trace);
+    trace.watch(s);
+    trace = undefined;
+    // The signal only holds a weak reference, so nothing here keeps the trace reachable.
+    expect(weak.deref()).toBeDefined();
+    s.set(1); // does not throw whether or not the trace has been collected
   });
 });

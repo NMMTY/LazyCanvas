@@ -71,10 +71,11 @@ export class Scene {
    * every running animation per step) and a shorter one follows time more closely. A frame time is
    * rounded down to a step, so `1/60` shows each 60 fps frame exactly, while an export at another
    * rate would show some frames twice.
-   * @param {boolean | { maxSeconds?: number }} [opts.history] - Remember the values of animated
-   * signals, so `renderFrame` can be asked for an earlier time than the last one (a scrubber, a
-   * paused preview). On by default, keeping ten minutes; `false` turns it off, and going back in
-   * time then throws.
+   * @param {boolean | { maxSeconds?: number, maxEntries?: number }} [opts.history] - Remember the values of
+   * animated signals, so `renderFrame` can be asked for an earlier time than the last one (a scrubber, a
+   * paused preview). On by default, keeping ten minutes or a million recorded values, whichever is reached
+   * first: a scene with thousands of moving signals keeps seconds, a small one keeps all ten minutes.
+   * `false` turns it off, which also saves the time spent recording, and going back in time then throws.
    * @param {boolean | LayerCacheOptions} [opts.cache] - Keep the picture of layers between frames and
    * reuse it while nothing that shows in it has changed. For a scene that is drawn again and
    * again (a live preview); a scene drawn once only pays for it. See `LayerCache`.
@@ -88,7 +89,7 @@ export class Scene {
       adapter?: ICanvasAdapter;
       onFrameDrawn?: (time: number) => void;
       cache?: boolean | LayerCacheOptions;
-      history?: boolean | { maxSeconds?: number };
+      history?: boolean | { maxSeconds?: number; maxEntries?: number };
       timeStep?: number;
     } = {},
   ) {
