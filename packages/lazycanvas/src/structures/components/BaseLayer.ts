@@ -9,10 +9,17 @@ import {
   Centring,
   type ICanvasRenderingContext2D,
   type ILayoutProps,
-  type LayerType,
+  LayerType,
   type ScaleType,
 } from "../../types";
-import { LazyError, authoredProps, generateID, isColor, transform } from "../../utils";
+import {
+  LazyError,
+  authoredProps,
+  bumpTreeVersion,
+  generateID,
+  isColor,
+  transform,
+} from "../../utils";
 import {
   Gradient,
   Link,
@@ -225,6 +232,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
       layer.parent = this;
     }
     this.children.push(...layersArray);
+    bumpTreeVersion();
     return this;
   }
 
@@ -235,6 +243,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    */
   remove(id: string): this {
     this.children = this.children.filter((c) => c.id !== id);
+    bumpTreeVersion();
     return this;
   }
 
@@ -473,8 +482,9 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
     extra?: { text: string; textAlign: any; fontSize: number; multiline: boolean },
     legacyBox: TransformBox = box,
   ): void {
+    let own: Matrix | undefined;
     if (this.props.transform) {
-      transform(
+      own = transform(
         ctx,
         this.props.transform as Transform | TransformProps,
         { ...legacyBox, type: this.type },
@@ -482,11 +492,27 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
         box,
       );
     }
-    this.renderState = { matrix: currentMatrix(ctx), box: { ...box } };
+    // Only numbers are kept: asking the canvas where it is would be a call into the native
+    // library for every layer of every frame. The matrix is put together when it is asked for.
+    this.renderState = { box, own, childSpace: undefined };
+  }
+
+  /**
+   * Remembers where the context is, for the layers inside this one. A layer that draws its own
+   * children (a group) calls this once its translation and transform are in place.
+   *
+   * @internal
+   */
+  public recordChildSpace(ctx: ICanvasRenderingContext2D): void {
+    const raw = ctx.getTransform?.();
+    const state = this.renderState;
+    if (state) state.childSpace = raw ? Matrix.from(raw) : Matrix.identity();
   }
 
   /** Where the layer was drawn last. Set by {@link BaseLayer.applyTransform}. */
-  private renderState: { matrix: Matrix; box: TransformBox } | undefined;
+  private renderState:
+    | { box: TransformBox; own: Matrix | undefined; childSpace: Matrix | undefined }
+    | undefined;
 
   /**
    * Whether the layer has been drawn, so that its position is known.
@@ -498,7 +524,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
     return this.renderState !== undefined;
   }
 
-  private drawn(): { matrix: Matrix; box: TransformBox } {
+  private drawn(): { box: TransformBox; own: Matrix | undefined; childSpace: Matrix | undefined } {
     if (!this.renderState) {
       throw new LazyError(
         `Layer "${this.id}" has not been drawn yet, so its position is not known. Render a frame first.`,
@@ -513,7 +539,19 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @throws {LazyError} If the layer has not been drawn yet.
    */
   public worldMatrix(): Matrix {
-    return this.drawn().matrix;
+    const state = this.drawn();
+    // A group's own space is the space of its children: its position and transform are in it.
+    if (state.childSpace && this.isGroup()) return state.childSpace;
+
+    const parent = this.parent as BaseLayer<any> | null | undefined;
+    const space = parent?.renderState?.childSpace;
+    return space
+      ? space.multiply(state.own ?? Matrix.identity())
+      : (state.own ?? Matrix.identity());
+  }
+
+  private isGroup(): boolean {
+    return this.type === LayerType.Group;
   }
 
   /**
@@ -530,7 +568,8 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @throws {LazyError} If the layer has not been drawn yet.
    */
   public worldCorners(): [Vector2, Vector2, Vector2, Vector2] {
-    const { matrix, box } = this.drawn();
+    const { box } = this.drawn();
+    const matrix = this.worldMatrix();
     return [
       matrix.apply({ x: box.x, y: box.y }),
       matrix.apply({ x: box.x + box.width, y: box.y }),
@@ -558,7 +597,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @throws {LazyError} If the layer has not been drawn yet.
    */
   public localToWorld(point: { x: number; y: number }): Vector2 {
-    return this.drawn().matrix.apply(point);
+    return this.worldMatrix().apply(point);
   }
 
   /**
@@ -566,7 +605,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @throws {LazyError} If the layer has not been drawn yet, or its scale is `0`.
    */
   public worldToLocal(point: { x: number; y: number }): Vector2 {
-    return this.drawn().matrix.inverse().apply(point);
+    return this.worldMatrix().inverse().apply(point);
   }
 
   /**
@@ -575,7 +614,8 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @throws {LazyError} If the layer has not been drawn yet.
    */
   public contains(point: { x: number; y: number }): boolean {
-    const { matrix, box } = this.drawn();
+    const { box } = this.drawn();
+    const matrix = this.worldMatrix();
     if (!matrix.invertible) return false;
     const local = matrix.inverse().apply(point);
     return (
@@ -660,10 +700,4 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
       globalComposite: data.globalComposite || "source-over",
     };
   }
-}
-
-/** The matrix of a context, or the identity for a context that cannot say. */
-function currentMatrix(ctx: ICanvasRenderingContext2D): Matrix {
-  const raw = ctx.getTransform?.();
-  return raw ? Matrix.from(raw) : Matrix.identity();
 }

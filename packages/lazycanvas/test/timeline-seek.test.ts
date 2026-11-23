@@ -329,3 +329,21 @@ describe("matrix transform", () => {
     await expect(scene.renderFrame(0)).rejects.toThrow(/valid matrix/);
   });
 });
+
+describe("ThreadScheduler with animations that start animations", () => {
+  it("starts an animation added by a running one on the next step, with its first step intact", () => {
+    const scheduler = new ThreadScheduler();
+    const child = createSignal(0);
+    scheduler.add(
+      (function* () {
+        yield* waitFor(0.5);
+        scheduler.add(child.to(10, 1));
+      })(),
+    );
+    scheduler.update(0);
+    scheduler.update(1.5);
+    expect(child.value()).toBeCloseTo(10, 5);
+    scheduler.update(1.25);
+    expect(child.value()).toBeGreaterThan(0);
+  });
+});

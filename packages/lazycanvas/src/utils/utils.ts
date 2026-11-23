@@ -1,4 +1,5 @@
 import { isSignal, unwrap } from "../core";
+import { Matrix } from "../core/Matrix";
 import { Bezier, Group, Line, Path2D, Quadratic, Text } from "../structures/components";
 import { Gradient, Link, Pattern, Transform, type TransformProps } from "../structures/helpers";
 import type { LayersManager } from "../structures/managers";
@@ -287,27 +288,48 @@ export function transform(
     multiline: false,
   },
   box?: { x: number; y: number; width: number; height: number },
-) {
-  if (!input) return;
+): Matrix | undefined {
+  if (!input) return undefined;
+  // Layers carry an empty `{}` unless a transform was given, and most never get one.
+  if (isEmpty(input)) return undefined;
   const t = Transform.from(input);
 
+  // The whole transform is worked out as numbers and handed to the context in one call: asking a
+  // canvas to translate, rotate and scale one by one costs a call into the native library each.
+  const matrix = t.legacy ? legacyMatrix(t, layer, extra) : t.toMatrix(box ?? layer);
+
+  // `rotate: 0` and the like change nothing; spare the call into the canvas.
+  if (!matrix.equals(Matrix.identity(), 0)) ctx.transform(...matrix.toArray());
+  return matrix;
+}
+
+/** Whether a transform has no field at all. */
+function isEmpty(input: object): boolean {
+  for (const key in input) {
+    if ((input as Record<string, unknown>)[key] !== undefined) return false;
+  }
+  return true;
+}
+
+/** The matrix of a transform with no `origin` or `skew`: the rules from before they existed. */
+function legacyMatrix(
+  t: Transform,
+  layer: { width: number; height: number; x: number; y: number; type: LayerType },
+  extra: { text: string; textAlign: AnyTextAlign; fontSize: number; multiline: boolean },
+): Matrix {
   // Reads every number, and rejects an incomplete matrix before anything is drawn.
   const values = t.resolved();
-
-  if (!t.legacy) {
-    ctx.transform(...t.toMatrix(box ?? layer).toArray());
-    return;
-  }
+  let m = Matrix.identity();
 
   if (t.translate !== undefined) {
-    ctx.translate(values.translate.x, values.translate.y);
+    m = m.multiply(Matrix.translation(values.translate.x, values.translate.y));
   }
   if (values.rotate) {
-    const radians = (Math.PI / 180) * values.rotate;
     const rotateAround = (px: number, py: number) => {
-      ctx.translate(px, py);
-      ctx.rotate(radians);
-      ctx.translate(-px, -py);
+      m = m
+        .multiply(Matrix.translation(px, py))
+        .multiply(Matrix.rotation(values.rotate))
+        .multiply(Matrix.translation(-px, -py));
     };
 
     switch (layer.type) {
@@ -334,11 +356,12 @@ export function transform(
     }
   }
   if (t.scale !== undefined) {
-    ctx.scale(values.scale.x, values.scale.y);
+    m = m.multiply(Matrix.scaling(values.scale.x, values.scale.y));
   }
   if (values.matrix) {
-    ctx.transform(...values.matrix.toArray());
+    m = m.multiply(values.matrix);
   }
+  return m;
 }
 
 export function generateRandomName() {

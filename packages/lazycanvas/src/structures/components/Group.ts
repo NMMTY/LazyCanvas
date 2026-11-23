@@ -6,7 +6,14 @@ import {
   type ICanvasRenderingContext2D,
   LayerType,
 } from "../../types";
-import { LazyLog, authoredProps, generateID, getChildren, throwFirst } from "../../utils";
+import {
+  LazyLog,
+  authoredProps,
+  bumpTreeVersion,
+  generateID,
+  getChildren,
+  throwFirst,
+} from "../../utils";
 import type { LayersManager } from "../managers";
 import { drawLayerCached } from "../managers/LayerCache";
 import { BaseLayer, type IBaseLayer, type IBaseLayerProps } from "./BaseLayer";
@@ -95,6 +102,7 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
 
   set layers(value: Array<AnyLayer | Group>) {
     this.children = value;
+    bumpTreeVersion();
   }
 
   /**
@@ -155,6 +163,7 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
    */
   clear(): this {
     this.children = [];
+    bumpTreeVersion();
     return this;
   }
 
@@ -207,6 +216,9 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
           const y = typeof position.y === "number" ? position.y : 0;
           ctx.translate(x, y);
         }
+        (layer as { recordChildSpace?: (c: ICanvasRenderingContext2D) => void }).recordChildSpace?.(
+          ctx,
+        );
 
         for (const child of children) {
           try {
@@ -252,6 +264,7 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
         width: typeof size?.width === "number" ? size.width : 0,
         height: typeof size?.height === "number" ? size.height : 0,
       });
+      this.recordChildSpace(ctx);
 
       // One layer failing must not take its siblings down with it, nor leave the
       // context translated for whatever is drawn next: draw everything, put the

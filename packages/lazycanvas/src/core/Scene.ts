@@ -6,7 +6,7 @@ import {
   ModernRenderPipeline,
 } from "../structures/managers";
 import { type AnyExport, type AnyLayer, Export, type ICanvas, type ICanvasAdapter } from "../types";
-import { walkLayers } from "../utils";
+import { treeVersion, walkLayers } from "../utils";
 import type { Signal, ThreadGenerator } from "./Signal";
 import { ThreadScheduler } from "./ThreadScheduler";
 
@@ -32,6 +32,12 @@ export class Scene {
 
   /** Signals handed to {@link Scene.playAnimation}; they may not be used by any layer. */
   private playedSignals = new Set<Signal<any>>();
+
+  /** The signals of the layers, found by walking the tree. Walked again only when the tree changes. */
+  private signalList: Signal<any>[] = [];
+  private signalsOfVersion = -1;
+  private signalsOfLayers: unknown;
+  private signalsOfScheduler = -1;
 
   /** Animations added as functions: the only ones whose length can be measured. */
   private factories: Array<() => ThreadGenerator> = [];
@@ -60,6 +66,11 @@ export class Scene {
    * @param {(time: number) => void} [opts.onFrameDrawn] - Called after every frame that was drawn
    * completely, before the next queued frame starts. The canvas holds exactly that frame at this
    * point, so it is the place to copy it somewhere (e.g. from an off-screen canvas to a visible one).
+   * @param {number} [opts.timeStep] - Length of one simulation step in seconds, `1/240` by default.
+   * Animations are advanced in whole steps, so a longer step is cheaper (a frame costs one pass over
+   * every running animation per step) and a shorter one follows time more closely. A frame time is
+   * rounded down to a step, so `1/60` shows each 60 fps frame exactly, while an export at another
+   * rate would show some frames twice.
    * @param {boolean | { maxSeconds?: number }} [opts.history] - Remember the values of animated
    * signals, so `renderFrame` can be asked for an earlier time than the last one (a scrubber, a
    * paused preview). On by default, keeping ten minutes; `false` turns it off, and going back in
@@ -78,10 +89,11 @@ export class Scene {
       onFrameDrawn?: (time: number) => void;
       cache?: boolean | LayerCacheOptions;
       history?: boolean | { maxSeconds?: number };
+      timeStep?: number;
     } = {},
   ) {
     this.lazyCanvas = new LazyCanvas(ModernRenderPipeline, opts).create(width, height);
-    this.scheduler = new ThreadScheduler({ history: opts.history });
+    this.scheduler = new ThreadScheduler({ history: opts.history, step: opts.timeStep });
     this.onFrameDrawn = opts.onFrameDrawn;
   }
 
@@ -232,11 +244,25 @@ export class Scene {
 
   /** Tells the scheduler which signals to remember, so the timeline can go back. */
   private watchSignals(): void {
+    if (
+      this.signalsOfVersion === treeVersion() &&
+      this.signalsOfLayers === this.allLayers &&
+      this.signalsOfScheduler === this.scheduler.generation
+    ) {
+      return;
+    }
+
+    const found = new Set<Signal<any>>(this.playedSignals);
     for (const layer of walkLayers(this.allLayers)) {
       const signals = (layer as { listSignals?: () => Signal<any>[] }).listSignals?.();
-      if (signals) for (const signal of signals) this.scheduler.watch(signal);
+      if (signals) for (const signal of signals) found.add(signal);
     }
-    for (const signal of this.playedSignals) this.scheduler.watch(signal);
+    this.signalList = [...found];
+    for (const signal of this.signalList) this.scheduler.watch(signal);
+
+    this.signalsOfVersion = treeVersion();
+    this.signalsOfLayers = this.allLayers;
+    this.signalsOfScheduler = this.scheduler.generation;
   }
 
   private updateAllStates(time: number): void {
@@ -352,7 +378,6 @@ export class Scene {
    * @param {ThreadGenerator | (() => ThreadGenerator)} generatorOrFactory - A generator, or a function returning one.
    */
   public addAnimation(generatorOrFactory: ThreadGenerator | (() => ThreadGenerator)): void {
-    this.watchSignals();
     const gen = this.start(generatorOrFactory);
     this.scheduler.add(gen);
   }
@@ -368,7 +393,7 @@ export class Scene {
     generatorOrFactory: ThreadGenerator | (() => ThreadGenerator),
   ): void {
     this.playedSignals.add(signal);
-    this.watchSignals();
+    this.signalsOfVersion = -1;
     const gen = this.start(generatorOrFactory);
     signal.run(gen);
     this.scheduler.add(gen);
@@ -418,12 +443,8 @@ export class Scene {
     if (this.factories.length === 0) return 0;
 
     this.watchSignals();
-    const signals = new Set<Signal<any>>(this.playedSignals);
-    for (const layer of walkLayers(this.allLayers)) {
-      const listed = (layer as { listSignals?: () => Signal<any>[] }).listSignals?.();
-      if (listed) for (const signal of listed) signals.add(signal);
-    }
-    const saved = [...signals].map((signal) => [signal, signal.value()] as const);
+    const signals = this.signalList;
+    const saved = signals.map((signal) => [signal, signal.value()] as const);
 
     const sandbox = new ThreadScheduler({ step: this.scheduler.step, history: false });
     for (const factory of this.factories) sandbox.add(factory());

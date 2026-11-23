@@ -53,3 +53,18 @@ export function findLayer(roots: LayerNode | LayerNode[], id: string): LayerNode
   }
   return undefined;
 }
+
+let version = 0;
+
+/**
+ * Notes that some layer tree changed shape (a layer was added or removed), so that anything that
+ * cached a walk of the tree knows to do it again.
+ */
+export function bumpTreeVersion(): void {
+  version++;
+}
+
+/** A number that changes whenever {@link bumpTreeVersion} is called. */
+export function treeVersion(): number {
+  return version;
+}

@@ -34,7 +34,8 @@ export interface ThreadSchedulerOptions {
  */
 export class ThreadScheduler {
   private threads: Set<ThreadGenerator> = new Set();
-  private primed: WeakSet<ThreadGenerator> = new WeakSet();
+  /** Threads added but not yet run to their first `yield`. Usually empty. */
+  private unprimed: Set<ThreadGenerator> = new Set();
   private currentTime = 0;
 
   /** Step the signals currently show. */
@@ -44,6 +45,10 @@ export class ThreadScheduler {
 
   private readonly stepSize: number;
   private trace: SignalTrace | null;
+  private resets = 0;
+  private stepping = false;
+  /** Threads added by a running thread; they join after the step. */
+  private joining: ThreadGenerator[] = [];
 
   constructor(options: ThreadSchedulerOptions = {}) {
     this.stepSize = options.step ?? DEFAULT_TIME_STEP;
@@ -56,6 +61,11 @@ export class ThreadScheduler {
       const seconds = typeof history === "object" ? (history.maxSeconds ?? 600) : 600;
       this.trace = new SignalTrace(Math.ceil(seconds / this.stepSize));
     }
+  }
+
+  /** Changes every time the history is cleared, which is when watched signals must be handed over again. */
+  public get generation(): number {
+    return this.resets;
   }
 
   /** Length of one simulation step, in seconds. */
@@ -71,7 +81,7 @@ export class ThreadScheduler {
    * inconsistent state. Call {@link ThreadScheduler.clear} first.
    */
   public add(thread: ThreadGenerator): void {
-    if (this.cursor < this.furthest) {
+    if (!this.stepping && this.cursor < this.furthest) {
       if (this.threads.size > 0) {
         throw new LazyError(
           "Cannot add an animation after moving the timeline back while other animations are still " +
@@ -82,12 +92,18 @@ export class ThreadScheduler {
       this.furthest = this.cursor;
       this.trace?.truncate(this.cursor);
     }
+    if (this.stepping) {
+      this.joining.push(thread);
+      return;
+    }
     this.threads.add(thread);
+    this.unprimed.add(thread);
   }
 
   /** Remove a thread from the scheduler */
   public remove(thread: ThreadGenerator): void {
     this.threads.delete(thread);
+    this.unprimed.delete(thread);
   }
 
   /**
@@ -123,6 +139,8 @@ export class ThreadScheduler {
     if (this.cursor < this.furthest) {
       this.seekRecorded(this.furthest);
     }
+    // From here the signals show the live state; an animation may add another while it runs.
+    this.cursor = this.furthest;
 
     if (this.primeNew()) this.trace?.record(this.furthest);
 
@@ -137,6 +155,7 @@ export class ThreadScheduler {
   /** Clear all threads */
   public clear(): void {
     this.threads.clear();
+    this.unprimed.clear();
   }
 
   /** Get current time */
@@ -149,6 +168,7 @@ export class ThreadScheduler {
     this.currentTime = 0;
     this.cursor = 0;
     this.furthest = 0;
+    this.resets++;
     this.trace?.clear();
   }
 
@@ -169,27 +189,32 @@ export class ThreadScheduler {
 
   /** Runs every thread that has not started yet up to its first `yield`. */
   private primeNew(): boolean {
-    let any = false;
-    for (const thread of [...this.threads]) {
-      if (this.primed.has(thread)) continue;
-      this.primed.add(thread);
-      any = true;
+    if (this.unprimed.size === 0) return false;
+    const fresh = [...this.unprimed];
+    this.unprimed.clear();
+    for (const thread of fresh) {
       if (thread.next().done) this.threads.delete(thread);
     }
-    return any;
+    return true;
   }
 
   private runStep(): void {
-    for (const thread of [...this.threads]) {
-      if (!this.primed.has(thread)) {
-        // Added by another animation during this step.
-        this.primed.add(thread);
-        if (thread.next().done) {
-          this.threads.delete(thread);
-          continue;
-        }
+    // A thread may add another while it runs; that one is primed here, before it takes a step.
+    if (this.unprimed.size > 0) this.primeNew();
+
+    // Deleting the thread being visited is safe while iterating a Set.
+    this.stepping = true;
+    try {
+      for (const thread of this.threads) {
+        if (thread.next(this.stepSize).done) this.threads.delete(thread);
       }
-      if (thread.next(this.stepSize).done) this.threads.delete(thread);
+    } finally {
+      this.stepping = false;
+      for (const thread of this.joining) {
+        this.threads.add(thread);
+        this.unprimed.add(thread);
+      }
+      this.joining = [];
     }
   }
 }
