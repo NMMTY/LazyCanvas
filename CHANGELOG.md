@@ -106,6 +106,10 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   hands over to the next one at that very moment (a `loop` used to lose up to a step on every iteration and drift:
   18 units after ten iterations in a test), and a time given to `renderFrame` is no longer rounded down to a grid.
   Generators that do a bare `yield` keep working: they are resumed on a grid of 1/240 s, with the time that passed.
+  Measured against the stepped engine (median of 5 rounds): the engine alone for 1000 looping tweens went from 0.49 to
+  0.06 ms per frame at 60 fps and for 5000 from 3.5 to 0.34 ms; playing 20 s of 1000 signals from about 1.6 s to 81 ms;
+  running 60 s ahead in one go from 4.7 s to 0.17 s; the complex benchmark scene from 16.7 to 12.3 ms per frame
+  (−26%). The history of 1000 moving signals over a minute takes 22 MB.
 - When an animation is stopped (`clearAnimations()`, `remove()`, the losing side of an `any()`, the end of a
   `loopFor()`) the signals it was animating stay where they were. If two animations drive one signal, the one that
   started last takes over and the other ending does not undo it.
