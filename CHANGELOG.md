@@ -60,6 +60,12 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ### Changed
 
+- **`@napi-rs/canvas` 1.2.0 or newer** (`@nmmty/adapter-node`, `@nmmty/adapter-react`): with 1.0.0 every call
+  into the canvas leaked about a hundred bytes of native memory that was never given back, so a process that
+  kept rendering grew without end (about 30 KB per frame for a scene of sixty rectangles, 1.2 GB after ten minutes
+  of an animated scene, with a flat JavaScript heap). 1.2.0 holds steady (164 MB after the same ten minutes). Glyph
+  widths of the bundled fonts differ a little between the two versions (a 20 px line of Geist is 141 px wide
+  instead of 127), so text layouts can shift.
 - `spring(signal, target, config)` is now `signal.spring()`: it is exact instead of stepped, takes presets,
   and blends colours and points instead of jumping to the target. `precision` sets `restDelta` and
   `restSpeed`; without it a spring settles at 0.1% of its distance instead of an absolute `0.01`.

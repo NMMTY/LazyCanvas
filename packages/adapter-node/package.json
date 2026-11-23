@@ -44,7 +44,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^1.0.0"
+    "@napi-rs/canvas": "^1.2.0"
   },
   "peerDependencies": {
     "@nmmty/lazycanvas": "workspace:^"

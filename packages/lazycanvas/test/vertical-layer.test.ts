@@ -94,11 +94,14 @@ describe("Text measurement in vertical directions", () => {
 
 describe("Text rendering in vertical directions", () => {
   it("draws a tall narrow block instead of a wide one", async () => {
-    const wide = sceneWith(text({ direction: "ltr" }));
+    // Four words, so that the stack is clearly taller than its widest word whatever the glyph widths of
+    // the canvas library are (they differ a little between versions).
+    const words = "one two three four";
+    const wide = sceneWith(text({ text: words, direction: "ltr" }));
     await wide.renderFrame(0);
     const h = inkBounds(wide.getImageData(), 400, 300);
 
-    const tall = sceneWith(text({ direction: "ttb", vertical: { mode: "words" } }));
+    const tall = sceneWith(text({ text: words, direction: "ttb", vertical: { mode: "words" } }));
     await tall.renderFrame(0);
     const v = inkBounds(tall.getImageData(), 400, 300);
 
