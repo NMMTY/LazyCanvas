@@ -180,6 +180,7 @@ export class Polygon extends BaseLayer<IPolygonProps> {
 
     ctx.save();
     try {
+      this.applyTransform(ctx, { x, y, width: w, height: h });
       ctx.beginPath();
 
       // Calculate polygon vertices

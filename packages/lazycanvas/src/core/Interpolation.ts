@@ -214,6 +214,18 @@ export function getInterpolator<T>(from: T, to: T): Interpolator<T> {
     }
   }
 
+  // Objects that know how to blend themselves: Vector2, Matrix, Transform.
+  if (
+    typeof from === "object" &&
+    from !== null &&
+    typeof to === "object" &&
+    to !== null &&
+    typeof (from as { lerp?: unknown }).lerp === "function"
+  ) {
+    return ((a: { lerp(to: unknown, t: number): unknown }, b: unknown, progress: number) =>
+      a.lerp(b, progress)) as unknown as Interpolator<T>;
+  }
+
   // Vector/Point
   if (
     typeof from === "object" &&

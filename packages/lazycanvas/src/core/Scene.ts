@@ -317,6 +317,36 @@ export class Scene {
   }
 
   /**
+   * The layers under a point of the canvas, the top-most first.
+   *
+   * A layer counts if the point is inside its box after every transform (a rotated layer is hit
+   * where it is). Layers that are hidden or have not been drawn yet are skipped. Positions are
+   * those of the last frame that was drawn.
+   *
+   * @param {{ x: number, y: number }} point - A point of the canvas, in pixels.
+   * @returns {Array<AnyLayer | Group>} The layers at the point.
+   */
+  public layersAt(point: { x: number; y: number }): Array<AnyLayer | Group> {
+    const hits: Array<AnyLayer | Group> = [];
+    for (const layer of walkLayers(this.allLayers)) {
+      const candidate = layer as AnyLayer | Group;
+      if (!candidate.visible || !candidate.isDrawn()) continue;
+      if (candidate.contains(point)) hits.push(candidate);
+    }
+    return hits.reverse();
+  }
+
+  /**
+   * The top-most layer under a point of the canvas, if any.
+   *
+   * @param {{ x: number, y: number }} point - A point of the canvas, in pixels.
+   * @returns {AnyLayer | Group | undefined} The layer, if the point is on one.
+   */
+  public layerAt(point: { x: number; y: number }): AnyLayer | Group | undefined {
+    return this.layersAt(point)[0];
+  }
+
+  /**
    * Starts an animation on the scene timeline.
    *
    * @param {ThreadGenerator | (() => ThreadGenerator)} generatorOrFactory - A generator, or a function returning one.

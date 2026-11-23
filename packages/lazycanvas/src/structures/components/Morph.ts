@@ -17,7 +17,6 @@ import {
   isColor,
   parseFillStyle,
   parser,
-  transform,
 } from "../../utils";
 import { Link } from "../helpers";
 import type { LayersManager } from "../managers";
@@ -202,9 +201,7 @@ export class Morph extends BaseLayer<IMorphProps> {
 
     ctx.save();
     try {
-      if (this.props.transform) {
-        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
-      }
+      this.applyTransform(ctx, { x, y, width: w, height: h });
       ctx.beginPath();
       if (Object.keys(rad).length > 0) {
         ctx.moveTo(x + w / 2, y);

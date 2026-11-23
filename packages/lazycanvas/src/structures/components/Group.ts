@@ -244,6 +244,15 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
         ctx.translate(x, y);
       }
 
+      // The transform of a group moves everything in it. Its box is its size, when it has one.
+      const size = (this.props as { size?: { width?: unknown; height?: unknown } }).size;
+      this.applyTransform(ctx, {
+        x: 0,
+        y: 0,
+        width: typeof size?.width === "number" ? size.width : 0,
+        height: typeof size?.height === "number" ? size.height : 0,
+      });
+
       // One layer failing must not take its siblings down with it, nor leave the
       // context translated for whatever is drawn next: draw everything, put the
       // state back, and only then report.

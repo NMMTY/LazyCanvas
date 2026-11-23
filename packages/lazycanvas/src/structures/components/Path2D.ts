@@ -15,7 +15,6 @@ import {
   isColor,
   parseFillStyle,
   resolvePath2D,
-  transform,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -336,9 +335,8 @@ export class Path2D extends BaseLayer<IPath2DProps> {
           type: this.type,
         });
 
-      if (this.props.transform) {
-        transform(ctx, this.props.transform, { width: 0, height: 0, x: 0, y: 0, type: this.type });
-      }
+      // A path has no known box, so an `origin` is measured from the point (0, 0).
+      this.applyTransform(ctx, { x: 0, y: 0, width: 0, height: 0 });
 
       DrawUtils.opacity(ctx, this.props.opacity);
 

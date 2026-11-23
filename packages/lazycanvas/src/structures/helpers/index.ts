@@ -5,3 +5,4 @@ export * from "./Pattern";
 export * from "./serialize";
 export * from "./readers/JSONReader";
 export * from "./readers/YAMLReader";
+export * from "./Transform";

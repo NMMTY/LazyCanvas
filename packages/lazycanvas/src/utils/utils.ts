@@ -1,6 +1,6 @@
 import { isSignal, unwrap } from "../core";
 import { Bezier, Group, Line, Path2D, Quadratic, Text } from "../structures/components";
-import { Gradient, Link, Pattern } from "../structures/helpers";
+import { Gradient, Link, Pattern, Transform, type TransformProps } from "../structures/helpers";
 import type { LayersManager } from "../structures/managers";
 import {
   type AnyCentring,
@@ -17,7 +17,6 @@ import {
   type ScaleType,
   type SubStringColor,
   TextAlign,
-  type Transform,
 } from "../types";
 import { LazyError, defaultArg } from "./LazyUtil";
 
@@ -262,9 +261,18 @@ export function parseFillStyle(
   return "#000000";
 }
 
+/**
+ * Applies a layer's transform to the context.
+ *
+ * With an `origin` or a `skew` the transform is one matrix around that pivot. Without them it
+ * works as it always has: translate, rotate around the centre of the layer (text has its own
+ * rules), scale from the canvas origin, then the matrix.
+ *
+ * `layer` is the box the old rules use; `box` is where `origin` is measured, and defaults to `layer`.
+ */
 export function transform(
   ctx: ICanvasRenderingContext2D,
-  transform: Transform,
+  input: Transform | TransformProps,
   layer: { width: number; height: number; x: number; y: number; type: LayerType } = {
     width: 0,
     height: 0,
@@ -278,65 +286,58 @@ export function transform(
     fontSize: 0,
     multiline: false,
   },
+  box?: { x: number; y: number; width: number; height: number },
 ) {
-  if (transform) {
-    if (transform.translate) {
-      ctx.translate(transform.translate.x, transform.translate.y);
+  if (!input) return;
+  const t = Transform.from(input);
+
+  // Reads every number, and rejects an incomplete matrix before anything is drawn.
+  const values = t.resolved();
+
+  if (!t.legacy) {
+    ctx.transform(...t.toMatrix(box ?? layer).toArray());
+    return;
+  }
+
+  if (t.translate !== undefined) {
+    ctx.translate(values.translate.x, values.translate.y);
+  }
+  if (values.rotate) {
+    const radians = (Math.PI / 180) * values.rotate;
+    const rotateAround = (px: number, py: number) => {
+      ctx.translate(px, py);
+      ctx.rotate(radians);
+      ctx.translate(-px, -py);
+    };
+
+    switch (layer.type) {
+      case LayerType.Image:
+      case LayerType.Morph:
+      case LayerType.BezierCurve:
+      case LayerType.QuadraticCurve:
+      case LayerType.Line:
+      case LayerType.Polygon:
+      case LayerType.Group:
+        rotateAround(layer.x + layer.width / 2, layer.y + layer.height / 2);
+        break;
+      case LayerType.Text:
+        if (extra.multiline) {
+          rotateAround(layer.x + layer.width / 2, layer.y + layer.height / 2);
+        } else if (extra.textAlign === TextAlign.Center) {
+          rotateAround(layer.x, layer.y);
+        } else if (extra.textAlign === TextAlign.Left || extra.textAlign === TextAlign.Start) {
+          rotateAround(layer.x + (extra.fontSize * extra.text.length) / 2, layer.y);
+        } else if (extra.textAlign === TextAlign.Right || extra.textAlign === TextAlign.End) {
+          rotateAround(layer.x - (extra.fontSize * extra.text.length) / 2, layer.y);
+        }
+        break;
     }
-    if (transform.rotate) {
-      switch (layer.type) {
-        case LayerType.Image:
-        case LayerType.Morph:
-        case LayerType.BezierCurve:
-        case LayerType.QuadraticCurve:
-        case LayerType.Line:
-        case LayerType.Polygon:
-          ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
-          ctx.rotate((Math.PI / 180) * transform.rotate);
-          ctx.translate(-(layer.x + layer.width / 2), -(layer.y + layer.height / 2));
-          break;
-        case LayerType.Text:
-          if (extra.multiline) {
-            ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
-            ctx.rotate((Math.PI / 180) * transform.rotate);
-            ctx.translate(-(layer.x + layer.width / 2), -(layer.y + layer.height / 2));
-          } else {
-            if (extra.textAlign === TextAlign.Center) {
-              ctx.translate(layer.x, layer.y);
-              ctx.rotate((Math.PI / 180) * transform.rotate);
-              ctx.translate(-layer.x, -layer.y);
-            } else if (extra.textAlign === TextAlign.Left || extra.textAlign === TextAlign.Start) {
-              ctx.translate(layer.x + (extra.fontSize * extra.text.length) / 2, layer.y);
-              ctx.rotate((Math.PI / 180) * transform.rotate);
-              ctx.translate(-(layer.x + (extra.fontSize * extra.text.length) / 2), -layer.y);
-            } else if (extra.textAlign === TextAlign.Right || extra.textAlign === TextAlign.End) {
-              ctx.translate(layer.x - (extra.fontSize * extra.text.length) / 2, layer.y);
-              ctx.rotate((Math.PI / 180) * transform.rotate);
-              ctx.translate(-(layer.x - (extra.fontSize * extra.text.length) / 2), -layer.y);
-            }
-          }
-          break;
-      }
-    }
-    if (transform.scale) {
-      ctx.scale(transform.scale.x, transform.scale.y);
-    }
-    if (transform.matrix) {
-      // A component may legitimately be 0 (no skew, no translation), so check for
-      // numbers rather than for truthiness.
-      const { a, b, c, d, e, f } = transform.matrix;
-      if (
-        typeof a !== "number" ||
-        typeof b !== "number" ||
-        typeof c !== "number" ||
-        typeof d !== "number" ||
-        typeof e !== "number" ||
-        typeof f !== "number" ||
-        ![a, b, c, d, e, f].every(Number.isFinite)
-      )
-        throw new LazyError("The matrix transformation must be a valid matrix");
-      ctx.transform(a, b, c, d, e, f);
-    }
+  }
+  if (t.scale !== undefined) {
+    ctx.scale(values.scale.x, values.scale.y);
+  }
+  if (values.matrix) {
+    ctx.transform(...values.matrix.toArray());
   }
 }
 
@@ -625,19 +626,18 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
         }
 
         if ("transform" in layer.props && layer.props.transform) {
-          if (layer.props.transform.translate) {
-            layer.props.transform.translate.x = resize(
-              layer.props.transform.translate.x,
-              ratio,
-            ) as number;
-            layer.props.transform.translate.y = resize(
-              layer.props.transform.translate.y,
-              ratio,
-            ) as number;
+          const t = layer.props.transform as {
+            translate?: { x: number; y: number };
+            scale?: number | { x: number; y: number };
+          };
+          // Signals and a single-number scale are left alone: there is no `{ x, y }` to resize.
+          if (t.translate && typeof t.translate === "object" && "x" in t.translate) {
+            t.translate.x = resize(t.translate.x, ratio) as number;
+            t.translate.y = resize(t.translate.y, ratio) as number;
           }
-          if (layer.props.transform.scale) {
-            layer.props.transform.scale.x = resize(layer.props.transform.scale.x, ratio) as number;
-            layer.props.transform.scale.y = resize(layer.props.transform.scale.y, ratio) as number;
+          if (t.scale && typeof t.scale === "object" && "x" in t.scale) {
+            t.scale.x = resize(t.scale.x, ratio) as number;
+            t.scale.y = resize(t.scale.y, ratio) as number;
           }
         }
       } else if (layer instanceof Group) {

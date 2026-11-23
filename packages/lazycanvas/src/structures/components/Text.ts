@@ -34,7 +34,6 @@ import {
   parseFillStyle,
   parseToNormal,
   parser,
-  transform,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -531,19 +530,13 @@ export class Text extends BaseLayer<ITextProps> {
 
     ctx.save();
     try {
-      if (this.props.transform) {
-        transform(
-          ctx,
-          this.props.transform,
-          { width: w, height: h, x, y, type: this.type },
-          {
-            text: unwrap(this.props.text),
-            textAlign: this.props.align,
-            fontSize: this.props.font.size,
-            multiline: this.props?.multiline?.enabled || false,
-          },
-        );
-      }
+      const box = { x, y, width: w, height: h };
+      const extra = {
+        text: unwrap(this.props.text),
+        textAlign: this.props.align,
+        fontSize: this.props.font.size,
+        multiline: this.props?.multiline?.enabled || false,
+      };
       ctx.beginPath();
       DrawUtils.drawShadow(ctx, this.props.shadow);
       DrawUtils.opacity(ctx, this.props.opacity);
@@ -578,6 +571,12 @@ export class Text extends BaseLayer<ITextProps> {
         const origin = useLayoutAlignment
           ? { x, y }
           : this.anchorBlock(x, y, layout.width, layout.height);
+        this.applyTransform(
+          ctx,
+          { x: origin.x, y: origin.y, width: layout.width, height: layout.height },
+          extra,
+          box,
+        );
 
         for (const unit of layout.units) {
           this.drawText(
@@ -593,6 +592,7 @@ export class Text extends BaseLayer<ITextProps> {
           );
         }
       } else if (this.props?.multiline?.enabled) {
+        this.applyTransform(ctx, box, extra);
         const words = unwrap(this.props.text).split(" ");
 
         let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
@@ -627,12 +627,54 @@ export class Text extends BaseLayer<ITextProps> {
         }
       } else {
         ctx.font = cssFont(this.props.font);
+        this.applyTransform(ctx, this.lineBox(ctx, x, y, w, h), extra, box);
         this.drawText(this.props, ctx, fillStyle, unwrap(this.props.text), x, y, w, 0);
       }
       ctx.closePath();
     } finally {
       ctx.restore();
     }
+  }
+
+  /**
+   * The box a single line of text takes up, for the pivot of `transform.origin`.
+   *
+   * The line is as wide as the text measures and as tall as the font; where the box sits follows
+   * `align` and `baseline`, which decide how the text hangs from `(x, y)`. A transform without an
+   * `origin` does not use this box.
+   */
+  private lineBox(
+    ctx: ICanvasRenderingContext2D,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ): { x: number; y: number; width: number; height: number } {
+    const transform = this.props.transform as { origin?: unknown; skew?: unknown } | undefined;
+    // Measuring costs a little; only a transform with a pivot needs it.
+    if (!transform || (transform.origin === undefined && transform.skew === undefined)) {
+      return { x, y, width: w, height: h };
+    }
+
+    const metrics = ctx.measureText(unwrap(this.props.text)) as TextMetrics;
+    const size = this.props.font.size;
+    const ascent = metrics.fontBoundingBoxAscent ?? size * 0.8;
+    const descent = metrics.fontBoundingBoxDescent ?? size * 0.2;
+    const width = metrics.width;
+    const height = ascent + descent;
+
+    const align = String(ctx.textAlign);
+    const left =
+      align === "center" ? x - width / 2 : align === "right" || align === "end" ? x - width : x;
+
+    const baseline = String(ctx.textBaseline);
+    let top = y - ascent;
+    if (baseline === "top") top = y;
+    else if (baseline === "hanging") top = y - ascent * 0.2;
+    else if (baseline === "middle") top = y - height / 2;
+    else if (baseline === "bottom" || baseline === "ideographic") top = y - height;
+
+    return { x: left, y: top, width, height };
   }
 
   /**

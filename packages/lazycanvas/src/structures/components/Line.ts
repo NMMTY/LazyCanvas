@@ -15,7 +15,6 @@ import {
   isColor,
   parseFillStyle,
   parser,
-  transform,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -211,9 +210,12 @@ export class Line extends BaseLayer<ILineProps> {
 
     ctx.save();
     try {
-      if (this.props.transform) {
-        transform(ctx, this.props.transform, { x: xs, y: ys, width, height, type: this.type });
-      }
+      this.applyTransform(
+        ctx,
+        { x: Math.min(xs, xe), y: Math.min(ys, ye), width, height },
+        undefined,
+        { x: xs, y: ys, width, height },
+      );
       DrawUtils.drawShadow(ctx, this.props.shadow);
       DrawUtils.opacity(ctx, this.props.opacity);
       DrawUtils.filters(ctx, this.props.filter);

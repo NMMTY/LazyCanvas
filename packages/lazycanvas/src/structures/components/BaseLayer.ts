@@ -1,17 +1,27 @@
+import { Matrix } from "../../core/Matrix";
 import { Signal } from "../../core/Signal";
+import type { Vector2 } from "../../core/Vector2";
 import {
   type AnyCentring,
   type AnyFilter,
   type AnyGlobalCompositeOperation,
   type AnyLayer,
   Centring,
+  type ICanvasRenderingContext2D,
   type ILayoutProps,
   type LayerType,
   type ScaleType,
-  type Transform,
 } from "../../types";
-import { LazyError, authoredProps, generateID, isColor } from "../../utils";
-import { Gradient, Link, Pattern } from "../helpers";
+import { LazyError, authoredProps, generateID, isColor, transform } from "../../utils";
+import {
+  Gradient,
+  Link,
+  Pattern,
+  Transform,
+  type TransformBox,
+  type TransformOrigin,
+  type TransformProps,
+} from "../helpers";
 import type { Group } from "./Group";
 
 /**
@@ -140,7 +150,7 @@ export interface IBaseLayerProps {
   /**
    * The transformation properties of the layer.
    */
-  transform?: Transform;
+  transform?: Transform | TransformProps | Signal<Transform>;
 
   /**
    * The global composite operation applied to the layer.
@@ -197,6 +207,9 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
     this.props = props;
     this.parent = null;
     this.children = [];
+    // Signals are taken out of the props below, which edits the object in place. A transform that
+    // other layers share must keep its signals for them.
+    if (props.transform instanceof Transform) props.transform = props.transform.clone();
     this.extractSignals(this.props, "");
   }
 
@@ -372,7 +385,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @returns {this} The current instance for chaining.
    */
   setMatrix(matrix: DOMMatrix2DInit): this {
-    this.props.transform = { ...this.props.transform, matrix };
+    this.props.transform = this.transformObject().with({ matrix });
     return this;
   }
 
@@ -383,7 +396,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @returns {this} The current instance for chaining.
    */
   setScale(x: number, y: number): this {
-    this.props.transform = { ...this.props.transform, scale: { x, y } };
+    this.props.transform = this.transformObject().with({ scale: { x, y } });
     return this;
   }
 
@@ -393,7 +406,7 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @returns {this} The current instance for chaining.
    */
   setRotate(rotate: number): this {
-    this.props.transform = { ...this.props.transform, rotate };
+    this.props.transform = this.transformObject().with({ rotate });
     return this;
   }
 
@@ -404,8 +417,173 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @returns {this} The current instance for chaining.
    */
   setTranslate(x: number, y: number): this {
-    this.props.transform = { ...this.props.transform, translate: { x, y } };
+    this.props.transform = this.transformObject().with({ translate: { x, y } });
     return this;
+  }
+
+  /**
+   * Sets the skew of the layer: a shear along each axis.
+   * @param {number} [x] - The shear along x in degrees.
+   * @param {number} [y] - The shear along y in degrees.
+   * @returns {this} The current instance for chaining.
+   */
+  setSkew(x: number, y = 0): this {
+    this.props.transform = this.transformObject().with({ skew: { x, y } });
+    return this;
+  }
+
+  /**
+   * Sets the point the layer rotates, scales and skews around.
+   * @param {TransformOrigin} [origin] - A keyword such as `"center"`, or `{ x, y }` in pixels or percent.
+   * @returns {this} The current instance for chaining.
+   */
+  setOrigin(origin: TransformOrigin): this {
+    this.props.transform = this.transformObject().with({ origin });
+    return this;
+  }
+
+  /**
+   * Replaces the whole transform of the layer.
+   * @param {Transform | TransformProps} [value] - The new transform.
+   * @returns {this} The current instance for chaining.
+   */
+  setTransform(value: Transform | TransformProps): this {
+    this.props.transform = value;
+    return this;
+  }
+
+  private transformObject(): Transform {
+    return Transform.from(this.props.transform as Transform | TransformProps | undefined);
+  }
+
+  /**
+   * Applies the layer's transform to `ctx` and remembers where the layer is, so that
+   * {@link BaseLayer.worldMatrix} and the other position methods can answer later.
+   *
+   * Every layer calls this from `draw`, after `ctx.save()` and before drawing anything.
+   *
+   * @param {ICanvasRenderingContext2D} [ctx] - The context being drawn to.
+   * @param {TransformBox} [box] - The box the layer is drawn in, in its own coordinates.
+   * @param {object} [extra] - Text details used by the rotation of a text layer that has no `origin`.
+   * @param {TransformBox} [legacyBox] - The box the pre-`origin` rotation rules use, when it is not `box`.
+   */
+  protected applyTransform(
+    ctx: ICanvasRenderingContext2D,
+    box: TransformBox,
+    extra?: { text: string; textAlign: any; fontSize: number; multiline: boolean },
+    legacyBox: TransformBox = box,
+  ): void {
+    if (this.props.transform) {
+      transform(
+        ctx,
+        this.props.transform as Transform | TransformProps,
+        { ...legacyBox, type: this.type },
+        extra,
+        box,
+      );
+    }
+    this.renderState = { matrix: currentMatrix(ctx), box: { ...box } };
+  }
+
+  /** Where the layer was drawn last. Set by {@link BaseLayer.applyTransform}. */
+  private renderState: { matrix: Matrix; box: TransformBox } | undefined;
+
+  /**
+   * Whether the layer has been drawn, so that its position is known.
+   *
+   * With a layer cache, a layer that comes out of the cache is not drawn again and keeps what it
+   * had from the last time it was.
+   */
+  public isDrawn(): boolean {
+    return this.renderState !== undefined;
+  }
+
+  private drawn(): { matrix: Matrix; box: TransformBox } {
+    if (!this.renderState) {
+      throw new LazyError(
+        `Layer "${this.id}" has not been drawn yet, so its position is not known. Render a frame first.`,
+      );
+    }
+    return this.renderState;
+  }
+
+  /**
+   * The matrix from the layer's own coordinates to the canvas, as it was when the layer was
+   * last drawn: the position of every parent, the layer's own transform, everything.
+   * @throws {LazyError} If the layer has not been drawn yet.
+   */
+  public worldMatrix(): Matrix {
+    return this.drawn().matrix;
+  }
+
+  /**
+   * The box the layer was drawn in, in its own coordinates (before its transform).
+   * @throws {LazyError} If the layer has not been drawn yet.
+   */
+  public bounds(): TransformBox {
+    return { ...this.drawn().box };
+  }
+
+  /**
+   * The four corners of the layer on the canvas, clockwise from the top-left, after every
+   * transform.
+   * @throws {LazyError} If the layer has not been drawn yet.
+   */
+  public worldCorners(): [Vector2, Vector2, Vector2, Vector2] {
+    const { matrix, box } = this.drawn();
+    return [
+      matrix.apply({ x: box.x, y: box.y }),
+      matrix.apply({ x: box.x + box.width, y: box.y }),
+      matrix.apply({ x: box.x + box.width, y: box.y + box.height }),
+      matrix.apply({ x: box.x, y: box.y + box.height }),
+    ];
+  }
+
+  /**
+   * The smallest upright rectangle on the canvas that holds the layer.
+   * @throws {LazyError} If the layer has not been drawn yet.
+   */
+  public worldBounds(): TransformBox {
+    const corners = this.worldCorners();
+    const xs = corners.map((corner) => corner.x);
+    const ys = corners.map((corner) => corner.y);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
+  }
+
+  /**
+   * Where a point of the layer is on the canvas. `{ x: 0, y: 0 }` is the origin of the layer's
+   * own coordinates, not its top-left corner: use `bounds()` for that.
+   * @throws {LazyError} If the layer has not been drawn yet.
+   */
+  public localToWorld(point: { x: number; y: number }): Vector2 {
+    return this.drawn().matrix.apply(point);
+  }
+
+  /**
+   * Which point of the layer is at a point of the canvas.
+   * @throws {LazyError} If the layer has not been drawn yet, or its scale is `0`.
+   */
+  public worldToLocal(point: { x: number; y: number }): Vector2 {
+    return this.drawn().matrix.inverse().apply(point);
+  }
+
+  /**
+   * Whether a point of the canvas is on the layer: inside its box after every transform
+   * (so a rotated layer is hit where it is, not where its unrotated box was).
+   * @throws {LazyError} If the layer has not been drawn yet.
+   */
+  public contains(point: { x: number; y: number }): boolean {
+    const { matrix, box } = this.drawn();
+    if (!matrix.invertible) return false;
+    const local = matrix.inverse().apply(point);
+    return (
+      local.x >= box.x &&
+      local.x <= box.x + box.width &&
+      local.y >= box.y &&
+      local.y <= box.y + box.height
+    );
   }
 
   /**
@@ -482,4 +660,10 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
       globalComposite: data.globalComposite || "source-over",
     };
   }
+}
+
+/** The matrix of a context, or the identity for a context that cannot say. */
+function currentMatrix(ctx: ICanvasRenderingContext2D): Matrix {
+  const raw = ctx.getTransform?.();
+  return raw ? Matrix.from(raw) : Matrix.identity();
 }

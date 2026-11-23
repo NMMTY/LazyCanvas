@@ -118,6 +118,27 @@ tl.duration;                       // seconds
 
 Positions that depend on an end need to know how long the previous animation is. `to`, `spring`, `keyframes`, `waitFor`, `all`, `chain`, `delay` and nested timelines know it (`durationOf(animation)`); a generator you wrote yourself does not, and `add` says so. Use an absolute position there, or `after(generator)`, which starts when the previous animation really ends. A spring counts as the time it needs to settle from where the signal is when the spring is created.
 
+## Stagger
+
+`stagger` runs animations side by side, each starting a little after the one before:
+
+```ts
+yield* stagger(0.08, bars.map((height) => height.to(200, 0.5)));
+
+// or from a list of things and a function that makes the animation for each
+yield* stagger({ each: 0.05, from: "center" }, dots, (opacity) => opacity.to(1, 0.3));
+```
+
+| Option | Does |
+| --- | --- |
+| `each` | Seconds between one start and the next. |
+| `total` | Seconds from the first start to the last, instead of `each`. |
+| `from` | `"start"` (default), `"end"`, `"center"`, `"edges"`, `"random"`, or the index to start from. |
+| `ease` | Reshapes the spacing: `Easing.easeIn` bunches the first starts together. |
+| `seed` | For `from: "random"`: the same seed gives the same order. |
+
+`staggerDelays(count, options)` returns the delays if you want them yourself. A stagger knows its length, so it can go in a `timeline()`.
+
 ## Playing, pausing and reversing
 
 A scene can show **any** time in any order, so pause, reverse, speed and loops are only a matter of which time you ask for. `Playhead` does that arithmetic:
@@ -153,7 +174,7 @@ Animations are generators, so you compose them with `yield*`:
 | `loopFor(() => a, seconds)` | Repeats until the time is up. |
 | `any(a, b, …)` | Runs in parallel until one finishes. |
 | `sequence`, `yoyo` | Value lists and ping-pong. |
-| `signal.spring()`, `signal.keyframes()`, `timeline()` | Physics, keyframes and a timeline with positions: see below. |
+| `signal.spring()`, `signal.keyframes()`, `timeline()`, `stagger()` | Physics, keyframes, a timeline with positions and staggered starts: see below. |
 
 ```ts
 scene.addAnimation(function* () {

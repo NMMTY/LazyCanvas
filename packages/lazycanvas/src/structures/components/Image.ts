@@ -16,7 +16,6 @@ import {
   isImageUrlValid,
   loadImageFallback,
   parser,
-  transform,
 } from "../../utils";
 import { Link } from "../helpers";
 import type { LayersManager } from "../managers";
@@ -210,9 +209,7 @@ export class Image extends BaseLayer<IImageProps> {
 
     ctx.save();
     try {
-      if (this.props.transform) {
-        transform(ctx, this.props.transform, { width: w, height: h, x, y, type: this.type });
-      }
+      this.applyTransform(ctx, { x, y, width: w, height: h });
       DrawUtils.drawShadow(ctx, this.props.shadow);
       DrawUtils.opacity(ctx, this.props.opacity);
       DrawUtils.filters(ctx, this.props.filter);

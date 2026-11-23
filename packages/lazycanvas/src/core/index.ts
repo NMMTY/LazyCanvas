@@ -9,3 +9,6 @@ export * from "./Keyframes";
 export * from "./EasingFunctions";
 export * from "./Duration";
 export * from "./Playhead";
+export * from "./Vector2";
+export * from "./Matrix";
+export * from "./Stagger";

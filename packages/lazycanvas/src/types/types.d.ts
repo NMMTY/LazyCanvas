@@ -190,19 +190,6 @@ export type PointNumber = {
 
 export type Extensions = "png" | "jpeg" | "jpg" | "webp" | "yaml" | "json";
 
-export interface Transform {
-  rotate?: number;
-  scale?: {
-    x: number;
-    y: number;
-  };
-  translate?: {
-    x: number;
-    y: number;
-  };
-  matrix?: DOMMatrix2DInit;
-}
-
 export type RadiusCorner = "leftTop" | "leftBottom" | "rightTop" | "rightBottom" | "all";
 
 export type SubStringColor = {

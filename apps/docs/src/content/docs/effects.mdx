@@ -14,9 +14,89 @@ Every layer accepts the same set of visual effects.
 | `opacity` | `opacity: 0.4` (a number, or a signal) |
 | `shadow` | `shadow: { color: "#00000066", blur: 16, offsetX: 4, offsetY: 8 }` |
 | `filter` | `filter: Filters.blur(8)` — any CSS filter string works too |
-| `transform` | `transform: { rotate: 20, scale: { x: 1.2, y: 1.2 }, translate: { x: 10, y: 0 } }` — `rotate` is in degrees |
+| `transform` | `transform: { rotate: 20, scale: 1.2, translate: { x: 10, y: 0 } }` — `rotate` is in degrees. See [Transforms](#transforms) |
 | `globalComposite` | `globalComposite: "multiply"` — any canvas blend mode |
 | `visible`, `zIndex` | Set through the second constructor argument, or as props in JSX / React |
+
+## Transforms
+
+`transform` takes a plain object, or a `Transform`, which adds methods and lets you animate the whole thing:
+
+```ts
+import { Transform } from "@nmmty/lazycanvas";
+
+new Morph({
+  color: "#3b82f6",
+  size: { width: 120, height: 80 },
+  transform: new Transform({
+    translate: { x: 20, y: 0 },
+    rotate: 15,                 // degrees, clockwise
+    scale: 1.2,                 // one number, or { x, y }
+    skew: { x: 10, y: 0 },      // degrees
+    origin: "center",           // the point they turn around
+  }),
+});
+```
+
+**`origin`** is where `rotate`, `scale` and `skew` pivot, measured in the layer's box: `"center"`, `"top-left"`, `"bottom-right"` and the other keywords, or `{ x: 10, y: "50%" }` in pixels or percent.
+
+> Without an `origin` (or `skew`) a transform behaves as it always did: rotation around the centre of the layer, scale from the **corner of the canvas**. Set `origin` to pivot all of it around one point; `"center"` is what most people expect from `scale`.
+
+Order of operations: `translate`, then the pivot, then `rotate`, `skew`, `scale`, then `matrix` in the layer's own coordinates. A `matrix` needs all of `a`, `b`, `c`, `d`, `e`, `f`.
+
+Any number can be a signal, and the whole transform can be a signal:
+
+```ts
+const angle = createSignal(0);
+new Morph({ transform: new Transform({ rotate: angle, origin: "center" }) });
+
+const pose = createSignal(new Transform({ rotate: 0, scale: 1, origin: "center" }));
+yield* pose.to(new Transform({ rotate: 90, scale: 1.5, origin: "center" }), 0.6);
+yield* pose.spring(pose.value().with({ rotate: 0 }), "wobbly");
+```
+
+`transform.with({ ... })` copies it with some fields changed, `transform.lerp(other, t)` blends, `transform.toMatrix(box)` gives the matrix. Rotation and scale blend as numbers (so `0 → 360` is a full turn); a `matrix` is blended through its parts so a turn does not shrink in the middle.
+
+Layer setters: `setRotate`, `setScale`, `setSkew`, `setTranslate`, `setOrigin`, `setMatrix`, `setTransform`.
+
+A **`Group`** can have a transform too and it moves everything inside it. Its box is its `size` if it has one, otherwise the pivot is the group's own origin. A **`Path2D`** has no known box, so its pivot is the point `(0, 0)`. For a **`Text`** line the box is the measured width of the text by the height of the font.
+
+## Matrices and vectors
+
+`Matrix` and `Vector2` are plain 2D math with no canvas attached.
+
+```ts
+import { Matrix, Vector2 } from "@nmmty/lazycanvas";
+
+const m = Matrix.translation(100, 50).multiply(Matrix.rotation(30)); // inner is applied first
+m.apply({ x: 10, y: 0 });     // Vector2
+m.inverse();                  // throws if the scale is 0
+m.decompose();                // { translate, rotate, scale, skew }
+Matrix.compose({ rotate: 45, scale: new Vector2(2, 1) });
+
+const orbit = center.add(Vector2.fromPolar(100, angle));
+```
+
+A signal holding a `Vector2`, `Matrix` or `Transform` is blended as that type.
+
+### Where a layer is
+
+After a frame has been drawn every layer knows where it ended up, parents and its own transform included:
+
+```ts
+await scene.renderFrame(0);
+
+const corner = card.worldCorners()[1];   // top-right corner of the card, on the canvas
+badge.setPosition(corner.x, corner.y);
+card.worldMatrix();           // layer coordinates → canvas
+card.bounds();                // the box it was drawn in, before its transform
+card.worldBounds();           // the upright rectangle that holds it on the canvas
+card.localToWorld({ x, y });  // and card.worldToLocal(point)
+card.contains({ x, y });      // inside the box after every transform
+scene.layerAt({ x, y });      // top-most layer under a point; scene.layersAt() for all of them
+```
+
+These describe the last frame that was **drawn**: they throw before the first frame (`layer.isDrawn()`), and a layer that comes out of the layer cache without being drawn keeps what it had. A layer's coordinates are those it is drawn in: `localToWorld({ x: 0, y: 0 })` is the origin of the layer's own space, and `bounds()` is where its box is in it.
 
 ## Filters
 

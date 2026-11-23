@@ -39,12 +39,29 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - **`Playhead`**: the clock of a player (play, pause, reverse, seek, speed, loop, yoyo) to drive
   `scene.renderFrame()`.
 - `cubicBezier(x1, y1, x2, y2)` and `steps(count)` easings.
+- **`Transform` class** (`@nmmty/lazycanvas`): `translate`, `rotate`, `scale` (a number or `{ x, y }`), `skew`,
+  `origin` and `matrix`, where every number can be a signal. `origin` (`"center"`, `"top-left"`, …,
+  or `{ x, y }` in pixels or percent) is the pivot of `rotate`, `scale` and `skew`. `with()`, `lerp()`,
+  `toMatrix(box)`, `clone()`. A `Signal<Transform>` animates with `to()`, `spring()` and `keyframes()`.
+  `setSkew`, `setOrigin` and `setTransform` on layers. Without an `origin` or `skew` a transform works exactly
+  as before.
+- **`Matrix` and `Vector2`**: 2D affine math (`multiply`, `apply`, `inverse`, `decompose`, `compose`, `lerp`;
+  arithmetic, polar form, rotation). Signals holding them (and `Transform`) are blended as that type.
+- **Where a layer is**: after a frame is drawn, `layer.worldMatrix()`, `bounds()`, `worldCorners()`,
+  `worldBounds()`, `localToWorld()`, `worldToLocal()`, `contains(point)`, `isDrawn()`; and
+  `scene.layerAt(point)` / `scene.layersAt(point)` for the layers under a point.
+- **`stagger(options, animations)`** and `stagger(options, items, animate)`: staggered starts with `each` or
+  `total`, `from` (`start`, `end`, `center`, `edges`, `random`, an index), `ease` and a `seed`.
+  `staggerDelays()` gives the delays.
 
 ### Changed
 
 - `spring(signal, target, config)` is now `signal.spring()`: it is exact instead of stepped, takes presets,
   and blends colours and points instead of jumping to the target. `precision` sets `restDelta` and
   `restSpeed`; without it a spring settles at 0.1% of its distance instead of an absolute `0.01`.
+- **Type change:** `Transform` is a class now; the old interface of that name is `TransformProps`. A plain
+  object such as `{ rotate: 30 }` is still accepted everywhere a transform is (`transform: { rotate: 30 }`), but a
+  variable annotated `const t: Transform = { rotate: 30 }` must become `TransformProps`.
 - Colour blending clamps each channel, so an overshooting easing or spring cannot produce `rgba(300, …)`.
 
 - **Time moves in fixed steps of 1/240 s.** Animations are advanced in equal slices whatever the frame
@@ -56,6 +73,8 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ### Fixed
 
+- A `Polygon` ignored its `transform`; it is applied now.
+- A `Group`'s `transform` was ignored; it now moves everything in the group.
 - `Timeline.after()` did not wait for the previous animation; it now starts when it finishes, and
   `seek(time)` pins the next `after()` to a time. Animations started by `at()` no longer run one step ahead.
 - A `transform.matrix` with a `0` component (no skew, no offset) was rejected as invalid.
