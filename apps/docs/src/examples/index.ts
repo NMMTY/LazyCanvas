@@ -6,6 +6,7 @@ import Hello from "./hello";
 import Layout from "./layout";
 import Reactive from "./reactive";
 import Shapes from "./shapes";
+import Springs from "./springs";
 import TextExample from "./text";
 
 /** Every live example, by the file name used in `<Example name="…" />`. */
@@ -17,5 +18,6 @@ export const examples: Record<string, ComponentType> = {
   layout: Layout,
   reactive: Reactive,
   shapes: Shapes,
+  springs: Springs,
   text: TextExample,
 };

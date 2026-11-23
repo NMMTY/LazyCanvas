@@ -40,6 +40,105 @@ Colors tween through RGB by default; create the signal with `createSignal("#f00"
 
 `Easing` has `linear`, `easeIn`/`easeOut`/`easeInOut` and the `Cubic`, `Quart`, `Quint`, `Sine`, `Expo`, `Circ`, `Back`, `Elastic` and `Bounce` families of each.
 
+## Springs
+
+`signal.spring(target, config)` moves a signal by physics instead of on a schedule. There is no duration: it runs until it settles.
+
+<Example name="springs" caption="Green: default spring. Orange: wobbly spring. Blue: keyframes." />
+
+```ts
+yield* x.spring(300);                                  // default: smooth, no overshoot
+yield* x.spring(300, "wobbly");                        // a preset
+yield* x.spring(300, { stiffness: 120, damping: 8 });  // your own
+```
+
+`stiffness` pulls towards the target (higher is faster), `damping` takes energy out (lower bounces more), `mass` makes it heavier. The presets are `default`, `gentle`, `wobbly`, `stiff`, `snappy`, `slow` and `molasses`.
+
+- The motion is solved exactly, so it is identical at any frame rate, and scrubbing a scene back and forth gives the same picture.
+- A numeric signal that is already moving keeps its speed (`signal.velocity()`), so a spring that interrupts a tween or another spring continues smoothly. Pass `velocity` in the config to override it.
+- Colours and `{ x, y }` points work too: they are blended with the spring's motion, starting from rest.
+- "Settled" means within 0.1% of the distance and slower than 1% of the distance per second, so a small and a large move take the same time. Set `restDelta` and `restSpeed` for absolute limits.
+
+`Spring` lets you read the motion itself: `solveSpring(0, 100, "wobbly").position(0.3)`.
+
+## Keyframes
+
+`signal.keyframes(frames, options)` moves a signal through a list of values.
+
+```ts
+yield* x.keyframes([
+  { at: 0, value: 40 },
+  { at: 0.4, value: 300, easing: Easing.easeOutCubic },
+  { at: 1, value: 120 },
+]);
+
+yield* x.keyframes([0, 100, 50], { duration: 2 });          // plain values, evenly spaced
+yield* x.keyframes(
+  [{ offset: 0.2, value: 100 }, { offset: 1, value: 0 }],   // offset: 0 to 1 of the duration
+  { duration: 3 },
+);
+```
+
+- `at` is in seconds, `offset` a fraction of `options.duration`. If the first keyframe is later than `0`, the signal starts from its current value.
+- A keyframe's `easing` shapes the stretch that **starts** there, as in CSS; `options.easing` is the default.
+- Two keyframes at the same time make a jump.
+- Colours (`colorSpace: "hsl"` to blend in HSL) and `{ x, y }` points work like in `to()`.
+
+`Keyframes` is also a plain function of time: `new Keyframes(frames).valueAt(0.7)` has no state, so you can sample it anywhere.
+
+Two helpers make easings: `cubicBezier(0.4, 0, 0.2, 1)` like CSS, and `steps(4)`.
+
+## Timeline
+
+`timeline()` places animations on a shared clock. The second argument of `add` is the position, as in GSAP:
+
+```ts
+import { timeline } from "@nmmty/lazycanvas";
+
+const tl = timeline()
+  .add(x.to(300, 1))               // 0 – 1: at the end of the timeline by default
+  .add(opacity.to(1, 0.5), "<")    // together with the previous one
+  .add(y.spring(80), ">-=0.2")     // 0.2 s before the previous one ends
+  .label("end")
+  .add(color.to("#ef4444", 0.4), "end+=0.5")
+  .add(otherTimeline, 2);          // timelines nest
+
+scene.addAnimation(tl.play());
+tl.duration;                       // seconds
+```
+
+| Position | Means |
+| --- | --- |
+| `2` | 2 s from the start |
+| *(left out)* | at the end of the timeline |
+| `"<"` / `">"` | where the previous animation starts / ends |
+| `"+=0.5"` / `"-=0.5"` | 0.5 s after / before the end of the timeline |
+| `"<+=0.2"`, `">-=0.1"` | an offset from the previous start / end |
+| `"name"`, `"name+=0.3"` | at a label, and after it |
+
+Positions that depend on an end need to know how long the previous animation is. `to`, `spring`, `keyframes`, `waitFor`, `all`, `chain`, `delay` and nested timelines know it (`durationOf(animation)`); a generator you wrote yourself does not, and `add` says so. Use an absolute position there, or `after(generator)`, which starts when the previous animation really ends. A spring counts as the time it needs to settle from where the signal is when the spring is created.
+
+## Playing, pausing and reversing
+
+A scene can show **any** time in any order, so pause, reverse, speed and loops are only a matter of which time you ask for. `Playhead` does that arithmetic:
+
+```ts
+import { Playhead } from "@nmmty/lazycanvas";
+
+const head = new Playhead({ duration: scene.duration, loop: true, yoyo: true });
+head.play();                // pause(), reverse(), seek(t), speed = 2, ...
+
+let last = performance.now();
+function frame(now: number) {
+  scene.renderFrame(head.tick((now - last) / 1000));
+  last = now;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+```
+
+Going back uses the history the scene keeps (see below).
+
 ## Composing
 
 Animations are generators, so you compose them with `yield*`:
@@ -53,7 +152,8 @@ Animations are generators, so you compose them with `yield*`:
 | `loop(() => a, times?)` | Repeats; forever by default. |
 | `loopFor(() => a, seconds)` | Repeats until the time is up. |
 | `any(a, b, …)` | Runs in parallel until one finishes. |
-| `spring`, `sequence`, `yoyo`, `timeline` | Physics, value lists, ping-pong and keyframes. |
+| `sequence`, `yoyo` | Value lists and ping-pong. |
+| `signal.spring()`, `signal.keyframes()`, `timeline()` | Physics, keyframes and a timeline with positions: see below. |
 
 ```ts
 scene.addAnimation(function* () {

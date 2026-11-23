@@ -4,3 +4,8 @@ export * from "./SignalUtils";
 export * from "./ThreadScheduler";
 export * from "./SignalTrace";
 export * from "./Interpolation";
+export * from "./Spring";
+export * from "./Keyframes";
+export * from "./EasingFunctions";
+export * from "./Duration";
+export * from "./Playhead";

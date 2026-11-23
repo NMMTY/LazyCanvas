@@ -1,4 +1,7 @@
+import { withDuration } from "./Duration";
 import { type Interpolator, getInterpolator, lerpColorHSL, lerpColorRGB } from "./Interpolation";
+import { type Keyframe, Keyframes, type KeyframesOptions } from "./Keyframes";
+import { type SpringConfig, type SpringPresetName, solveSpring } from "./Spring";
 
 /**
  * Tolerance, in seconds, when comparing elapsed time with a duration.
@@ -156,6 +159,7 @@ export interface SignalOptions<T> {
 export class Signal<T = number> {
   private _value: T;
   private _initialValue: T;
+  private _velocity = 0;
   private _currentThread: ThreadGenerator | null = null;
   private _interpolator: Interpolator<T>;
   private _colorSpace: "rgb" | "hsl";
@@ -182,10 +186,22 @@ export class Signal<T = number> {
   }
 
   /**
+   * How fast a numeric signal is changing, in units per second.
+   *
+   * It is what a spring continues from when it takes over from another animation, so a
+   * signal that is moving does not stop dead and start again. `0` for a signal that is
+   * still, and for values that are not numbers.
+   */
+  public velocity(): number {
+    return this._velocity;
+  }
+
+  /**
    * Set value directly
    */
   public set(value: T): void {
     this._value = value;
+    this._velocity = 0;
     this._currentThread = null;
   }
 
@@ -196,8 +212,9 @@ export class Signal<T = number> {
    * unlike {@link Signal.set} it does not cancel the animation that drives the
    * signal. Call `set` for ordinary assignments.
    */
-  public restore(value: T): void {
+  public restore(value: T, velocity = 0): void {
     this._value = value;
+    this._velocity = velocity;
   }
 
   /**
@@ -205,13 +222,83 @@ export class Signal<T = number> {
    */
   public reset(): void {
     this._value = this._initialValue;
+    this._velocity = 0;
     this._currentThread = null;
   }
 
   /**
    * Animate to a new value - returns a generator
    */
-  public *to(
+  public to(
+    value: T,
+    duration: number,
+    config?: Partial<TweenConfig<T>> & { easing?: EasingFunction },
+  ): ThreadGenerator {
+    return withDuration(this.tween(value, duration, config), Math.max(duration, 0));
+  }
+
+  /**
+   * Moves to a new value like a spring: by physics rather than on a fixed schedule.
+   *
+   * There is no duration; the spring runs until it settles. A numeric signal that is already
+   * moving keeps its speed, so interrupting one spring with another is smooth. Other values
+   * (colours, `{ x, y }` points) are blended with the same motion, starting from rest.
+   *
+   * The motion is solved exactly rather than stepped, so it is the same at any frame rate and
+   * on any seek.
+   *
+   * @param {T} target - The value to settle on.
+   * @param {SpringConfig | SpringPresetName} [config] - `stiffness`, `damping`, `mass`, or the
+   * name of a preset such as `"wobbly"`.
+   *
+   * @example
+   * ```ts
+   * yield* x.spring(300);                                    // default
+   * yield* x.spring(300, "wobbly");                          // preset
+   * yield* x.spring(300, { stiffness: 120, damping: 8 });    // your own
+   * ```
+   */
+  public spring(target: T, config: SpringConfig | SpringPresetName = {}): ThreadGenerator {
+    // Solved once here to validate the config and to learn how long it will take from now;
+    // the real run solves again from wherever the signal is when it starts.
+    const estimate = this.solve(target, config);
+    return withDuration(this.springRun(target, config), estimate.motion.duration);
+  }
+
+  /**
+   * Moves through a list of keyframes.
+   *
+   * If the first keyframe is later than time `0`, the signal starts from its current value.
+   *
+   * @param {Array<Keyframe<T> | T>} frames - `{ at, value }` keyframes (`at` in seconds, or
+   * `offset` from `0` to `1` of the `duration`), or plain values spread evenly over `duration`.
+   * @param {KeyframesOptions<T>} [options] - `duration`, a default `easing`, `colorSpace`.
+   *
+   * @example
+   * ```ts
+   * yield* x.keyframes([
+   *   { at: 0.4, value: 300, easing: Easing.easeOutCubic },
+   *   { at: 1, value: 120 },
+   * ]);
+   * yield* x.keyframes([0, 100, 50], { duration: 2 });
+   * ```
+   */
+  public keyframes(
+    frames: Array<Keyframe<T> | T>,
+    options: KeyframesOptions<T> = {},
+  ): ThreadGenerator {
+    const track = new Keyframes(frames, { colorSpace: this._colorSpace, ...options });
+    return withDuration(this.keyframesRun(frames, options), track.duration);
+  }
+
+  /**
+   * Wait for a duration without changing value
+   */
+  public wait(duration: number): ThreadGenerator {
+    return withDuration(this.waitRun(duration), Math.max(duration, 0));
+  }
+
+  private *tween(
     value: T,
     duration: number,
     config?: Partial<TweenConfig<T>> & { easing?: EasingFunction },
@@ -221,7 +308,7 @@ export class Signal<T = number> {
     const interpolator = config?.interpolator || this._getInterpolator(from, value);
 
     if (duration <= 0) {
-      this._value = value;
+      this.assign(value, 0);
       return;
     }
 
@@ -234,23 +321,70 @@ export class Signal<T = number> {
 
       const progress = Math.min(elapsed / duration, 1);
       const easedProgress = easing(progress);
-      this._value = interpolator(from, value, easedProgress);
+      this.assign(interpolator(from, value, easedProgress), actualDelta);
 
       // Critical: ensure we don't overshoot
       if (timeReached(elapsed, duration)) {
-        this._value = value;
+        this.assign(value, actualDelta);
         break;
       }
     }
-
-    // Final value assignment
-    this._value = value;
   }
 
-  /**
-   * Wait for a duration without changing value
-   */
-  public *wait(duration: number): ThreadGenerator {
+  private *springRun(target: T, config: SpringConfig | SpringPresetName): ThreadGenerator {
+    const { motion, from, numeric, interpolator } = this.solve(target, config);
+
+    if (motion.duration <= 0) {
+      this.assign(target, 0);
+      this._velocity = 0;
+      return;
+    }
+
+    let elapsed = 0;
+    while (!timeReached(elapsed, motion.duration)) {
+      const delta = yield;
+      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
+      elapsed += actualDelta;
+
+      if (timeReached(elapsed, motion.duration)) break;
+
+      const position = motion.position(elapsed);
+      this._value = numeric ? (position as unknown as T) : interpolator(from, target, position);
+      this._velocity = numeric ? motion.velocity(elapsed) : 0;
+    }
+
+    this._value = target;
+    this._velocity = 0;
+  }
+
+  private *keyframesRun(
+    frames: Array<Keyframe<T> | T>,
+    options: KeyframesOptions<T>,
+  ): ThreadGenerator {
+    // Built here, not when `keyframes()` was called: the start value is whatever the signal
+    // holds now, which may have been changed by an animation that ran before this one.
+    const track = new Keyframes(frames, {
+      colorSpace: this._colorSpace,
+      from: this._value,
+      ...options,
+    });
+
+    this.assign(track.valueAt(0), 0);
+
+    let elapsed = 0;
+    while (!timeReached(elapsed, track.duration)) {
+      const delta = yield;
+      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
+      elapsed += actualDelta;
+
+      this.assign(track.valueAt(Math.min(elapsed, track.duration)), actualDelta);
+    }
+
+    this.assign(track.valueAt(track.duration), 0);
+    this._velocity = 0;
+  }
+
+  private *waitRun(duration: number): ThreadGenerator {
     let elapsed = 0;
 
     while (!timeReached(elapsed, duration)) {
@@ -289,6 +423,28 @@ export class Signal<T = number> {
    */
   public isAnimating(): boolean {
     return this._currentThread !== null;
+  }
+
+  /** Sets the value and, for numbers, the speed it moved at over the last `delta` seconds. */
+  private assign(value: T, delta: number): void {
+    const previous = this._value;
+    this._value = value;
+    this._velocity =
+      delta > 0 && typeof previous === "number" && typeof value === "number"
+        ? (value - previous) / delta
+        : 0;
+  }
+
+  /** Solves a spring from where this signal is now. */
+  private solve(target: T, config: SpringConfig | SpringPresetName) {
+    const from = this._value;
+    const numeric = typeof from === "number" && typeof target === "number";
+    const interpolator = this._getInterpolator(from, target);
+    const motion = numeric
+      ? solveSpring(from as number, target as number, config, this._velocity)
+      : // Anything else is blended by progress, from 0 to 1.
+        solveSpring(0, 1, config);
+    return { motion, from, numeric, interpolator };
   }
 
   /**

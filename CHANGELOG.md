@@ -22,9 +22,30 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   `ThreadScheduler` and `SignalTrace` are exported.
 - **`scene.duration`**: the length of the animations added as functions, measured without leaving the
   signals at their end values. `Exporter` uses it as the default `duration` of an APNG export.
-- `Signal.restore(value)`, `BaseLayer.listSignals()`.
+- `Signal.restore(value, velocity?)`, `BaseLayer.listSignals()`.
+- **Springs** (`@nmmty/lazycanvas`): `signal.spring(target, config | preset)` moves a signal by physics.
+  The damped spring is solved exactly (under-, critically and over-damped), so it is the same at any frame
+  rate and on any seek. `stiffness`, `damping`, `mass`, `velocity`, `restDelta`, `restSpeed`; presets
+  `default`, `gentle`, `wobbly`, `stiff`, `snappy`, `slow`, `molasses` in `SpringPresets`. A numeric signal
+  that is moving keeps its speed (`signal.velocity()`) when a spring takes over. Works for numbers, colours
+  and `{ x, y }` points. `solveSpring()` returns the motion as a function of time.
+- **Keyframes**: `signal.keyframes(frames, options)` and the `Keyframes` class (`valueAt(t)` is a pure
+  function of time). Keyframes are `{ at | offset, value, easing? }` or plain values spread over `duration`;
+  an easing applies to the stretch that starts at its keyframe, as in CSS.
+- **Timeline positions**: `timeline().add(animation, position)` with GSAP-style positions (`2`, `"<"`,
+  `">"`, `"+=0.5"`, `"<+=0.2"`, labels with `label(name)`), nested timelines and `timeline.duration`.
+  `durationOf(animation)` gives the length of what `to`, `spring`, `keyframes`, `waitFor`, `all`, `chain`,
+  `delay`, `loopFor`, `sequence`, `yoyo` and timelines make.
+- **`Playhead`**: the clock of a player (play, pause, reverse, seek, speed, loop, yoyo) to drive
+  `scene.renderFrame()`.
+- `cubicBezier(x1, y1, x2, y2)` and `steps(count)` easings.
 
 ### Changed
+
+- `spring(signal, target, config)` is now `signal.spring()`: it is exact instead of stepped, takes presets,
+  and blends colours and points instead of jumping to the target. `precision` sets `restDelta` and
+  `restSpeed`; without it a spring settles at 0.1% of its distance instead of an absolute `0.01`.
+- Colour blending clamps each channel, so an overshooting easing or spring cannot produce `rgba(300, …)`.
 
 - **Time moves in fixed steps of 1/240 s.** Animations are advanced in equal slices whatever the frame
   rate, so the same animation gives the same values at 30, 60 or 144 fps, and the time left over when one

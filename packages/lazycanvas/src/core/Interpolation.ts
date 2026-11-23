@@ -7,6 +7,10 @@ export function lerpNumber(from: number, to: number, progress: number): number {
   return from + (to - from) * progress;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
 /**
  * Parse color string to RGBA components
  */
@@ -142,10 +146,11 @@ export function lerpColorRGB(from: string, to: string, progress: number): string
     return progress < 0.5 ? from : to;
   }
 
-  const r = Math.round(lerpNumber(fromColor.r, toColor.r, progress));
-  const g = Math.round(lerpNumber(fromColor.g, toColor.g, progress));
-  const b = Math.round(lerpNumber(fromColor.b, toColor.b, progress));
-  const a = lerpNumber(fromColor.a, toColor.a, progress);
+  // Springs and `back` easings overshoot, which would push a channel out of range.
+  const r = clamp(Math.round(lerpNumber(fromColor.r, toColor.r, progress)), 0, 255);
+  const g = clamp(Math.round(lerpNumber(fromColor.g, toColor.g, progress)), 0, 255);
+  const b = clamp(Math.round(lerpNumber(fromColor.b, toColor.b, progress)), 0, 255);
+  const a = clamp(lerpNumber(fromColor.a, toColor.a, progress), 0, 1);
 
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
@@ -170,11 +175,11 @@ export function lerpColorHSL(from: string, to: string, progress: number): string
   if (deltaH < -0.5) deltaH += 1;
 
   const h = fromHSL.h + deltaH * progress;
-  const s = lerpNumber(fromHSL.s, toHSL.s, progress);
-  const l = lerpNumber(fromHSL.l, toHSL.l, progress);
-  const a = lerpNumber(fromColor.a, toColor.a, progress);
+  const s = clamp(lerpNumber(fromHSL.s, toHSL.s, progress), 0, 1);
+  const l = clamp(lerpNumber(fromHSL.l, toHSL.l, progress), 0, 1);
+  const a = clamp(lerpNumber(fromColor.a, toColor.a, progress), 0, 1);
 
-  const { r, g, b } = hslToRgb(h, s, l);
+  const { r, g, b } = hslToRgb(((h % 1) + 1) % 1, s, l);
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
@@ -225,4 +230,28 @@ export function getInterpolator<T>(from: T, to: T): Interpolator<T> {
 
   // Default: snap to end value
   return ((from: T, to: T, progress: number) => (progress < 1 ? from : to)) as Interpolator<T>;
+}
+
+/**
+ * Picks how to blend two values.
+ *
+ * An explicit `interpolator` wins; colour strings use `colorSpace`; anything else is
+ * detected from the values (numbers, `{ x, y }` points) and otherwise snaps to the end value.
+ */
+export function pickInterpolator<T>(
+  from: T,
+  to: T,
+  options: { interpolator?: Interpolator<T>; colorSpace?: "rgb" | "hsl" } = {},
+): Interpolator<T> {
+  if (options.interpolator) return options.interpolator;
+
+  if (typeof from === "string" && typeof to === "string") {
+    if (from.startsWith("#") || from.startsWith("rgb") || from.startsWith("hsl")) {
+      return (options.colorSpace === "hsl"
+        ? lerpColorHSL
+        : lerpColorRGB) as unknown as Interpolator<T>;
+    }
+  }
+
+  return getInterpolator(from, to);
 }

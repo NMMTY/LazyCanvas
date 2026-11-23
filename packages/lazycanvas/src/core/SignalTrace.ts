@@ -4,6 +4,7 @@ import type { Signal } from "./Signal";
 interface TraceEntry {
   step: number;
   value: unknown;
+  velocity: number;
 }
 
 /**
@@ -35,18 +36,22 @@ export class SignalTrace {
   /** Starts following a signal. Its current value is what it had before any animation. */
   public watch(signal: Signal<any>): void {
     if (this.tracks.has(signal)) return;
-    this.tracks.set(signal, [{ step: this.earliestStep, value: signal.value() }]);
+    this.tracks.set(signal, [
+      { step: this.earliestStep, value: signal.value(), velocity: signal.velocity() },
+    ]);
   }
 
   /** Writes down the current value of every watched signal as the state after `step`. */
   public record(step: number): void {
     for (const [signal, entries] of this.tracks) {
       const value = signal.value();
+      const velocity = signal.velocity();
       const last = entries[entries.length - 1];
       if (last.step === step) {
         last.value = value;
-      } else if (!Object.is(last.value, value)) {
-        entries.push({ step, value });
+        last.velocity = velocity;
+      } else if (!Object.is(last.value, value) || last.velocity !== velocity) {
+        entries.push({ step, value, velocity });
       }
     }
 
@@ -67,7 +72,8 @@ export class SignalTrace {
     }
 
     for (const [signal, entries] of this.tracks) {
-      signal.restore(entries[this.indexAt(entries, step)].value);
+      const entry = entries[this.indexAt(entries, step)];
+      signal.restore(entry.value, entry.velocity);
     }
   }
 
