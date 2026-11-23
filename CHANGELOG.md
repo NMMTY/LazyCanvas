@@ -62,6 +62,12 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   `staggerDelays()` gives the delays.
 
 ### Changed
+- **Drawing makes about a third fewer calls into the canvas** (`@nmmty/lazycanvas`): a rounded rectangle is one
+  `roundRect` call instead of `moveTo` and four `arcTo` (the old way is kept for radii that do not fit and for
+  contexts without `roundRect`), `globalCompositeOperation` is set only when it changes, `shadowColor` is reset only
+  after a layer that had a shadow, and the layout pass copies plain data instead of calling `structuredClone` for
+  every layer on every frame. On the complex benchmark scene canvas calls per frame went from 15.6k to 10.2k, and
+  frame time (median of 5 rounds) from 17.3 to 15.1 ms (−13%); a medium scene −16%, a 300-box flex layout −26%.
 - **Exporting an animation takes a fraction of the memory and time** (`@nmmty/lazycanvas`): the APNG
   exporter compresses every frame as it is drawn instead of keeping all the raw frames, `APNGEncoder` copies
   a scanline at a time instead of a byte at a time, and the loops that render a range of frames give the event
