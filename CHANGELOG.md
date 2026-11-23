@@ -62,6 +62,14 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   `staggerDelays()` gives the delays.
 
 ### Changed
+- **The layout pass is skipped while nothing it depends on has changed** (`@nmmty/lazycanvas`): it used to build
+  a tree for the flex engine, run it and copy the result back on every frame, and now the last answer is reused
+  while the layers in the flow, their `layout` rules (compared by value), the measured size of their text and the
+  canvas size are the same, no layer was added or removed, and nothing has written over what the last pass wrote.
+  Otherwise a full pass runs, as before, so the result is the same. A 300-box flex layout went from 4.0 to 2.2 ms
+  per frame (−44%) and a flex layout with text and 100 animated layers on top from 6.5 to 3.7 ms (−43%); scenes
+  without a layout are unaffected. `manager.layout.stats` counts passes and skips, `manager.layout.reuse = false`
+  turns it off.
 - **Drawing makes about a third fewer calls into the canvas** (`@nmmty/lazycanvas`): a rounded rectangle is one
   `roundRect` call instead of `moveTo` and four `arcTo` (the old way is kept for radii that do not fit and for
   contexts without `roundRect`), `globalCompositeOperation` is set only when it changes, `shadowColor` is reset only
