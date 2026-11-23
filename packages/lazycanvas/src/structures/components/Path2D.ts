@@ -8,6 +8,7 @@ import {
 import type { StrokeOptions } from "../../types";
 import {
   DrawUtils,
+  type Later,
   LazyError,
   LazyLog,
   createPath2D,
@@ -15,6 +16,7 @@ import {
   isColor,
   parseFillStyle,
   resolvePath2D,
+  withFill,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -311,13 +313,13 @@ export class Path2D extends BaseLayer<IPath2DProps> {
     return this;
   }
 
-  async draw(
+  draw(
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
     adapter?: ICanvasAdapter,
-  ): Promise<void> {
+  ): Later {
     // Node has no global Path2D, so the implementation comes from the adapter.
     const path = this.ensurePath(adapter);
     if (!path) {
@@ -326,6 +328,24 @@ export class Path2D extends BaseLayer<IPath2DProps> {
       );
     }
 
+    // A path that is filled needs its fill style; it is found before anything is drawn, since a pattern has to
+    // be waited for.
+    const color = this.props.color;
+    if (this.props.clipPath || !color) return this.paint(ctx, path, undefined, debug);
+    const fill =
+      typeof color === "string" && color !== ""
+        ? color
+        : parseFillStyle(ctx, color, { debug, manager });
+    return withFill(fill, (fillStyle) => this.paint(ctx, path, fillStyle, debug));
+  }
+
+  /** Draws the path, clips to it, or does neither, once its fill style (if it has one) is known. */
+  private paint(
+    ctx: ICanvasRenderingContext2D,
+    path: any,
+    fillStyle: string | CanvasGradient | CanvasPattern | undefined,
+    debug: boolean,
+  ): void {
     ctx.beginPath();
     ctx.save();
     try {
@@ -336,15 +356,13 @@ export class Path2D extends BaseLayer<IPath2DProps> {
         });
 
       // A path has no known box, so an `origin` is measured from the point (0, 0).
-      this.applyTransform(ctx, { x: 0, y: 0, width: 0, height: 0 });
+      this.applyTransformAt(ctx, 0, 0, 0, 0);
 
       DrawUtils.opacity(ctx, this.props.opacity);
 
       if (this.props.clipPath) {
         ctx.clip(path);
-      } else if (this.props.color) {
-        const fillStyle = await parseFillStyle(ctx, this.props.color, { debug, manager });
-
+      } else if (fillStyle !== undefined) {
         if (this.props.globalComposite) {
           ctx.globalCompositeOperation = this.props.globalComposite;
         }

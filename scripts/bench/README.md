@@ -49,6 +49,17 @@ load the library from).
 Adding a scenario: build it in `run-scenario.mjs` (`build(name)`), add its name to `SCENARIOS` in `bench.mjs`, and set
 `both: true` only if it uses nothing that is missing from the revisions you compare with.
 
+## Checking that a change draws the same pixels
+
+```bash
+node scripts/bench/parity.mjs --against /path/to/other/checkout   # exits 1 if any frame differs
+```
+
+Renders scenes that between them use every layer type (corner radii, strokes, shadows, filters, gradients,
+patterns, images, text in all its modes, nested groups with transforms, flex layout, animated signals, a layer
+that throws) in both builds and compares a hash of each frame. `BENCH_ALLOC=1` on `run-scenario.mjs` adds the
+bytes allocated per frame and the functions that allocate them (use `BENCH_FAKE=1` to leave the canvas out).
+
 ## Showcase scenes: rendering to video
 
 `showcase.mjs` plays two longer scenes, writes them to video and reports how long every frame took. They are

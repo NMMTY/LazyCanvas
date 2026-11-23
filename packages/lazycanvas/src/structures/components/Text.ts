@@ -21,7 +21,9 @@ import {
   VerticalTextMode,
 } from "../../types";
 import {
+  DOWN,
   DrawUtils,
+  type Later,
   LazyError,
   LazyLog,
   type VerticalTextLayout,
@@ -29,11 +31,13 @@ import {
   cssFont,
   defaultArg,
   isColor,
+  isEmptyTransform,
   isVerticalDirection,
   layoutVerticalText,
   parseFillStyle,
   parseToNormal,
-  parser,
+  scalar,
+  withFill,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -510,33 +514,60 @@ export class Text extends BaseLayer<ITextProps> {
    * @param {LayersManager} [manager] - The layer's manager.
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
-  async draw(
+  draw(
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-  ): Promise<void> {
-    const parcer = parser(ctx, canvas, manager);
-
-    const { x, y, w } = parcer.parseBatch({
-      x: { v: this.props.position?.x || 0 },
-      y: { v: this.props.position?.y || 0, options: defaultArg.vl(true) },
-      w: { v: this.props.size?.width || "vw" },
-    });
-
-    const h = parcer.parse(this.props.size?.height || 0, defaultArg.wh(w), defaultArg.vl(true));
+  ): Later {
+    const position = this.props.position;
+    const size = this.props.size;
+    const x = scalar(position?.x || 0, ctx, canvas, manager);
+    const y = scalar(position?.y || 0, ctx, canvas, manager, true);
+    const w = scalar(size?.width || "vw", ctx, canvas, manager);
+    const hv = size?.height || 0;
+    const h =
+      typeof hv === "number" ? hv : parseToNormal(hv, ctx, canvas, defaultArg.wh(w), DOWN, manager);
 
     if (debug) LazyLog.log("none", "Text:", { x, y, w, h });
 
+    // The fill style is found before anything is drawn, since a pattern has to be waited for.
+    const color = this.props.color;
+    const fill =
+      typeof color === "string" && color !== ""
+        ? color
+        : parseFillStyle(ctx, color, {
+            debug,
+            layer: { width: w, height: h, x, y, align: "center" },
+            manager,
+          });
+    return withFill(fill, (fillStyle) => this.paint(ctx, canvas, fillStyle, x, y, w, h));
+  }
+
+  /** Draws the text, once its fill style is known. */
+  private paint(
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
+    fillStyle: string | CanvasGradient | CanvasPattern,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  ): void {
     ctx.save();
     try {
-      const box = { x, y, width: w, height: h };
-      const extra = {
-        text: unwrap(this.props.text),
-        textAlign: this.props.align,
-        fontSize: this.props.font.size,
-        multiline: this.props?.multiline?.enabled || false,
-      };
+      // The details of the text are only needed to work out a transform.
+      const given = this.props.transform;
+      const transformed = !!given && !isEmptyTransform(given);
+      const box = transformed ? { x, y, width: w, height: h } : undefined;
+      const extra = transformed
+        ? {
+            text: unwrap(this.props.text),
+            textAlign: this.props.align,
+            fontSize: this.props.font.size,
+            multiline: this.props?.multiline?.enabled || false,
+          }
+        : undefined;
       ctx.beginPath();
       DrawUtils.drawShadow(ctx, this.props.shadow);
       DrawUtils.opacity(ctx, this.props.opacity);
@@ -560,23 +591,22 @@ export class Text extends BaseLayer<ITextProps> {
       const nativeDirection = canvasDirection(this.props.direction);
       if (nativeDirection) ctx.direction = nativeDirection;
 
-      const fillStyle = await parseFillStyle(ctx, this.props.color, {
-        debug,
-        layer: { width: w, height: h, x, y, align: "center" },
-        manager,
-      });
       if (vertical) {
         ctx.font = cssFont(this.props.font);
         const layout = this.layoutVertical(ctx, canvas);
         const origin = useLayoutAlignment
           ? { x, y }
           : this.anchorBlock(x, y, layout.width, layout.height);
-        this.applyTransform(
-          ctx,
-          { x: origin.x, y: origin.y, width: layout.width, height: layout.height },
-          extra,
-          box,
-        );
+        if (box) {
+          this.applyTransform(
+            ctx,
+            { x: origin.x, y: origin.y, width: layout.width, height: layout.height },
+            extra,
+            box,
+          );
+        } else {
+          this.applyTransformAt(ctx, origin.x, origin.y, layout.width, layout.height);
+        }
 
         for (const unit of layout.units) {
           this.drawText(
@@ -592,7 +622,8 @@ export class Text extends BaseLayer<ITextProps> {
           );
         }
       } else if (this.props?.multiline?.enabled) {
-        this.applyTransform(ctx, box, extra);
+        if (box) this.applyTransform(ctx, box, extra);
+        else this.applyTransformAt(ctx, x, y, w, h);
         const words = unwrap(this.props.text).split(" ");
 
         let lines: Array<{ text: string; x: number; y: number; startOffset: number }> = [];
@@ -627,7 +658,8 @@ export class Text extends BaseLayer<ITextProps> {
         }
       } else {
         ctx.font = cssFont(this.props.font);
-        this.applyTransform(ctx, this.lineBox(ctx, x, y, w, h), extra, box);
+        if (box) this.applyTransform(ctx, this.lineBox(ctx, x, y, w, h), extra, box);
+        else this.applyTransformAt(ctx, x, y, w, h);
         this.drawText(this.props, ctx, fillStyle, unwrap(this.props.text), x, y, w, 0);
       }
       ctx.closePath();

@@ -10,13 +10,14 @@ import {
 } from "../../types";
 import {
   DrawUtils,
+  type Later,
   LazyError,
   LazyLog,
-  defaultArg,
   getBoundingBoxBezier,
   isColor,
   parseFillStyle,
-  parser,
+  scalar,
+  withFill,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -177,16 +178,13 @@ export class Quadratic extends BaseLayer<IQuadraticProps> {
    * @returns {Object} The bounding box details including max, min, center, width, and height.
    */
   getBoundingBox(ctx: ICanvasRenderingContext2D, canvas: ICanvas, manager: LayersManager) {
-    const parcer = parser(ctx, canvas, manager);
-
-    const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
-      xs: { v: this.props.position.x },
-      ys: { v: this.props.position.y, options: defaultArg.vl(true) },
-      cx: { v: this.props.controlPoints[0].x },
-      cy: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
-      xe: { v: this.props.position.endX },
-      ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
-    });
+    const { position, controlPoints } = this.props;
+    const xs = scalar(position.x, ctx, canvas, manager);
+    const ys = scalar(position.y, ctx, canvas, manager, true);
+    const cx = scalar(controlPoints[0].x, ctx, canvas, manager);
+    const cy = scalar(controlPoints[0].y, ctx, canvas, manager, true);
+    const xe = scalar(position.endX, ctx, canvas, manager);
+    const ye = scalar(position.endY, ctx, canvas, manager, true);
 
     const { max, min, center, width, height } = getBoundingBoxBezier([
       { x: xs, y: ys },
@@ -203,71 +201,74 @@ export class Quadratic extends BaseLayer<IQuadraticProps> {
    * @param {LayersManager} [manager] - The layer's manager.
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
-  async draw(
+  draw(
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-  ): Promise<void> {
-    const parcer = parser(ctx, canvas, manager);
-
-    const { xs, ys, cx, cy, xe, ye } = parcer.parseBatch({
-      xs: { v: this.props.position.x },
-      ys: { v: this.props.position.y, options: defaultArg.vl(true) },
-      cx: { v: this.props.controlPoints[0].x },
-      cy: { v: this.props.controlPoints[0].y, options: defaultArg.vl(true) },
-      xe: { v: this.props.position.endX },
-      ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
-    });
+  ): Later {
+    const { position, controlPoints } = this.props;
+    const xs = scalar(position.x, ctx, canvas, manager);
+    const ys = scalar(position.y, ctx, canvas, manager, true);
+    const cx = scalar(controlPoints[0].x, ctx, canvas, manager);
+    const cy = scalar(controlPoints[0].y, ctx, canvas, manager, true);
+    const xe = scalar(position.endX, ctx, canvas, manager);
+    const ye = scalar(position.endY, ctx, canvas, manager, true);
 
     const { max, min, center, width, height } = getBoundingBoxBezier([
       { x: xs, y: ys },
       { x: cx, y: cy },
       { x: xe, y: ye },
     ]);
-    const fillStyle = await parseFillStyle(ctx, this.props.color, {
-      debug,
-      layer: { width, height, x: min.x, y: min.y, align: "none" },
-      manager,
+    // A plain colour is the fill style as it is; anything else (gradient, pattern) may have to wait.
+    const color = this.props.color;
+    const fill =
+      typeof color === "string" && color !== ""
+        ? color
+        : parseFillStyle(ctx, color, {
+            debug,
+            layer: { width, height, x: min.x, y: min.y, align: "none" },
+            manager,
+          });
+    return withFill(fill, (fillStyle) => {
+      if (debug)
+        LazyLog.log("none", "Bezier:", {
+          xs,
+          ys,
+          cx,
+          cy,
+          xe,
+          ye,
+          max,
+          min,
+          center,
+          width,
+          height,
+          fillStyle,
+        });
+
+      ctx.save();
+      try {
+        this.applyTransform(ctx, { x: min.x, y: min.y, width, height }, undefined, {
+          x: center.x,
+          y: center.y,
+          width,
+          height,
+        });
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
+        DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+
+        ctx.beginPath();
+        ctx.moveTo(xs, ys);
+        ctx.quadraticCurveTo(cx, cy, xe, ye);
+        ctx.stroke();
+        ctx.closePath();
+      } finally {
+        ctx.restore();
+      }
     });
-
-    if (debug)
-      LazyLog.log("none", "Bezier:", {
-        xs,
-        ys,
-        cx,
-        cy,
-        xe,
-        ye,
-        max,
-        min,
-        center,
-        width,
-        height,
-        fillStyle,
-      });
-
-    ctx.save();
-    try {
-      this.applyTransform(ctx, { x: min.x, y: min.y, width, height }, undefined, {
-        x: center.x,
-        y: center.y,
-        width,
-        height,
-      });
-      DrawUtils.drawShadow(ctx, this.props.shadow);
-      DrawUtils.opacity(ctx, this.props.opacity);
-      DrawUtils.filters(ctx, this.props.filter);
-      DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
-
-      ctx.beginPath();
-      ctx.moveTo(xs, ys);
-      ctx.quadraticCurveTo(cx, cy, xe, ye);
-      ctx.stroke();
-      ctx.closePath();
-    } finally {
-      ctx.restore();
-    }
   }
 
   /**

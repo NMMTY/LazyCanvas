@@ -18,6 +18,7 @@ import {
   bumpTreeVersion,
   generateID,
   isColor,
+  isEmptyTransform,
   transform,
 } from "../../utils";
 import {
@@ -200,6 +201,8 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
   parent?: IBaseLayer | any | null;
   children: Array<AnyLayer | Group> = [];
   private _signals: Map<string, Signal<any>> = new Map();
+  /** The signals again, with the path to what they drive already split, since they are read on every frame. */
+  private _bindings: Array<{ signal: Signal<any>; keys: string[] }> = [];
 
   constructor(type: LayerType, props: T, misc?: IBaseLayerMisc) {
     // Extract id, visible, zIndex from props if provided (for JSX support)
@@ -218,6 +221,10 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
     // other layers share must keep its signals for them.
     if (props.transform instanceof Transform) props.transform = props.transform.clone();
     this.extractSignals(this.props, "");
+    this._bindings = [...this._signals].map(([path, signal]) => ({
+      signal,
+      keys: path.split("."),
+    }));
   }
 
   /**
@@ -308,21 +315,21 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
    * @param time - Current time in seconds
    */
   public updateState(time: number): void {
-    this._signals.forEach((signal, path) => {
+    const bindings = this._bindings;
+    for (let i = 0; i < bindings.length; i++) {
       // Just read the current value - signals are updated by the scheduler
-      const value = signal.value ? signal.value() : signal.get(time);
-      this.setNestedProperty(this.props, path, value);
-    });
+      const { signal, keys } = bindings[i];
+      this.setNestedProperty(this.props, keys, signal.value());
+    }
   }
 
   /**
-   * Set a nested property value using dot notation path
+   * Set a nested property value
    * @param obj - Object to set property on
-   * @param path - Property path (e.g., "size.width")
+   * @param keys - Property path, split (e.g., ["size", "width"])
    * @param value - Value to set
    */
-  private setNestedProperty(obj: any, path: string, value: any): void {
-    const keys = path.split(".");
+  private setNestedProperty(obj: any, keys: string[], value: any): void {
     let current = obj;
 
     for (let i = 0; i < keys.length - 1; i++) {
@@ -482,19 +489,65 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
     extra?: { text: string; textAlign: any; fontSize: number; multiline: boolean },
     legacyBox: TransformBox = box,
   ): void {
-    let own: Matrix | undefined;
-    if (this.props.transform) {
-      own = transform(
+    const state = this.beginDraw(box.x, box.y, box.width, box.height);
+    const given = this.props.transform;
+    if (given && !isEmptyTransform(given)) {
+      state.own = transform(
         ctx,
         this.props.transform as Transform | TransformProps,
         { ...legacyBox, type: this.type },
         extra,
-        box,
+        state.box,
       );
     }
-    // Only numbers are kept: asking the canvas where it is would be a call into the native
-    // library for every layer of every frame. The matrix is put together when it is asked for.
-    this.renderState = { box, own, childSpace: undefined };
+  }
+
+  /**
+   * {@link BaseLayer.applyTransform} for the common case of a box and nothing else, without making an object to
+   * say what the box is.
+   */
+  protected applyTransformAt(
+    ctx: ICanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): void {
+    const state = this.beginDraw(x, y, width, height);
+    // Layers carry an empty `{}` unless they were given a transform; looking costs less than making the arguments.
+    const given = this.props.transform;
+    if (given && !isEmptyTransform(given)) {
+      state.own = transform(
+        ctx,
+        this.props.transform as Transform | TransformProps,
+        { x, y, width, height, type: this.type },
+        undefined,
+        state.box,
+      );
+    }
+  }
+
+  /**
+   * Notes where the layer is drawn this time. Only numbers are kept: asking the canvas where it is would be
+   * a call into the native library for every layer of every frame. The matrix is put together when it is asked for.
+   * The layer keeps one record for good and writes over it, so drawing a frame allocates nothing here.
+   */
+  private beginDraw(x: number, y: number, width: number, height: number) {
+    const state =
+      this.renderState ??
+      (this.renderState = {
+        box: { x, y, width, height },
+        own: undefined,
+        childSpace: undefined,
+      });
+    const box = state.box;
+    box.x = x;
+    box.y = y;
+    box.width = width;
+    box.height = height;
+    state.own = undefined;
+    state.childSpace = undefined;
+    return state;
   }
 
   /**

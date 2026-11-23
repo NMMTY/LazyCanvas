@@ -7,8 +7,10 @@
 // this checkout unless the variable points at another one (that is how a baseline is compared).
 //
 // Environment: BENCH_OPTS (JSON merged into the Scene options), BENCH_NOANIM=1 (do not start animations),
-// BENCH_NOROT=1 (leave the transforms off the polygons of the "complex" scene).
+// BENCH_NOROT=1 (leave the transforms off the polygons of the "complex" scene), BENCH_ALLOC=1 (also report
+// how many bytes each frame allocates and which functions allocate them).
 import { existsSync } from "node:fs";
+import inspector from "node:inspector";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -393,6 +395,50 @@ const stats = (xs) => {
   };
 };
 
+/**
+ * Runs `work` with V8's sampling heap profiler on and says what was allocated, by function, including the
+ * objects that were collected again: that is the pressure on the garbage collector.
+ */
+async function sampleAllocations(work, frames) {
+  const session = new inspector.Session();
+  session.connect();
+  const post = (method, params) =>
+    new Promise((resolveCall, reject) =>
+      session.post(method, params, (error, result) =>
+        error ? reject(error) : resolveCall(result),
+      ),
+    );
+  await post("HeapProfiler.startSampling", {
+    samplingInterval: 256,
+    includeObjectsCollectedByMajorGC: true,
+    includeObjectsCollectedByMinorGC: true,
+  });
+  await work();
+  const { profile } = await post("HeapProfiler.stopSampling");
+  session.disconnect();
+
+  const byFunction = new Map();
+  let total = 0;
+  const visit = (node) => {
+    if (node.selfSize > 0) {
+      const frame = node.callFrame;
+      const key = `${frame.functionName || "(anonymous)"}  ${frame.url.split("/").pop()}:${frame.lineNumber + 1}`;
+      byFunction.set(key, (byFunction.get(key) ?? 0) + node.selfSize);
+      total += node.selfSize;
+    }
+    for (const child of node.children) visit(child);
+  };
+  visit(profile.head);
+
+  return {
+    bytesPerFrame: Math.round(total / frames),
+    top: [...byFunction.entries()]
+      .sort((x, y) => y[1] - x[1])
+      .slice(0, 25)
+      .map(([fn, bytes]) => ({ fn, bytesPerFrame: Math.round(bytes / frames) })),
+  };
+}
+
 async function renderScenario(name) {
   const frames = {
     simple: 300,
@@ -417,16 +463,21 @@ async function renderScenario(name) {
 
   const times = [];
   const callsBefore = adapter.calls?.total ?? 0;
-  for (let i = 0; i < frames; i++) {
-    const t = now();
-    await scene.renderFrame((11 + i) / 60);
-    times.push(now() - t);
-  }
+  const measure = async () => {
+    for (let i = 0; i < frames; i++) {
+      const t = now();
+      await scene.renderFrame((11 + i) / 60);
+      times.push(now() - t);
+    }
+  };
+  const alloc = process.env.BENCH_ALLOC ? await sampleAllocations(measure, frames) : undefined;
+  if (!alloc) await measure();
   const s = stats(times);
   const canvasCallsPerFrame = adapter.calls
     ? (adapter.calls.total - callsBefore) / frames
     : undefined;
   return {
+    alloc,
     canvasCallsPerFrame,
     canvasCalls: adapter.calls
       ? Object.fromEntries(

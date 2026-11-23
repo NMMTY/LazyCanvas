@@ -9,14 +9,20 @@ import {
   type StrokeOptions,
 } from "../../types";
 import {
+  ACROSS,
+  DOWN,
   DrawUtils,
+  type Later,
   LazyError,
   LazyLog,
+  NO_LAYER,
+  WITHIN,
   centring,
   defaultArg,
   isColor,
   parseFillStyle,
-  parser,
+  parseToNormal,
+  withFill,
 } from "../../utils";
 import { Link } from "../helpers";
 import type { LayersManager } from "../managers";
@@ -161,49 +167,76 @@ export class Morph extends BaseLayer<IMorphProps> {
    * @param {LayersManager} [manager] - The layer's manager.
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
-  async draw(
+  draw(
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-  ): Promise<void> {
-    const parcer = parser(ctx, canvas, manager);
+  ): Later {
+    const props = this.props;
+    const position = props.position;
+    const size = props.size;
 
-    const { xs, ys, w } = parcer.parseBatch({
-      xs: { v: this.props.position?.x || 0 },
-      ys: { v: this.props.position?.y || 0, options: defaultArg.vl(true) },
-      w: { v: this.props.size.width },
-    });
+    // Numbers need no parsing, and most values are: checking costs less than the objects `parser()` makes
+    // on every call.
+    const xv = position?.x || 0;
+    const xs =
+      typeof xv === "number" ? xv : parseToNormal(xv, ctx, canvas, NO_LAYER, ACROSS, manager);
+    const yv = position?.y || 0;
+    const ys =
+      typeof yv === "number" ? yv : parseToNormal(yv, ctx, canvas, NO_LAYER, DOWN, manager);
+    const wv = size.width;
+    const w =
+      typeof wv === "number" ? wv : parseToNormal(wv, ctx, canvas, NO_LAYER, ACROSS, manager);
+    const hv = size.height;
+    const h =
+      typeof hv === "number" ? hv : parseToNormal(hv, ctx, canvas, defaultArg.wh(w), DOWN, manager);
 
-    const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
-
-    const rad: { [corner in RadiusCorner]?: number } = {};
-    if (typeof this.props.size.radius === "object" && this.props.size.radius !== Link) {
-      for (const corner in this.props.size.radius) {
-        // @ts-ignore
-        rad[corner] = parcer.parse(
-          // @ts-ignore
-          this.props.size.radius[corner],
-          defaultArg.wh(w / 2, h / 2),
-          defaultArg.vl(false, true),
-        );
+    let rad: { [corner in RadiusCorner]?: number } | undefined;
+    const radius = size.radius;
+    if (typeof radius === "object" && radius !== null && (radius as unknown) !== Link) {
+      for (const corner in radius) {
+        const value = (radius as Record<string, ScaleType>)[corner];
+        (rad ??= {})[corner as RadiusCorner] =
+          typeof value === "number"
+            ? value
+            : parseToNormal(value, ctx, canvas, defaultArg.wh(w / 2, h / 2), WITHIN, manager);
       }
     }
 
-    const { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
-    const fillStyle = await parseFillStyle(ctx, this.props.color, {
+    const { x, y } = centring(props.centring as AnyCentring, this.type, w, h, xs, ys);
+
+    // A plain colour is the fill style as it is; anything else (gradient, pattern) may have to wait.
+    const color = props.color;
+    if (typeof color === "string" && color !== "") {
+      return this.paint(ctx, color, x, y, w, h, rad, debug);
+    }
+    const fill = parseFillStyle(ctx, color, {
       debug,
-      layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring },
+      layer: { width: w, height: h, x: xs, y: ys, align: props.centring as AnyCentring },
       manager,
     });
+    return withFill(fill, (fillStyle) => this.paint(ctx, fillStyle, x, y, w, h, rad, debug));
+  }
 
+  /** Draws the shape, once its fill style is known. */
+  private paint(
+    ctx: ICanvasRenderingContext2D,
+    fillStyle: string | CanvasGradient | CanvasPattern,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    rad: { [corner in RadiusCorner]?: number } | undefined,
+    debug: boolean,
+  ): void {
     if (debug) LazyLog.log("none", "Morph:", { x, y, w, h, rad });
 
     ctx.save();
     try {
-      this.applyTransform(ctx, { x, y, width: w, height: h });
+      this.applyTransformAt(ctx, x, y, w, h);
       ctx.beginPath();
-      if (Object.keys(rad).length > 0) {
+      if (rad) {
         DrawUtils.roundedRect(ctx, x, y, w, h, rad);
       } else {
         ctx.rect(x, y, w, h);

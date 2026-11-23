@@ -63,6 +63,42 @@ export function isColor(v: ColorType | SubStringColor) {
   return false;
 }
 
+/** What `parseToNormal` is told about a value, shared so that parsing does not make an object for every call. */
+export const ACROSS: Readonly<{ vertical: boolean; layer: boolean }> = Object.freeze({
+  vertical: false,
+  layer: false,
+});
+export const DOWN: Readonly<{ vertical: boolean; layer: boolean }> = Object.freeze({
+  vertical: true,
+  layer: false,
+});
+export const WITHIN: Readonly<{ vertical: boolean; layer: boolean }> = Object.freeze({
+  vertical: false,
+  layer: true,
+});
+/** The layer a value is relative to when there is none. */
+export const NO_LAYER: Readonly<{ width: number; height: number }> = Object.freeze({
+  width: 0,
+  height: 0,
+});
+
+/**
+ * A value of a layer as a number of pixels: the value itself when it already is one (almost always), parsed otherwise.
+ *
+ * @param {boolean} [vertical] - Whether a percentage is of the height of the canvas rather than its width.
+ */
+export function scalar(
+  v: ScaleType,
+  ctx: ICanvasRenderingContext2D,
+  canvas: ICanvas,
+  manager: LayersManager | undefined,
+  vertical = false,
+): number {
+  return typeof v === "number"
+    ? v
+    : parseToNormal(v, ctx, canvas, NO_LAYER, vertical ? DOWN : ACROSS, manager);
+}
+
 export function parseToNormal(
   v: ScaleType,
   ctx: ICanvasRenderingContext2D,
@@ -291,7 +327,7 @@ export function transform(
 ): Matrix | undefined {
   if (!input) return undefined;
   // Layers carry an empty `{}` unless a transform was given, and most never get one.
-  if (isEmpty(input)) return undefined;
+  if (isEmptyTransform(input)) return undefined;
   const t = Transform.from(input);
 
   // The whole transform is worked out as numbers and handed to the context in one call: asking a
@@ -303,8 +339,8 @@ export function transform(
   return matrix;
 }
 
-/** Whether a transform has no field at all. */
-function isEmpty(input: object): boolean {
+/** Whether a transform has no field at all: a layer carries an empty `{}` unless it was given one. */
+export function isEmptyTransform(input: object): boolean {
   for (const key in input) {
     if ((input as Record<string, unknown>)[key] !== undefined) return false;
   }

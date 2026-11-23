@@ -7,11 +7,14 @@ import {
   LayerType,
 } from "../../types";
 import {
+  type Later,
   LazyLog,
   authoredProps,
   bumpTreeVersion,
+  eachInOrder,
   generateID,
   getChildren,
+  isLater,
   throwFirst,
 } from "../../utils";
 import type { LayersManager } from "../managers";
@@ -177,15 +180,18 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
 
   /**
    * Renders a layer and, unless it manages its own children, its subtree.
+   *
+   * Nothing here is `async`: when every layer can be drawn at once (a plain colour is) the whole tree is drawn
+   * without a single promise, and only a layer that has to wait (an image) makes the rest continue after it.
+   *
    * @param {AnyLayer | Group} [layer] - The layer or group to render.
    * @param {ICanvasRenderingContext2D} [ctx] - The canvas rendering context.
    * @param {ICanvas} [canvas] - The canvas instance.
    * @param {LayersManager} [manager] - The layer's manager.
    * @param {boolean} [debug] - Whether to enable debug logging.
    * @param {ICanvasAdapter} [adapter] - The canvas adapter.
-   * @returns {Promise<ICanvasRenderingContext2D>} The context after rendering.
    */
-  private async renderLayer(
+  private renderLayer(
     layer: AnyLayer | Group,
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
@@ -193,9 +199,9 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
     debug: boolean,
     adapter: ICanvasAdapter | undefined,
     scope: { composite?: string },
-  ): Promise<ICanvasRenderingContext2D> {
+  ): Later {
     if (debug) LazyLog.log("info", `Rendering ${layer.id}...\nData:`, layer.toJSON());
-    if (!layer.visible) return ctx;
+    if (!layer.visible) return;
 
     // Each assignment is a call into the native canvas, and nearly every layer is drawn in the mode the one
     // before it was. `scope` remembers the mode of the layers drawn at this level (what is changed deeper is
@@ -206,59 +212,91 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
       scope.composite = composite;
     }
 
-    await drawLayerCached(layer, ctx, canvas, manager, debug, adapter);
+    const drawn = drawLayerCached(layer, ctx, canvas, manager, debug, adapter);
+    if (isLater(drawn)) {
+      return drawn.then(() =>
+        this.renderChildren(layer, ctx, canvas, manager, debug, adapter, scope),
+      );
+    }
+    return this.renderChildren(layer, ctx, canvas, manager, debug, adapter, scope);
+  }
 
+  /** What follows drawing a layer: the layers inside it, when it has some that it does not draw itself. */
+  private renderChildren(
+    layer: AnyLayer | Group,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
+    manager: LayersManager,
+    debug: boolean,
+    adapter: ICanvasAdapter | undefined,
+    scope: { composite?: string },
+  ): Later {
     // A Group renders its own subtree inside `draw`, so descending into it here
     // would draw every descendant twice.
     const children = layer instanceof Group ? [] : getChildren(layer);
-    if (children.length > 0) {
-      const errors: unknown[] = [];
-
-      ctx.save();
-      try {
-        // Layout positions are relative to the parent, so move into the parent's
-        // coordinate space before drawing the children.
-        const position = layer.props?.position;
-        if (position) {
-          const x = typeof position.x === "number" ? position.x : 0;
-          const y = typeof position.y === "number" ? position.y : 0;
-          ctx.translate(x, y);
-        }
-        (layer as { recordChildSpace?: (c: ICanvasRenderingContext2D) => void }).recordChildSpace?.(
-          ctx,
-        );
-
-        const childScope = { composite: scope.composite };
-        for (const child of children) {
-          try {
-            await this.renderLayer(child, ctx, canvas, manager, debug, adapter, childScope);
-          } catch (error) {
-            errors.push(error);
-          }
-        }
-      } finally {
-        ctx.restore();
-      }
-
-      throwFirst(errors);
+    if (children.length === 0) {
+      this.leave(layer, ctx);
+      return;
     }
 
-    // A layer sets its shadow inside its own `save` and `restore`, so there is nothing to undo unless it has one
-    // (or is a layer of someone else's that does not keep to that).
-    if (layer.props?.shadow) ctx.shadowColor = "transparent";
-    return ctx;
+    const errors: unknown[] = [];
+    ctx.save();
+    let pending: Later;
+    try {
+      // Layout positions are relative to the parent, so move into the parent's
+      // coordinate space before drawing the children.
+      const position = layer.props?.position;
+      if (position) {
+        const x = typeof position.x === "number" ? position.x : 0;
+        const y = typeof position.y === "number" ? position.y : 0;
+        ctx.translate(x, y);
+      }
+      (layer as { recordChildSpace?: (c: ICanvasRenderingContext2D) => void }).recordChildSpace?.(
+        ctx,
+      );
+
+      const childScope = { composite: scope.composite };
+      pending = eachInOrder(
+        children,
+        (child) => this.renderLayer(child, ctx, canvas, manager, debug, adapter, childScope),
+        errors,
+      );
+    } catch (error) {
+      ctx.restore();
+      throw error;
+    }
+
+    if (isLater(pending)) {
+      return pending.then(() => {
+        ctx.restore();
+        throwFirst(errors);
+        this.leave(layer, ctx);
+      });
+    }
+    ctx.restore();
+    throwFirst(errors);
+    this.leave(layer, ctx);
   }
 
-  public async draw(
+  /**
+   * A layer sets its shadow inside its own `save` and `restore`, so there is nothing to undo unless it has one
+   * (or is a layer of someone else's that does not keep to that).
+   */
+  private leave(layer: AnyLayer | Group, ctx: ICanvasRenderingContext2D): void {
+    if (layer.props?.shadow) ctx.shadowColor = "transparent";
+  }
+
+  public draw(
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
     adapter?: ICanvasAdapter,
-  ) {
+  ): Later {
     const errors: unknown[] = [];
 
     ctx.save();
+    let pending: Later;
     try {
       // Apply position translation if available (from layout)
       if (this.props.position) {
@@ -282,21 +320,27 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
       // state back, and only then report.
       // What the context is set to is not known on entry, so the first layer sets it.
       const scope: { composite?: string } = {};
-      for (const subLayer of this.layers) {
-        if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
-        if (subLayer.visible) {
-          try {
-            await this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter, scope);
-          } catch (error) {
-            errors.push(error);
+      pending = eachInOrder(
+        this.layers,
+        (subLayer) => {
+          if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
+          if (subLayer.visible) {
+            return this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter, scope);
           }
-        }
-      }
-    } finally {
+        },
+        errors,
+      );
+    } catch (error) {
       ctx.restore();
+      throw error;
     }
 
-    throwFirst(errors);
+    const finish = () => {
+      ctx.restore();
+      throwFirst(errors);
+    };
+    if (isLater(pending)) return pending.then(finish);
+    finish();
   }
 
   /**

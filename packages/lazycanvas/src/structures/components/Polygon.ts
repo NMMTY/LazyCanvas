@@ -8,14 +8,18 @@ import {
   type StrokeOptions,
 } from "../../types";
 import {
+  DOWN,
   DrawUtils,
+  type Later,
   LazyError,
   LazyLog,
   centring,
   defaultArg,
   isColor,
   parseFillStyle,
-  parser,
+  parseToNormal,
+  scalar,
+  withFill,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -145,124 +149,130 @@ export class Polygon extends BaseLayer<IPolygonProps> {
    * @param {LayersManager} [manager] - The layer's manager.
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
-  async draw(
+  draw(
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-  ): Promise<void> {
-    const parcer = parser(ctx, canvas, manager);
-
-    const { xs, ys, w } = parcer.parseBatch({
-      xs: { v: this.props.position?.x || 0 },
-      ys: { v: this.props.position?.y || 0, options: defaultArg.vl(true) },
-      w: { v: this.props.size.width },
-    });
-
-    const h = parcer.parse(this.props.size.height, defaultArg.wh(w), defaultArg.vl(true));
+  ): Later {
+    const position = this.props.position;
+    const size = this.props.size;
+    const xs = scalar(position?.x || 0, ctx, canvas, manager);
+    const ys = scalar(position?.y || 0, ctx, canvas, manager, true);
+    const w = scalar(size.width, ctx, canvas, manager);
+    const h =
+      typeof size.height === "number"
+        ? size.height
+        : parseToNormal(size.height, ctx, canvas, defaultArg.wh(w), DOWN, manager);
 
     const { x, y } = centring(this.props.centring as AnyCentring, this.type, w, h, xs, ys);
-    const fillStyle = await parseFillStyle(ctx, this.props.color, {
-      debug,
-      layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring },
-      manager,
-    });
-
-    if (debug)
-      LazyLog.log("none", "Polygon:", {
-        x,
-        y,
-        w,
-        h,
-        count: this.props.size.count,
-        radius: this.props.size.radius,
-      });
-
-    ctx.save();
-    try {
-      this.applyTransform(ctx, { x, y, width: w, height: h });
-      ctx.beginPath();
-
-      // Calculate polygon vertices
-      const vertices: { x: number; y: number }[] = [];
-      for (let i = 0; i < this.props.size.count; i++) {
-        const angle = (i / this.props.size.count) * (2 * Math.PI) - Math.PI / 2;
-        vertices.push({
-          x: x + w / 2 + (w / 2) * Math.cos(angle),
-          y: y + h / 2 + (h / 2) * Math.sin(angle),
+    // A plain colour is the fill style as it is; anything else (gradient, pattern) may have to wait.
+    const color = this.props.color;
+    const fill =
+      typeof color === "string" && color !== ""
+        ? color
+        : parseFillStyle(ctx, color, {
+            debug,
+            layer: { width: w, height: h, x: xs, y: ys, align: this.props.centring as AnyCentring },
+            manager,
+          });
+    return withFill(fill, (fillStyle) => {
+      if (debug)
+        LazyLog.log("none", "Polygon:", {
+          x,
+          y,
+          w,
+          h,
+          count: this.props.size.count,
+          radius: this.props.size.radius,
         });
-      }
 
-      if (this.props.size.radius > 0) {
-        // Draw polygon with rounded corners
-        for (let i = 0; i < vertices.length; i++) {
-          const current = vertices[i];
-          const next = vertices[(i + 1) % vertices.length];
-          const prev = vertices[(i - 1 + vertices.length) % vertices.length];
+      ctx.save();
+      try {
+        this.applyTransform(ctx, { x, y, width: w, height: h });
+        ctx.beginPath();
 
-          // Calculate vectors from current vertex to adjacent vertices
-          const dx1 = current.x - prev.x;
-          const dy1 = current.y - prev.y;
-          const dx2 = next.x - current.x;
-          const dy2 = next.y - current.y;
-
-          // Normalize vectors
-          const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-          const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-          const ndx1 = dx1 / len1;
-          const ndy1 = dy1 / len1;
-          const ndx2 = dx2 / len2;
-          const ndy2 = dy2 / len2;
-
-          // Calculate the maximum radius based on edge lengths
-          const maxRadius = Math.max(len1 / 2, len2 / 2);
-          const cornerRadius = Math.min(this.props.size.radius, maxRadius);
-
-          // Calculate arc start and end points
-          const arcStart = {
-            x: current.x - ndx1 * cornerRadius,
-            y: current.y - ndy1 * cornerRadius,
-          };
-          const arcEnd = {
-            x: current.x + ndx2 * cornerRadius,
-            y: current.y + ndy2 * cornerRadius,
-          };
-
-          if (i === 0) {
-            ctx.moveTo(arcStart.x, arcStart.y);
-          } else {
-            ctx.lineTo(arcStart.x, arcStart.y);
-          }
-
-          // Draw arc at corner
-          ctx.arcTo(current.x, current.y, arcEnd.x, arcEnd.y, cornerRadius);
+        // Calculate polygon vertices
+        const vertices: { x: number; y: number }[] = [];
+        for (let i = 0; i < this.props.size.count; i++) {
+          const angle = (i / this.props.size.count) * (2 * Math.PI) - Math.PI / 2;
+          vertices.push({
+            x: x + w / 2 + (w / 2) * Math.cos(angle),
+            y: y + h / 2 + (h / 2) * Math.sin(angle),
+          });
         }
-        ctx.closePath();
-      } else {
-        // Draw polygon without rounded corners (original behavior)
-        for (let i = 0; i < vertices.length; i++) {
-          if (i === 0) {
-            ctx.moveTo(vertices[i].x, vertices[i].y);
-          } else {
-            ctx.lineTo(vertices[i].x, vertices[i].y);
+
+        if (this.props.size.radius > 0) {
+          // Draw polygon with rounded corners
+          for (let i = 0; i < vertices.length; i++) {
+            const current = vertices[i];
+            const next = vertices[(i + 1) % vertices.length];
+            const prev = vertices[(i - 1 + vertices.length) % vertices.length];
+
+            // Calculate vectors from current vertex to adjacent vertices
+            const dx1 = current.x - prev.x;
+            const dy1 = current.y - prev.y;
+            const dx2 = next.x - current.x;
+            const dy2 = next.y - current.y;
+
+            // Normalize vectors
+            const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            const ndx1 = dx1 / len1;
+            const ndy1 = dy1 / len1;
+            const ndx2 = dx2 / len2;
+            const ndy2 = dy2 / len2;
+
+            // Calculate the maximum radius based on edge lengths
+            const maxRadius = Math.max(len1 / 2, len2 / 2);
+            const cornerRadius = Math.min(this.props.size.radius, maxRadius);
+
+            // Calculate arc start and end points
+            const arcStart = {
+              x: current.x - ndx1 * cornerRadius,
+              y: current.y - ndy1 * cornerRadius,
+            };
+            const arcEnd = {
+              x: current.x + ndx2 * cornerRadius,
+              y: current.y + ndy2 * cornerRadius,
+            };
+
+            if (i === 0) {
+              ctx.moveTo(arcStart.x, arcStart.y);
+            } else {
+              ctx.lineTo(arcStart.x, arcStart.y);
+            }
+
+            // Draw arc at corner
+            ctx.arcTo(current.x, current.y, arcEnd.x, arcEnd.y, cornerRadius);
           }
+          ctx.closePath();
+        } else {
+          // Draw polygon without rounded corners (original behavior)
+          for (let i = 0; i < vertices.length; i++) {
+            if (i === 0) {
+              ctx.moveTo(vertices[i].x, vertices[i].y);
+            } else {
+              ctx.lineTo(vertices[i].x, vertices[i].y);
+            }
+          }
+          ctx.closePath();
         }
-        ctx.closePath();
-      }
 
-      DrawUtils.drawShadow(ctx, this.props.shadow);
-      DrawUtils.opacity(ctx, this.props.opacity);
-      DrawUtils.filters(ctx, this.props.filter);
-      DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
+        DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
 
-      if (this.props.stroke) {
-        ctx.stroke();
-      } else {
-        ctx.fill();
+        if (this.props.stroke) {
+          ctx.stroke();
+        } else {
+          ctx.fill();
+        }
+      } finally {
+        ctx.restore();
       }
-    } finally {
-      ctx.restore();
-    }
+    });
   }
 
   /**

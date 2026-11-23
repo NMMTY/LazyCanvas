@@ -1,6 +1,7 @@
 import { Signal, unwrap } from "../../core/Signal";
 import type { AnyLayer, ICanvas, ICanvasAdapter, ICanvasRenderingContext2D } from "../../types";
 import { LayerType } from "../../types";
+import type { Later } from "../../utils/LazyUtil";
 import { getChildren } from "../../utils/tree";
 import type { Group } from "../components/Group";
 import { Link } from "../helpers/Link";
@@ -432,7 +433,21 @@ export class LayerCache {
  * Draws one layer, through the cache of the canvas when it has one and the layer is eligible.
  * Every place that draws a layer goes through here.
  */
-export async function drawLayerCached(
+export function drawLayerCached(
+  layer: AnyLayer | Group,
+  ctx: ICanvasRenderingContext2D,
+  canvas: ICanvas,
+  manager: LayersManager,
+  debug: boolean,
+  adapter?: ICanvasAdapter,
+): Later {
+  // Without a cache the layer is drawn straight away, and nothing here is `async`.
+  if (!manager.cache) return layer.draw(ctx, canvas, manager, debug, adapter);
+  return drawThroughCache(manager.cache, layer, ctx, canvas, manager, debug, adapter);
+}
+
+async function drawThroughCache(
+  cache: LayerCache,
   layer: AnyLayer | Group,
   ctx: ICanvasRenderingContext2D,
   canvas: ICanvas,
@@ -440,8 +455,6 @@ export async function drawLayerCached(
   debug: boolean,
   adapter?: ICanvasAdapter,
 ): Promise<void> {
-  if (manager.cache && (await manager.cache.draw(layer, ctx, canvas, manager, debug, adapter))) {
-    return;
-  }
+  if (await cache.draw(layer, ctx, canvas, manager, debug, adapter)) return;
   await layer.draw(ctx, canvas, manager, debug, adapter);
 }

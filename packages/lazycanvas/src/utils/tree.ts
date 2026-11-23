@@ -68,3 +68,25 @@ export function bumpTreeVersion(): void {
 export function treeVersion(): number {
   return version;
 }
+
+/**
+ * Calls `visit` for every layer of the trees, parents before their children and in the order they are drawn.
+ *
+ * The same walk as {@link walkLayers}, without the iterator objects that a generator makes for every layer:
+ * this one runs on every frame.
+ */
+export function forEachLayer(
+  roots: LayerNode | LayerNode[],
+  visit: (layer: LayerNode) => void,
+): void {
+  const stack: LayerNode[] = Array.isArray(roots) ? [...roots].reverse() : [roots];
+
+  while (stack.length > 0) {
+    const layer = stack.pop() as LayerNode;
+    visit(layer);
+    const children = getChildren(layer);
+    for (let i = children.length - 1; i >= 0; i--) {
+      stack.push(children[i]);
+    }
+  }
+}

@@ -63,6 +63,19 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   `staggerDelays()` gives the delays.
 
 ### Changed
+- **Drawing allocates a quarter of what it did** (`@nmmty/lazycanvas`): every `draw` was an `async` function, and
+  a frame draws thousands of layers, so the promise and state object of each call were most of what a frame
+  allocated. `Morph`, `Text`, `Line`, `Polygon`, `Bezier`, `Quadratic`, `Path2D` and `Group` now draw straight
+  through and only a layer that has to wait (an image, a pattern) returns a promise, after which the rest of the
+  tree continues in the same order; a layer that throws still does not stop its siblings. Besides that: no
+  allocation for a position or size that is a plain number, one reused render record per layer instead of one per
+  draw, signal bindings split once instead of per frame, no generator in the per-frame state update, and
+  `Group` no longer sets the blend mode or the shadow again when nothing changed. Allocation per frame (sampling
+  profiler, fake canvas) went from 5.6 to 1.3 MB on the complex scene and from 0.52 to 0.12 MB on the medium one;
+  frame time −17% (12.7 → 10.6 ms) and −5% (1.53 → 1.45 ms), and with a flex layout −34% (3.8 → 2.5 ms). The pixels
+  are the same: `node scripts/bench/parity.mjs --against <checkout>` renders every layer type, signals and a
+  throwing layer in two builds and compares hashes of the frames. `Layer.draw` may now return `void` instead of a
+  promise; callers that `await` it are unaffected.
 - **The layout pass is skipped while nothing it depends on has changed** (`@nmmty/lazycanvas`): it used to build
   a tree for the flex engine, run it and copy the result back on every frame, and now the last answer is reused
   while the layers in the flow, their `layout` rules (compared by value), the measured size of their text and the

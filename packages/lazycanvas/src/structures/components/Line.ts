@@ -9,12 +9,15 @@ import {
 } from "../../types";
 import {
   DrawUtils,
+  type Later,
   LazyError,
   LazyLog,
   defaultArg,
   isColor,
   parseFillStyle,
   parser,
+  scalar,
+  withFill,
 } from "../../utils";
 import type { LayersManager } from "../managers";
 import { BaseLayer, type IBaseLayer, type IBaseLayerMisc, type IBaseLayerProps } from "./BaseLayer";
@@ -183,52 +186,55 @@ export class Line extends BaseLayer<ILineProps> {
    * @param {LayersManager} [manager] - The layer's manager.
    * @param {boolean} [debug] - Whether to enable debug logging.
    */
-  async draw(
+  draw(
     ctx: ICanvasRenderingContext2D,
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-  ): Promise<void> {
-    const parcer = parser(ctx, canvas, manager);
-
-    const { xs, ys, xe, ye } = parcer.parseBatch({
-      xs: { v: this.props.position.x },
-      ys: { v: this.props.position.y, options: defaultArg.vl(true) },
-      xe: { v: this.props.position.endX },
-      ye: { v: this.props.position.endY, options: defaultArg.vl(true) },
-    });
+  ): Later {
+    const position = this.props.position;
+    const xs = scalar(position.x, ctx, canvas, manager);
+    const ys = scalar(position.y, ctx, canvas, manager, true);
+    const xe = scalar(position.endX, ctx, canvas, manager);
+    const ye = scalar(position.endY, ctx, canvas, manager, true);
 
     const width = Math.abs(xe - xs);
     const height = Math.abs(ye - ys);
-    const fillStyle = await parseFillStyle(ctx, this.props.color, {
-      debug,
-      layer: { width, height, x: Math.min(xs, xe), y: Math.min(ys, ye), align: "none" },
-      manager,
+    // A plain colour is the fill style as it is; anything else (gradient, pattern) may have to wait.
+    const color = this.props.color;
+    const fill =
+      typeof color === "string" && color !== ""
+        ? color
+        : parseFillStyle(ctx, color, {
+            debug,
+            layer: { width, height, x: Math.min(xs, xe), y: Math.min(ys, ye), align: "none" },
+            manager,
+          });
+    return withFill(fill, (fillStyle) => {
+      if (debug) LazyLog.log("none", "Line:", { xs, ys, xe, ye, width, height });
+
+      ctx.save();
+      try {
+        this.applyTransform(
+          ctx,
+          { x: Math.min(xs, xe), y: Math.min(ys, ye), width, height },
+          undefined,
+          { x: xs, y: ys, width, height },
+        );
+        DrawUtils.drawShadow(ctx, this.props.shadow);
+        DrawUtils.opacity(ctx, this.props.opacity);
+        DrawUtils.filters(ctx, this.props.filter);
+        DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
+
+        ctx.beginPath();
+        ctx.moveTo(xs, ys);
+        ctx.lineTo(xe, ye);
+        ctx.stroke();
+        ctx.closePath();
+      } finally {
+        ctx.restore();
+      }
     });
-
-    if (debug) LazyLog.log("none", "Line:", { xs, ys, xe, ye, width, height });
-
-    ctx.save();
-    try {
-      this.applyTransform(
-        ctx,
-        { x: Math.min(xs, xe), y: Math.min(ys, ye), width, height },
-        undefined,
-        { x: xs, y: ys, width, height },
-      );
-      DrawUtils.drawShadow(ctx, this.props.shadow);
-      DrawUtils.opacity(ctx, this.props.opacity);
-      DrawUtils.filters(ctx, this.props.filter);
-      DrawUtils.fillStyle(ctx, fillStyle, this.props.stroke);
-
-      ctx.beginPath();
-      ctx.moveTo(xs, ys);
-      ctx.lineTo(xe, ye);
-      ctx.stroke();
-      ctx.closePath();
-    } finally {
-      ctx.restore();
-    }
   }
 
   /**

@@ -6,7 +6,7 @@ import {
   ModernRenderPipeline,
 } from "../structures/managers";
 import { type AnyExport, type AnyLayer, Export, type ICanvas, type ICanvasAdapter } from "../types";
-import { treeVersion, walkLayers, yieldToEventLoop } from "../utils";
+import { forEachLayer, treeVersion, walkLayers, yieldToEventLoop } from "../utils";
 import type { Signal, ThreadGenerator } from "./Signal";
 import { ThreadScheduler } from "./ThreadScheduler";
 
@@ -276,11 +276,10 @@ export class Scene {
   }
 
   private updateAllStates(time: number): void {
-    for (const layer of walkLayers(this.allLayers)) {
-      if ("updateState" in layer && typeof layer.updateState === "function") {
-        (layer as { updateState(t: number): void }).updateState(time);
-      }
-    }
+    forEachLayer(this.allLayers, (layer) => {
+      const updatable = layer as { updateState?: (t: number) => void };
+      if (typeof updatable.updateState === "function") updatable.updateState(time);
+    });
   }
 
   /**
