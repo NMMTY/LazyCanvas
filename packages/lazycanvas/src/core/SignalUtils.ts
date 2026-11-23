@@ -1,7 +1,9 @@
 import { LazyError } from "../utils/LazyUtil";
+import { type Clock, TIME_EPS, requireClock, wakeOf } from "./Clock";
 import { durationOf, withDuration } from "./Duration";
-import { type Signal, type ThreadGenerator, timeReached } from "./Signal";
+import type { Signal, ThreadGenerator } from "./Signal";
 import type { SpringConfig, SpringPresetName } from "./Spring";
+import { ThreadScheduler } from "./ThreadScheduler";
 
 /** Sum of the lengths, or `undefined` if one of them is not known. */
 function totalOf(animations: object[]): number | undefined {
@@ -31,6 +33,109 @@ function tagged<T extends object>(animation: T, length: number | undefined): T {
 }
 
 /**
+ * A thread of an animation: what the signals it animates are told when it is stopped.
+ * @internal
+ */
+interface Thread {
+  /** The thread (or the animation) this one belongs to. */
+  parent: unknown;
+}
+
+/**
+ * Animations running side by side, each asleep until it is due.
+ *
+ * It is what `all`, `any`, `loopFor` and `timeline` are made of. Each animation has its own thread of
+ * ownership: the animations it installs on signals are marked as its own, so that if it is stopped
+ * (because another one finished first, or time ran out) the signals stay where they were.
+ */
+class Concurrent<Tag = undefined> {
+  private children: Array<{
+    gen: ThreadGenerator;
+    wake: number | null;
+    last: number;
+    thread: Thread;
+    tag: Tag | undefined;
+  }> = [];
+
+  constructor(
+    private readonly clock: Clock,
+    private readonly onFinish?: (tag: Tag | undefined) => void,
+  ) {}
+
+  get size(): number {
+    return this.children.length;
+  }
+
+  /** Starts an animation: runs it to its first `yield`, now. */
+  start(gen: ThreadGenerator, tag?: Tag): void {
+    const thread: Thread = { parent: this.clock.owner };
+    const result = this.resume(thread, () => gen.next());
+    if (result.done) {
+      this.onFinish?.(tag);
+    } else {
+      this.children.push({ gen, wake: wakeOf(result.value), last: this.clock.time, thread, tag });
+    }
+  }
+
+  /** The time the next of them is due: a time it asked for, or a step of the grid for one that is polled. */
+  nextWake(): number {
+    let next = Number.POSITIVE_INFINITY;
+    for (const child of this.children) {
+      const due = child.wake === null ? this.clock.nextGrid(this.clock.time) : child.wake;
+      if (due < next) next = due;
+    }
+    return next;
+  }
+
+  /** Resumes what is due now. */
+  advance(): void {
+    const now = this.clock.time;
+    for (let i = 0; i < this.children.length; ) {
+      const child = this.children[i];
+      const due =
+        child.wake === null
+          ? this.clock.onGrid(now) && now > child.last + TIME_EPS
+          : child.wake <= now + TIME_EPS;
+      if (!due) {
+        i++;
+        continue;
+      }
+
+      const delta = now - child.last;
+      child.last = now;
+      const result = this.resume(child.thread, () => child.gen.next(delta));
+      if (result.done) {
+        this.children.splice(i, 1);
+        this.onFinish?.(child.tag);
+      } else {
+        child.wake = wakeOf(result.value);
+        i++;
+      }
+    }
+  }
+
+  /** Stops what is left. What it was animating stays where it is. */
+  cancel(): void {
+    for (const child of this.children) {
+      for (const signal of [...this.clock.driven]) {
+        if (signal.drivenBy(child.thread)) signal.freeze();
+      }
+    }
+    this.children = [];
+  }
+
+  private resume<R>(thread: Thread, run: () => R): R {
+    const previous = this.clock.owner;
+    this.clock.owner = thread;
+    try {
+      return run();
+    } finally {
+      this.clock.owner = previous;
+    }
+  }
+}
+
+/**
  * Run multiple animations in parallel
  * @param generators - Array of animation generators
  */
@@ -39,22 +144,12 @@ export function all(...generators: ThreadGenerator[]): ThreadGenerator {
 }
 
 function* runAll(generators: ThreadGenerator[]): ThreadGenerator {
-  const active = [...generators];
+  const group = new Concurrent(requireClock());
+  for (const generator of generators) group.start(generator);
 
-  // Initialize all generators before starting
-  for (const gen of active) {
-    gen.next(); // Prime the generator
-  }
-
-  while (active.length > 0) {
-    const delta = yield;
-
-    for (let i = active.length - 1; i >= 0; i--) {
-      const result = active[i].next(delta);
-      if (result.done) {
-        active.splice(i, 1);
-      }
-    }
+  while (group.size > 0) {
+    yield group.nextWake();
+    group.advance();
   }
 }
 
@@ -99,24 +194,27 @@ export function loopFor(generator: () => ThreadGenerator, duration: number): Thr
 }
 
 function* runLoopFor(generator: () => ThreadGenerator, duration: number): ThreadGenerator {
-  let elapsed = 0;
+  const clock = requireClock();
+  const end = clock.time + duration;
+  let withoutTime = 0;
 
-  while (!timeReached(elapsed, duration)) {
-    const gen = generator();
+  while (clock.time < end - TIME_EPS) {
+    const began = clock.time;
+    const group = new Concurrent(clock);
+    group.start(generator());
 
-    let result = gen.next();
-    while (!result.done && !timeReached(elapsed, duration)) {
-      const delta = yield;
-      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
-      elapsed += actualDelta;
-      result = gen.next(delta);
+    while (group.size > 0) {
+      yield Math.min(group.nextWake(), end);
+      if (clock.time >= end - TIME_EPS) {
+        group.cancel();
+        return;
+      }
+      group.advance();
     }
 
-    // If animation finished before duration, restart
-    if (result.done && !timeReached(elapsed, duration)) {
-      // Loop continues
-    } else {
-      break;
+    // The body ended and, if it took no time at all, the loop would never get to the end.
+    if (clock.time === began && ++withoutTime > 1000) {
+      throw new LazyError("loopFor: the animation takes no time, so the loop would never end");
     }
   }
 }
@@ -130,13 +228,8 @@ export function waitFor(duration: number): ThreadGenerator {
 }
 
 function* runWaitFor(duration: number): ThreadGenerator {
-  let elapsed = 0;
-
-  while (!timeReached(elapsed, duration)) {
-    const delta = yield;
-    const actualDelta = typeof delta === "number" ? delta : 1 / 60;
-    elapsed += actualDelta;
-  }
+  if (duration <= 0) return;
+  yield requireClock().time + duration;
 }
 
 /**
@@ -158,19 +251,24 @@ function* runDelay(duration: number, generator: ThreadGenerator): ThreadGenerato
  * @param generators - Array of animation generators
  */
 export function* any(...generators: ThreadGenerator[]): ThreadGenerator {
-  const active = [...generators];
+  const clock = requireClock();
+  let finished = false;
+  const group = new Concurrent(clock, () => {
+    finished = true;
+  });
 
-  while (active.length > 0) {
-    const delta = yield;
-
-    for (const gen of active) {
-      const result = gen.next(delta);
-      if (result.done) {
-        // Cancel all other generators
-        return;
-      }
-    }
+  for (const generator of generators) {
+    group.start(generator);
+    if (finished) break;
   }
+
+  while (!finished && group.size > 0) {
+    yield group.nextWake();
+    group.advance();
+  }
+
+  // Cancel all other generators
+  group.cancel();
 }
 
 /**
@@ -501,47 +599,43 @@ export class Timeline {
   }
 
   private *run(): ThreadGenerator {
+    const clock = requireClock();
+    const origin = clock.time;
     const entries = this.entries;
     const started: boolean[] = entries.map(() => false);
-    const active = new Map<number, ThreadGenerator>();
-    let time = 0;
-
-    const start = (index: number) => {
-      started[index] = true;
-      const generator = entries[index].generator;
-      if (!generator.next().done) active.set(index, generator);
-      else finish(index);
-    };
 
     // An entry that follows the previous one starts the moment that one ends.
-    const finish = (index: number) => {
-      const next = index + 1;
-      if (next < entries.length && entries[next].at === null && !started[next]) start(next);
+    const group = new Concurrent<number>(clock, (index) => {
+      const next = (index as number) + 1;
+      if (next < entries.length && entries[next].at === null && !started[next]) begin(next);
+    });
+
+    const begin = (index: number) => {
+      started[index] = true;
+      group.start(entries[index].generator, index);
     };
 
     const startDue = () => {
       for (let i = 0; i < entries.length; i++) {
         const at = entries[i].at;
-        if (!started[i] && at !== null && timeReached(time, at)) start(i);
+        if (!started[i] && at !== null && clock.time >= origin + at - TIME_EPS) begin(i);
       }
     };
 
     startDue();
 
-    while (started.includes(false) || active.size > 0) {
-      const delta = yield;
-      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
-      time += actualDelta;
-
-      // Advance what is already running first: an animation that starts now begins at
-      // this moment, so it must not take a step before the next one.
-      for (const [index, generator] of [...active]) {
-        if (generator.next(delta).done) {
-          active.delete(index);
-          finish(index);
-        }
+    while (started.includes(false) || group.size > 0) {
+      // Asleep until what is running is due, or until the next entry is to start.
+      let next = group.nextWake();
+      for (let i = 0; i < entries.length; i++) {
+        const at = entries[i].at;
+        if (!started[i] && at !== null) next = Math.min(next, origin + at);
       }
+      if (!Number.isFinite(next)) break;
 
+      yield next;
+      // What is already running goes first: an animation that starts now begins at this moment.
+      group.advance();
       startDue();
     }
   }
@@ -555,37 +649,30 @@ export function timeline(): Timeline {
 }
 
 /**
- * Calculate the total duration of an animation by running it with a fixed timestep
+ * Calculate the total duration of an animation by running it to its end
  * @param generatorFactory - Function that creates the animation generator
  * @param maxDuration - Maximum duration to simulate (safety limit, default: 3600s = 1 hour)
- * @param timestep - Simulation timestep in seconds (default: 1/60)
+ * @param timestep - The grid, in seconds, that a generator that is polled runs on (default: 1/240)
  * @returns Total duration in seconds
  */
 export function calculateDuration(
   generatorFactory: () => ThreadGenerator,
   maxDuration = 3600,
-  timestep: number = 1 / 60,
+  timestep?: number,
 ): number {
-  const gen = generatorFactory();
-  let totalTime = 0;
+  // The animation runs the way it does in a scene, on a scheduler of its own that is thrown away afterwards.
+  // What it animates is left where it ended up.
+  const scheduler = new ThreadScheduler({ history: false, step: timestep });
+  scheduler.add(generatorFactory());
+  const duration = scheduler.runToEnd(maxDuration);
 
-  // Initialize generator
-  gen.next();
-
-  // Run generator until completion
-  let result = gen.next(timestep);
-  while (!result.done && totalTime < maxDuration) {
-    totalTime += timestep;
-    result = gen.next(timestep);
-  }
-
-  if (totalTime >= maxDuration) {
+  if (scheduler.hasActiveThreads()) {
     console.warn(
       `Animation duration calculation reached maximum limit of ${maxDuration}s. Animation may be infinite or very long.`,
     );
   }
 
-  return totalTime;
+  return duration;
 }
 
 /**
@@ -595,7 +682,7 @@ export function calculateDuration(
 export function calculateParallelDuration(
   generatorFactories: (() => ThreadGenerator)[],
   maxDuration = 3600,
-  timestep: number = 1 / 60,
+  timestep?: number,
 ): number {
   const durations = generatorFactories.map((factory) =>
     calculateDuration(factory, maxDuration, timestep),
@@ -610,7 +697,7 @@ export function calculateParallelDuration(
 export function calculateSequentialDuration(
   generatorFactories: (() => ThreadGenerator)[],
   maxDuration = 3600,
-  timestep: number = 1 / 60,
+  timestep?: number,
 ): number {
   let totalDuration = 0;
 

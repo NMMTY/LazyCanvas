@@ -203,7 +203,7 @@ describe("moving the timeline to any time", () => {
       })(),
     );
     for (let t = 0; t <= 5; t += 0.5) await scene.renderFrame(t);
-    await expect(scene.renderFrame(0)).rejects.toThrow(/history before step/);
+    await expect(scene.renderFrame(0)).rejects.toThrow(/history before/);
     await expect(scene.renderFrame(4.8)).resolves.toBeUndefined();
   });
 });
@@ -373,7 +373,7 @@ describe("SignalTrace limits", () => {
     }
     expect(trace.size).toBeLessThanOrEqual(200);
     expect(trace.earliest).toBeGreaterThan(500);
-    expect(() => trace.restore(10)).toThrow(/history before step/);
+    expect(() => trace.restore(10)).toThrow(/history before/);
     trace.restore(1000);
     expect(s.value()).toBe(1000);
     trace.restore(trace.earliest + 3);

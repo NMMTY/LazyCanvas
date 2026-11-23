@@ -494,25 +494,21 @@ export class Scene {
     if (this.factories.length === 0) return 0;
 
     this.watchSignals();
-    const signals = this.signalList;
-    const saved = signals.map((signal) => [signal, signal.value()] as const);
+    const saved = this.signalList.map((signal) => [signal, signal.captureState()] as const);
 
+    // The animations run to their end on a scheduler of their own, which is thrown away afterwards.
     const sandbox = new ThreadScheduler({ step: this.scheduler.step, history: false });
     for (const factory of this.factories) sandbox.add(factory());
 
-    let steps = 0;
-    const maxSteps = Math.ceil(maxSeconds / sandbox.step);
+    let duration: number;
     try {
-      sandbox.update(0);
-      while (sandbox.hasActiveThreads() && steps < maxSteps) {
-        steps++;
-        sandbox.update(steps * sandbox.step);
-      }
+      duration = sandbox.runToEnd(maxSeconds);
     } finally {
-      for (const [signal, value] of saved) signal.restore(value);
+      sandbox.clear();
+      for (const [signal, state] of saved) signal.restoreState(state);
     }
 
-    return Math.round(steps * sandbox.step * 1e9) / 1e9;
+    return Math.round(duration * 1e9) / 1e9;
   }
 
   /** Whether any animation is still running. */

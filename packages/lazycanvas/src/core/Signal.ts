@@ -1,3 +1,4 @@
+import { type Clock, TIME_EPS, createClock, requireClock, withClock } from "./Clock";
 import { withDuration } from "./Duration";
 import { type Interpolator, getInterpolator, lerpColorHSL, lerpColorRGB } from "./Interpolation";
 import { type Keyframe, Keyframes, type KeyframesOptions } from "./Keyframes";
@@ -155,6 +156,52 @@ export interface SignalOptions<T> {
 }
 
 /**
+ * What drives a signal while an animation runs on it: its value, as a function of time.
+ *
+ * The animation does not write the value on every step; it installs a driver and sleeps until the driver ends,
+ * and the value is worked out when somebody reads it. That is why a scene with thousands of running tweens costs
+ * nothing between the moments they start and end, and why the value at any time is exact.
+ */
+export interface Driver<T> {
+  /** Time it starts at, in seconds. */
+  readonly start: number;
+  /** Time it ends at, in seconds. */
+  readonly end: number;
+  /** The value at `time`, which is between `start` and `end`. */
+  valueAt(time: number): T;
+  /** How fast a numeric value is changing at `time`, in units per second. */
+  velocityAt(time: number): number;
+  /** The thread that installed it. @internal */
+  owner?: unknown;
+}
+
+/**
+ * Everything about a signal that a timeline has to put back to go to an earlier time.
+ */
+export interface SignalState<T = unknown> {
+  driver: Driver<T> | null;
+  /** The clock the driver is read against. */
+  clock: Clock | null;
+  value: T;
+  velocity: number;
+}
+
+/** The window over which the speed of a numeric driver is measured, in seconds: one step of the grid. */
+const VELOCITY_WINDOW = 1 / 240;
+
+/** The slope of `valueAt` over the last window before `time` (or the first one after it, at the start). */
+function slopeAt(
+  valueAt: (time: number) => number,
+  start: number,
+  end: number,
+  time: number,
+): number {
+  const a = Math.max(start, Math.min(time - VELOCITY_WINDOW, end - VELOCITY_WINDOW));
+  const b = Math.min(end, a + VELOCITY_WINDOW);
+  return b > a ? (valueAt(b) - valueAt(a)) / (b - a) : 0;
+}
+
+/**
  * Signal class - reactive value that can be animated
  */
 export class Signal<T = number> {
@@ -162,10 +209,16 @@ export class Signal<T = number> {
   private _initialValue: T;
   private _velocity = 0;
   private _currentThread: ThreadGenerator | null = null;
+  /** What drives the value right now, instead of `_value`. */
+  private _driver: Driver<T> | null = null;
+  /** The clock `_driver` is read against. */
+  private _clock: Clock | null = null;
   /** Timelines following this signal. Weak, so a signal does not keep a finished scene's history alive. */
   private _traces: Array<WeakRef<TraceListener>> | undefined;
   private _interpolator: Interpolator<T>;
   private _colorSpace: "rgb" | "hsl";
+  /** For stepping the signal's own animation by hand with `update`. */
+  private _manual: { clock: Clock; wake: number | null; primed: boolean } | undefined;
 
   constructor(initial: T, options?: SignalOptions<T>) {
     this._value = initial;
@@ -175,17 +228,26 @@ export class Signal<T = number> {
   }
 
   /**
-   * Get current value at specific time (backward compatibility)
+   * The value at a given time. While an animation drives the signal this is the value it has at `time`.
    */
   public get(time: number): T {
-    return this._value;
+    const driver = this._driver;
+    if (driver === null) return this._value;
+    return driver.valueAt(
+      time < driver.start ? driver.start : time > driver.end ? driver.end : time,
+    );
   }
 
   /**
    * Get current value (sync)
    */
   public value(): T {
-    return this._value;
+    const driver = this._driver;
+    if (driver === null) return this._value;
+    const time = (this._clock as Clock).time;
+    return driver.valueAt(
+      time < driver.start ? driver.start : time > driver.end ? driver.end : time,
+    );
   }
 
   /**
@@ -196,13 +258,19 @@ export class Signal<T = number> {
    * still, and for values that are not numbers.
    */
   public velocity(): number {
-    return this._velocity;
+    const driver = this._driver;
+    if (driver === null) return this._velocity;
+    const time = (this._clock as Clock).time;
+    return driver.velocityAt(
+      time < driver.start ? driver.start : time > driver.end ? driver.end : time,
+    );
   }
 
   /**
    * Set value directly
    */
   public set(value: T): void {
+    this.dropDriver();
     this._value = value;
     this._velocity = 0;
     this._currentThread = null;
@@ -212,19 +280,74 @@ export class Signal<T = number> {
   /**
    * Puts a value back without touching the running animation.
    *
-   * This is what the scene's timeline uses when it moves to another point in time:
-   * unlike {@link Signal.set} it does not cancel the animation that drives the
-   * signal. Call `set` for ordinary assignments.
+   * Prefer {@link Signal.restoreState}, which also puts back what was driving the signal. Call `set` for
+   * ordinary assignments.
    */
   public restore(value: T, velocity = 0): void {
+    this._driver = null;
     this._value = value;
     this._velocity = velocity;
+  }
+
+  /**
+   * What a timeline needs to remember to put the signal back as it is now.
+   * @internal
+   */
+  public captureState(): SignalState<T> {
+    return {
+      driver: this._driver,
+      clock: this._clock,
+      value: this._value,
+      velocity: this._velocity,
+    };
+  }
+
+  /**
+   * Puts the signal back as {@link Signal.captureState} found it, without touching the running animation's thread.
+   * @internal
+   */
+  public restoreState(state: SignalState<T>): void {
+    this._driver = state.driver;
+    if (state.driver !== null) this._clock = state.clock;
+    this._value = state.value;
+    this._velocity = state.velocity;
+  }
+
+  /**
+   * Stops what drives the signal and leaves it at the value it has now.
+   * @internal
+   */
+  public freeze(): void {
+    const driver = this._driver;
+    if (driver === null) return;
+    const value = this.value();
+    const velocity = this.velocity();
+    this.dropDriver();
+    this._value = value;
+    this._velocity = velocity;
+    this.changed();
+  }
+
+  /**
+   * Whether the animation running on this signal was started by `owner`.
+   * @internal
+   */
+  public drivenBy(owner: unknown): boolean {
+    // The animation that installed the driver may be one of several side by side in a thread, each with
+    // its own owner pointing to the one it belongs to.
+    let current = this._driver?.owner;
+    while (current !== undefined && current !== null) {
+      if (current === owner) return true;
+      current = (current as { parent?: unknown }).parent;
+    }
+    return false;
   }
 
   /**
    * Reset to initial value
    */
   public reset(): void {
+    this.dropDriver();
     this._value = this._initialValue;
     this._velocity = 0;
     this._currentThread = null;
@@ -250,6 +373,40 @@ export class Signal<T = number> {
       if (trace) trace.dirty(this);
       else traces.splice(i, 1);
     }
+  }
+
+  private dropDriver(): void {
+    if (this._driver === null) return;
+    this._driver = null;
+    this._clock?.driven.delete(this);
+  }
+
+  /** Puts a driver on the signal. An animation that was driving it is replaced. */
+  private drive(driver: Driver<T>, clock: Clock): void {
+    driver.owner = clock.owner;
+    this._driver = driver;
+    this._clock = clock;
+    clock.driven.add(this);
+    this.changed();
+  }
+
+  /** The animation that installed `driver` has ended: the signal stays at its final value. */
+  private settle(driver: Driver<T>, value: T, velocity = 0): void {
+    // Something else may have taken over while this one was running; it keeps the signal.
+    if (this._driver !== driver) return;
+    this._driver = null;
+    this._clock?.driven.delete(this);
+    this._value = value;
+    this._velocity = velocity;
+    this.changed();
+  }
+
+  /** Puts a value straight on the signal, as an animation of no length does. */
+  private jump(value: T): void {
+    this.dropDriver();
+    this._value = value;
+    this._velocity = 0;
+    this.changed();
   }
 
   /**
@@ -329,61 +486,68 @@ export class Signal<T = number> {
     duration: number,
     config?: Partial<TweenConfig<T>> & { easing?: EasingFunction },
   ): ThreadGenerator {
-    const from = this._value;
+    const from = this.value();
     const easing = config?.easing || Easing.linear;
     const interpolator = config?.interpolator || this._getInterpolator(from, value);
 
     if (duration <= 0) {
-      this.assign(value, 0);
+      this.jump(value);
       return;
     }
 
-    let elapsed = 0;
+    const clock = requireClock();
+    const start = clock.time;
+    const end = start + duration;
+    const numeric = typeof from === "number" && typeof value === "number";
 
-    while (!timeReached(elapsed, duration)) {
-      const delta = yield;
-      const actualDelta = typeof delta === "number" ? delta : 1 / 60; // Default 60fps
-      elapsed += actualDelta;
+    // At either end it is exactly the value it started from or goes to, not what an interpolator makes of 0 or 1.
+    const valueAt = (time: number): T => {
+      const progress = (time - start) / duration;
+      if (progress <= 0) return from;
+      if (progress >= 1) return value;
+      return interpolator(from, value, easing(progress));
+    };
+    const driver: Driver<T> = {
+      start,
+      end,
+      valueAt,
+      velocityAt: numeric
+        ? (time) => slopeAt(valueAt as unknown as (t: number) => number, start, end, time)
+        : () => 0,
+    };
 
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easing(progress);
-      this.assign(interpolator(from, value, easedProgress), actualDelta);
-
-      // Critical: ensure we don't overshoot
-      if (timeReached(elapsed, duration)) {
-        this.assign(value, actualDelta);
-        break;
-      }
-    }
+    this.drive(driver, clock);
+    yield end;
+    // The speed it ends at is what whatever comes next continues from.
+    this.settle(driver, value, driver.velocityAt(end));
   }
 
   private *springRun(target: T, config: SpringConfig | SpringPresetName): ThreadGenerator {
     const { motion, from, numeric, interpolator } = this.solve(target, config);
 
     if (motion.duration <= 0) {
-      this.assign(target, 0);
-      this._velocity = 0;
-      this.changed();
+      this.jump(target);
       return;
     }
 
-    let elapsed = 0;
-    while (!timeReached(elapsed, motion.duration)) {
-      const delta = yield;
-      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
-      elapsed += actualDelta;
+    const clock = requireClock();
+    const start = clock.time;
+    const end = start + motion.duration;
 
-      if (timeReached(elapsed, motion.duration)) break;
+    const driver: Driver<T> = {
+      start,
+      end,
+      valueAt: (time) => {
+        if (time <= start) return from;
+        const position = motion.position(time - start);
+        return numeric ? (position as unknown as T) : interpolator(from, target, position);
+      },
+      velocityAt: numeric ? (time) => motion.velocity(time - start) : () => 0,
+    };
 
-      const position = motion.position(elapsed);
-      this._value = numeric ? (position as unknown as T) : interpolator(from, target, position);
-      this._velocity = numeric ? motion.velocity(elapsed) : 0;
-      this.changed();
-    }
-
-    this._value = target;
-    this._velocity = 0;
-    this.changed();
+    this.drive(driver, clock);
+    yield end;
+    this.settle(driver, target);
   }
 
   private *keyframesRun(
@@ -394,34 +558,38 @@ export class Signal<T = number> {
     // holds now, which may have been changed by an animation that ran before this one.
     const track = new Keyframes(frames, {
       colorSpace: this._colorSpace,
-      from: this._value,
+      from: this.value(),
       ...options,
     });
 
-    this.assign(track.valueAt(0), 0);
-
-    let elapsed = 0;
-    while (!timeReached(elapsed, track.duration)) {
-      const delta = yield;
-      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
-      elapsed += actualDelta;
-
-      this.assign(track.valueAt(Math.min(elapsed, track.duration)), actualDelta);
+    if (track.duration <= 0) {
+      this.jump(track.valueAt(0));
+      return;
     }
 
-    this.assign(track.valueAt(track.duration), 0);
-    this._velocity = 0;
-    this.changed();
+    const clock = requireClock();
+    const start = clock.time;
+    const end = start + track.duration;
+    const numeric = typeof track.valueAt(0) === "number";
+
+    const valueAt = (time: number): T => track.valueAt(time - start);
+    const driver: Driver<T> = {
+      start,
+      end,
+      valueAt,
+      velocityAt: numeric
+        ? (time) => slopeAt(valueAt as unknown as (t: number) => number, start, end, time)
+        : () => 0,
+    };
+
+    this.drive(driver, clock);
+    yield end;
+    this.settle(driver, track.valueAt(track.duration));
   }
 
   private *waitRun(duration: number): ThreadGenerator {
-    let elapsed = 0;
-
-    while (!timeReached(elapsed, duration)) {
-      const delta = yield;
-      const actualDelta = typeof delta === "number" ? delta : 1 / 60;
-      elapsed += actualDelta;
-    }
+    if (duration <= 0) return;
+    yield requireClock().time + duration;
   }
 
   /**
@@ -433,19 +601,31 @@ export class Signal<T = number> {
   }
 
   /**
-   * Update signal (called by scheduler)
+   * Steps the animation given to {@link Signal.run} by hand: `delta` seconds go by, and it runs if it was due.
+   * A `Scene` (or a `ThreadScheduler`) does this for you, for every animation at once.
    */
   public update(delta: number): boolean {
-    if (!this._currentThread) return false;
+    const thread = this._currentThread;
+    if (!thread) return false;
 
-    const result = this._currentThread.next(delta);
+    const manual = (this._manual ??= { clock: createClock(1 / 240), wake: null, primed: false });
+    manual.clock.time += delta;
 
-    if (result.done) {
-      this._currentThread = null;
-      return false;
-    }
+    return withClock(manual.clock, () => {
+      const due =
+        !manual.primed || manual.wake === null || manual.wake <= manual.clock.time + TIME_EPS;
+      if (!due) return true;
 
-    return true;
+      const result = manual.primed ? thread.next(delta) : thread.next();
+      manual.primed = true;
+      if (result.done) {
+        this._currentThread = null;
+        this._manual = undefined;
+        return false;
+      }
+      manual.wake = typeof result.value === "number" ? result.value : null;
+      return true;
+    });
   }
 
   /**
@@ -455,24 +635,13 @@ export class Signal<T = number> {
     return this._currentThread !== null;
   }
 
-  /** Sets the value and, for numbers, the speed it moved at over the last `delta` seconds. */
-  private assign(value: T, delta: number): void {
-    const previous = this._value;
-    this._value = value;
-    this._velocity =
-      delta > 0 && typeof previous === "number" && typeof value === "number"
-        ? (value - previous) / delta
-        : 0;
-    this.changed();
-  }
-
   /** Solves a spring from where this signal is now. */
   private solve(target: T, config: SpringConfig | SpringPresetName) {
-    const from = this._value;
+    const from = this.value();
     const numeric = typeof from === "number" && typeof target === "number";
     const interpolator = this._getInterpolator(from, target);
     const motion = numeric
-      ? solveSpring(from as number, target as number, config, this._velocity)
+      ? solveSpring(from as number, target as number, config, this.velocity())
       : // Anything else is blended by progress, from 0 to 1.
         solveSpring(0, 1, config);
     return { motion, from, numeric, interpolator };
