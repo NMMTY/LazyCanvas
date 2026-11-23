@@ -191,12 +191,20 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
     canvas: ICanvas,
     manager: LayersManager,
     debug: boolean,
-    adapter?: ICanvasAdapter,
+    adapter: ICanvasAdapter | undefined,
+    scope: { composite?: string },
   ): Promise<ICanvasRenderingContext2D> {
     if (debug) LazyLog.log("info", `Rendering ${layer.id}...\nData:`, layer.toJSON());
     if (!layer.visible) return ctx;
 
-    ctx.globalCompositeOperation = layer.props?.globalComposite || "source-over";
+    // Each assignment is a call into the native canvas, and nearly every layer is drawn in the mode the one
+    // before it was. `scope` remembers the mode of the layers drawn at this level (what is changed deeper is
+    // undone by `restore`), so it is only set when it changes.
+    const composite = layer.props?.globalComposite || "source-over";
+    if (scope.composite !== composite) {
+      ctx.globalCompositeOperation = composite;
+      scope.composite = composite;
+    }
 
     await drawLayerCached(layer, ctx, canvas, manager, debug, adapter);
 
@@ -220,9 +228,10 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
           ctx,
         );
 
+        const childScope = { composite: scope.composite };
         for (const child of children) {
           try {
-            await this.renderLayer(child, ctx, canvas, manager, debug, adapter);
+            await this.renderLayer(child, ctx, canvas, manager, debug, adapter, childScope);
           } catch (error) {
             errors.push(error);
           }
@@ -234,7 +243,9 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
       throwFirst(errors);
     }
 
-    ctx.shadowColor = "transparent";
+    // A layer sets its shadow inside its own `save` and `restore`, so there is nothing to undo unless it has one
+    // (or is a layer of someone else's that does not keep to that).
+    if (layer.props?.shadow) ctx.shadowColor = "transparent";
     return ctx;
   }
 
@@ -269,11 +280,13 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
       // One layer failing must not take its siblings down with it, nor leave the
       // context translated for whatever is drawn next: draw everything, put the
       // state back, and only then report.
+      // What the context is set to is not known on entry, so the first layer sets it.
+      const scope: { composite?: string } = {};
       for (const subLayer of this.layers) {
         if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
         if (subLayer.visible) {
           try {
-            await this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter);
+            await this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter, scope);
           } catch (error) {
             errors.push(error);
           }

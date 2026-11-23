@@ -9,6 +9,23 @@ export const LAYOUT_MANAGED_PROPS = ["position", "size", "centring"] as const;
  */
 const AUTHORED = Symbol.for("lazycanvas.authoredProps");
 
+/**
+ * A deep copy of plain data: numbers, strings, arrays and plain objects. Anything else (a `Link`, a signal)
+ * is kept as it is, since copying it would turn it into something else.
+ *
+ * `structuredClone` did this, but it goes through the serializer of the engine and cost about a tenth of a
+ * frame for a scene of a few hundred layers, since every layer is copied back every frame.
+ */
+function clonePlain<T>(value: T): T {
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(clonePlain) as T;
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) return value;
+  const copy: Record<string, unknown> = {};
+  for (const key in value) copy[key] = clonePlain((value as Record<string, unknown>)[key]);
+  return copy as T;
+}
+
 interface WithProps {
   props?: Record<string, any>;
 }
@@ -31,7 +48,7 @@ export function captureAuthoredProps(layer: WithProps): void {
 
   const snapshot: Record<string, any> = {};
   for (const key of LAYOUT_MANAGED_PROPS) {
-    if (key in props) snapshot[key] = structuredClone(props[key]);
+    if (key in props) snapshot[key] = clonePlain(props[key]);
   }
   (layer as any)[AUTHORED] = snapshot;
 }
@@ -51,7 +68,7 @@ export function restoreAuthoredProps(layer: WithProps): void {
   if (!props || captured === undefined) return;
 
   for (const key of LAYOUT_MANAGED_PROPS) {
-    if (key in captured) props[key] = structuredClone(captured[key]);
+    if (key in captured) props[key] = clonePlain(captured[key]);
     else delete props[key];
   }
 }

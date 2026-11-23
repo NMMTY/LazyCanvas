@@ -204,11 +204,7 @@ export class Morph extends BaseLayer<IMorphProps> {
       this.applyTransform(ctx, { x, y, width: w, height: h });
       ctx.beginPath();
       if (Object.keys(rad).length > 0) {
-        ctx.moveTo(x + w / 2, y);
-        ctx.arcTo(x + w, y, x + w, y + h / 2, rad.rightTop || rad.all || 0);
-        ctx.arcTo(x + w, y + h, x + w / 2, y + h, rad.rightBottom || rad.all || 0);
-        ctx.arcTo(x, y + h, x, y + h / 2, rad.leftBottom || rad.all || 0);
-        ctx.arcTo(x, y, x + w / 2, y, rad.leftTop || rad.all || 0);
+        DrawUtils.roundedRect(ctx, x, y, w, h, rad);
       } else {
         ctx.rect(x, y, w, h);
       }

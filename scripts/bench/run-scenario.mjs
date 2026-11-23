@@ -23,6 +23,7 @@ const load = (path) => {
 };
 
 const { NodeCanvasAdapter } = await load("packages/adapter-node/dist/index.mjs");
+const { createFakeAdapter } = await import("./fake-canvas.mjs");
 const lib = await load("packages/lazycanvas/dist/index.mjs");
 const { Fonts } = await load("packages/lazycanvas/dist/fonts/index.mjs");
 const {
@@ -42,7 +43,12 @@ const {
   waitFor,
 } = lib;
 
-const adapter = new NodeCanvasAdapter();
+// BENCH_FAKE=1: a canvas that draws nothing, to measure the library without the drawing (see fake-canvas.mjs).
+// Nothing else keeps the process alive while the layout engine (WebAssembly) is being set up.
+const keepAlive = process.env.BENCH_FAKE ? setInterval(() => {}, 1000) : null;
+const adapter = process.env.BENCH_FAKE
+  ? createFakeAdapter(new NodeCanvasAdapter())
+  : new NodeCanvasAdapter();
 const scenario = process.argv[2];
 const now = () => Number(process.hrtime.bigint()) / 1e6;
 
@@ -358,13 +364,25 @@ async function renderScenario(name) {
   for (let i = 1; i <= 10; i++) await scene.renderFrame(i / 60); // warm-up
 
   const times = [];
+  const callsBefore = adapter.calls?.total ?? 0;
   for (let i = 0; i < frames; i++) {
     const t = now();
     await scene.renderFrame((11 + i) / 60);
     times.push(now() - t);
   }
   const s = stats(times);
+  const canvasCallsPerFrame = adapter.calls
+    ? (adapter.calls.total - callsBefore) / frames
+    : undefined;
   return {
+    canvasCallsPerFrame,
+    canvasCalls: adapter.calls
+      ? Object.fromEntries(
+          Object.entries(adapter.calls.byName)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, n]) => [name, Math.round(n / (frames + 11))]),
+        )
+      : undefined,
     scenario: name,
     layers: built.layers,
     signals: built.signals,
@@ -582,3 +600,4 @@ const out = await (async () => {
   return renderScenario(scenario);
 })();
 console.log(JSON.stringify(out));
+clearInterval(keepAlive);
