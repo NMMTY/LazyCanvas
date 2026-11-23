@@ -27,6 +27,7 @@ const SCENARIOS = [
   { name: "medium-cache", both: true, group: "render" },
   { name: "complex", both: true, group: "render" },
   { name: "layout", both: true, group: "render" },
+  { name: "layout-mixed", both: true, group: "render" },
   { name: "xform-none", both: true, group: "render" },
   { name: "xform-legacy", both: true, group: "render" },
   { name: "xform-origin", both: false, group: "render" },

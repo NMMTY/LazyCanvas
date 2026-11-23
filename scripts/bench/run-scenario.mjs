@@ -315,6 +315,51 @@ function build(name, opts = {}) {
     return { scene, animations, layers: total, signals };
   }
 
+  if (name === "layout-mixed") {
+    // A flex layout with text in it that does not change, and animated layers placed by hand on top of it.
+    const scene = new Scene(1280, 720, sceneOpts);
+    scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
+    const grid = new Group({
+      layout: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+        padding: 16,
+        width: 1280,
+        height: 720,
+      },
+    });
+    for (let i = 0; i < 100; i++) {
+      grid.add(new Morph({ color: pick(), layout: { width: 90, height: 40 } }));
+      grid.add(new Text({ text: `Item ${i}`, color: "#e2e8f0", font: font(18) }));
+    }
+    const dots = [];
+    let signals = 0;
+    for (let i = 0; i < 100; i++) {
+      const x = createSignal(r() * 1200);
+      const y = createSignal(r() * 680);
+      signals += 2;
+      dots.push(
+        new Morph({
+          color: pick(),
+          size: { width: 14, height: 14, radius: { all: 7 } },
+          position: { x, y },
+          centring: "none",
+        }),
+      );
+      animations.push(() =>
+        loop(() =>
+          all(
+            chain(x.to(r() * 1200, 1.5), x.to(r() * 1200, 1.5)),
+            chain(y.to(r() * 680, 1.2), y.to(r() * 680, 1.2)),
+          ),
+        ),
+      );
+    }
+    scene.load(new Group({}).add(grid, ...dots));
+    return { scene, animations, layers: 300, signals };
+  }
+
   if (name === "layout") {
     const scene = new Scene(1280, 720, sceneOpts);
     scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
@@ -349,7 +394,14 @@ const stats = (xs) => {
 };
 
 async function renderScenario(name) {
-  const frames = { simple: 300, medium: 120, "medium-cache": 120, complex: 30, layout: 120 }[name];
+  const frames = {
+    simple: 300,
+    medium: 120,
+    "medium-cache": 120,
+    complex: 30,
+    layout: 120,
+    "layout-mixed": 120,
+  }[name];
   const t0 = now();
   const built = build(name);
   const buildMs = now() - t0;

@@ -66,5 +66,18 @@ The usual pattern for a card is a container with a background layer positioned a
 
 - A `Group` **without** `flexDirection` stretches to fill its parent; a flex container (one with `flexDirection`) wraps its content unless you give it a size.
 - A child with an explicit `position` and **no** `layout` is *not* part of the flow — it is drawn exactly where you put it. Add any `layout` property to bring it back into the flow.
-- Layout runs again on every frame, so changing a layout prop (or a signal that feeds one) takes effect on the next `renderFrame`.
+- Changing a layout prop (or a signal that feeds one) takes effect on the next `renderFrame`. The layout is only worked out again when something it depends on has changed — see below.
 - Yoga loads asynchronously the first time. `scene.renderFrame` waits for it, so the first frame is already laid out.
+
+## When layout runs
+
+Working out a layout means building a tree for the flex engine, running it and copying the result back to the layers. A scene that animates things drawn by hand on top of a layout that does not change would repeat the same answer on every frame, so the last answer is kept and used again **while its inputs are the same**:
+
+- the layers in the flow, and the `layout` rules of each (compared by value, so changing `gap` in place counts);
+- the size the text in the flow measures (a signal that changes the text, a different font, a font that has just finished loading);
+- the size of the canvas;
+- what the last pass wrote: if an animation or other code has written over the position or size of a laid-out layer, the layout is run again and puts it back.
+
+Adding or removing a layer always runs it again. Animating only layers that have an explicit `position` and no `layout` costs the layout nothing.
+
+`scene.lazyCanvas.manager.layout.stats` counts the passes that ran and the ones that were skipped, and `scene.lazyCanvas.manager.layout.reuse = false` gives a full pass on every frame (the result is the same).

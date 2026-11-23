@@ -11,6 +11,7 @@ import {
   getChildren,
   isVerticalDirection,
   restoreAuthoredProps,
+  treeVersion,
   walkLayers,
 } from "../../utils";
 import { Group, type Text } from "../components";
@@ -19,10 +20,76 @@ import { Group, type Text } from "../components";
 type YogaNode = any;
 type Yoga = any;
 
+/** Whether two plain values are the same: numbers and strings by value, arrays and plain objects by content. */
+function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+  const left = a as Record<string, unknown>;
+  const right = b as Record<string, unknown>;
+  const keys = Object.keys(left);
+  if (keys.length !== Object.keys(right).length) return false;
+  for (const key of keys) {
+    if (!(key in right) || !sameValue(left[key], right[key])) return false;
+  }
+  return true;
+}
+
+/** A copy of plain data that later changes to the original cannot reach. */
+function copyValue<T>(value: T): T {
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(copyValue) as T;
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) return value;
+  const copy: Record<string, unknown> = {};
+  for (const key in value) copy[key] = copyValue((value as Record<string, unknown>)[key]);
+  return copy as T;
+}
+
+/**
+ * What one layer of the flow looked like when the layout was last worked out: everything the result
+ * depends on, and what was written to the layer as the result.
+ */
+interface LayoutRecord {
+  layer: AnyLayer | Group;
+  /** `props.layout` at the time: the flex rules of the layer. */
+  layout: unknown;
+  /** For text: the size the text measures, which is what the layout engine is given for it. */
+  text?: { width: number; height: number };
+  /** The values the pass wrote, to tell whether anything has written over them since. */
+  position: unknown;
+  x: number;
+  y: number;
+  size: unknown;
+  width: number;
+  height: number;
+  centring: unknown;
+  children: LayoutRecord[];
+}
+
+interface LayoutMemo {
+  width: number;
+  height: number;
+  version: number;
+  record: LayoutRecord;
+}
+
 export class LayoutManager {
   private yoga: Yoga | null = null;
   private debug: boolean;
   public ready: Promise<void>;
+
+  /**
+   * Skip the layout pass when nothing it depends on has changed since the last one. On by default; turn it off
+   * to get a full pass on every frame, which gives the same result.
+   */
+  public reuse = true;
+
+  /** How many layout passes ran and how many were skipped. */
+  public readonly stats = { passes: 0, skipped: 0 };
+
+  private memo = new WeakMap<object, LayoutMemo>();
 
   constructor(opts?: { debug?: boolean }) {
     this.debug = opts?.debug || false;
@@ -98,6 +165,22 @@ export class LayoutManager {
       return;
     }
 
+    // Building the tree for the layout engine, running it and copying the result back is most of what this
+    // costs, and a scene whose layout does not change (or only moves hand-placed layers) asks for the same
+    // answer on every frame. The last answer is kept, and used again while its inputs are what they were and
+    // nobody has written over it.
+    const memo = this.reuse ? this.memo.get(root) : undefined;
+    if (
+      memo &&
+      memo.width === width &&
+      memo.height === height &&
+      memo.version === treeVersion() &&
+      this.unchanged(memo.record, ctx, canvas)
+    ) {
+      this.stats.skipped++;
+      return;
+    }
+
     // Remember the caller's input before the first pass overwrites it.
     for (const layer of walkLayers(root)) {
       captureAuthoredProps(layer);
@@ -110,9 +193,99 @@ export class LayoutManager {
     rootNode.setHeight(height);
     rootNode.calculateLayout(width, height, this.yoga.DIRECTION_LTR);
 
-    this.applyLayout(rootNode, root);
+    const record = this.applyLayout(rootNode, root, ctx, canvas);
 
     this.freeNode(rootNode);
+    this.stats.passes++;
+    if (this.reuse) this.memo.set(root, { width, height, version: treeVersion(), record });
+  }
+
+  /**
+   * Whether running the layout again would change nothing: the layers in the flow are the ones that were laid
+   * out, their rules and the size of their text are as they were, and what the last pass wrote is still there.
+   */
+  private unchanged(
+    record: LayoutRecord,
+    ctx?: ICanvasRenderingContext2D,
+    canvas?: ICanvas,
+  ): boolean {
+    const layer = record.layer;
+    const props = layer.props as any;
+    if (!props) return false;
+
+    if (!sameValue(record.layout, props.layout)) return false;
+
+    // What an animation or other code wrote over the result since (a signal on a laid-out layer does)
+    // has to be put back, which only a pass does.
+    if (props.position !== record.position || props.size !== record.size) return false;
+    if (props.centring !== record.centring || props._computedLayout !== true) return false;
+    if (record.position && (props.position.x !== record.x || props.position.y !== record.y)) {
+      return false;
+    }
+    if (record.size && (props.size.width !== record.width || props.size.height !== record.height)) {
+      return false;
+    }
+
+    if (record.text) {
+      if (!ctx || !canvas) return false;
+      const size = this.measureTextLayer(layer as Text, ctx, canvas);
+      if (size.width !== record.text.width || size.height !== record.text.height) return false;
+    }
+
+    const children = this.layoutChildren(layer);
+    if (children.length !== record.children.length) return false;
+    for (let i = 0; i < children.length; i++) {
+      if (children[i] !== record.children[i].layer) return false;
+      if (!this.unchanged(record.children[i], ctx, canvas)) return false;
+    }
+    return true;
+  }
+
+  /**
+   * The size a text layer gives the layout engine: its natural size, on one line, as laid out from the top left.
+   *
+   * The props that are relaxed for the measurement are put back as they were, in place, so that the objects
+   * the layer holds are the same ones afterwards.
+   */
+  private measureTextLayer(
+    textLayer: Text,
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
+  ): { width: number; height: number } {
+    const props = textLayer.props;
+    const originalAlign = props.align;
+    const originalBaseline = props.baseline;
+    const size = props.size as { width?: unknown } | undefined;
+    const originalWidth = size?.width;
+    const multiline = props.multiline;
+    const originalEnabled = multiline?.enabled;
+
+    // Yoga expects top-left coordinates.
+    props.align = "left";
+    props.baseline = "top";
+
+    // Vertical text flows down a column and wraps sideways, so its
+    // constrained axis is the height and its free axis is the width. The
+    // relaxations below are the other way round, and applying them would
+    // measure an unwrapped column while `draw` wraps it — the node would be
+    // sized for text that is never drawn that way.
+    const vertical = isVerticalDirection(props.direction);
+
+    try {
+      if (!vertical) {
+        // Measure the natural size: no wrapping, no width to wrap to.
+        if (multiline) multiline.enabled = false;
+        if (size) size.width = undefined;
+      }
+
+      const measured = textLayer.measureText(ctx, canvas);
+      return { width: Math.ceil(measured.width), height: Math.ceil(measured.height) };
+    } finally {
+      if (size) size.width = originalWidth;
+      if (multiline) multiline.enabled = originalEnabled as boolean;
+      props.align = originalAlign;
+      props.baseline = originalBaseline;
+    }
   }
 
   private createNode(
@@ -183,52 +356,7 @@ export class LayoutManager {
 
     // Handle Text measurement
     if (layer.type === LayerType.Text && ctx && canvas) {
-      node.setMeasureFunc((width: number, widthMode: any, height: number, heightMode: any) => {
-        const textLayer = layer as Text;
-
-        // Save original align/baseline for accurate measurement
-        const originalAlign = textLayer.props.align;
-        const originalBaseline = textLayer.props.baseline;
-
-        // Set to top-left for measurement (Yoga expects top-left coordinates)
-        textLayer.props.align = "left";
-        textLayer.props.baseline = "top";
-
-        // Temporarily disable multiline and width to measure natural size
-        const originalSize = textLayer.props.size ? { ...textLayer.props.size } : undefined;
-        const originalMultiline = textLayer.props.multiline
-          ? { ...textLayer.props.multiline }
-          : undefined;
-
-        // Vertical text flows down a column and wraps sideways, so its
-        // constrained axis is the height and its free axis is the width. The
-        // relaxations below are the other way round, and applying them would
-        // measure an unwrapped column while `draw` wraps it — the node would be
-        // sized for text that is never drawn that way.
-        const vertical = isVerticalDirection(textLayer.props.direction);
-
-        if (!vertical) {
-          // Disable multiline for measurement
-          if (textLayer.props.multiline) {
-            textLayer.props.multiline.enabled = false;
-          }
-
-          // Don't set width constraint for natural measurement
-          if (textLayer.props.size) {
-            (textLayer.props.size as any).width = undefined;
-          }
-        }
-
-        const size = textLayer.measureText(ctx, canvas);
-
-        // Restore original props
-        if (originalSize) textLayer.props.size = originalSize;
-        if (originalMultiline) textLayer.props.multiline = originalMultiline;
-        textLayer.props.align = originalAlign;
-        textLayer.props.baseline = originalBaseline;
-
-        return { width: Math.ceil(size.width), height: Math.ceil(size.height) };
-      });
+      node.setMeasureFunc(() => this.measureTextLayer(layer as Text, ctx, canvas));
     }
 
     this.layoutChildren(layer).forEach((child, index) => {
@@ -245,7 +373,12 @@ export class LayoutManager {
    * Positions are relative to the parent, which matches how the render pipeline
    * translates the context when descending into a subtree.
    */
-  private applyLayout(node: YogaNode, layer: AnyLayer | Group) {
+  private applyLayout(
+    node: YogaNode,
+    layer: AnyLayer | Group,
+    ctx?: ICanvasRenderingContext2D,
+    canvas?: ICanvas,
+  ): LayoutRecord {
     const layout = node.getComputedLayout();
 
     if (this.debug) {
@@ -269,10 +402,27 @@ export class LayoutManager {
       props.size = { ...props.size, width: layout.width, height: layout.height };
     }
 
+    const record: LayoutRecord = {
+      layer,
+      layout: copyValue(props.layout),
+      position: props.position,
+      x: props.position.x,
+      y: props.position.y,
+      size: props.size,
+      width: props.size?.width,
+      height: props.size?.height,
+      centring: props.centring,
+      children: [],
+    };
+    if (layer.type === LayerType.Text && ctx && canvas) {
+      record.text = this.measureTextLayer(layer as Text, ctx, canvas);
+    }
+
     this.layoutChildren(layer).forEach((child, index) => {
       const childNode = node.getChild(index);
-      if (childNode) this.applyLayout(childNode, child);
+      if (childNode) record.children.push(this.applyLayout(childNode, child, ctx, canvas));
     });
+    return record;
   }
 
   private freeNode(node: YogaNode) {
