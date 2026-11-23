@@ -48,3 +48,34 @@ load the library from).
 
 Adding a scenario: build it in `run-scenario.mjs` (`build(name)`), add its name to `SCENARIOS` in `bench.mjs`, and set
 `both: true` only if it uses nothing that is missing from the revisions you compare with.
+
+## Showcase scenes: rendering to video
+
+`showcase.mjs` plays two longer scenes, writes them to video and reports how long every frame took. They are
+rebuilt on LazyCanvas from the scenes of the project "Could This Asset Be Code" in
+[motion-canvas/examples](https://github.com/motion-canvas/examples) (MIT), made for the video
+[Could This Asset Be Code?](https://youtu.be/s1ZQnS_tOg0) by aarthificial:
+
+| Scene | What it shows | What it uses |
+|---|---|---|
+| `memory` | A game file is cut into 63 pieces and loaded into 8 slots of memory; random pieces are thrown out to make room | 79 layers, 207 signals, tweens, colour blending, a typewriter string interpolator |
+| `state-machine` | A YAML file describes three states that become cards joined by arrows; a transition is played through them | `timeline()` with positions and labels, `stagger`, `Transform` with signals and `origin`, dashed strokes, `loopFor` |
+
+```bash
+pnpm build
+node --expose-gc scripts/bench/showcase.mjs                  # both scenes: 1280 px, 60 fps, into bench-out/
+node --expose-gc scripts/bench/showcase.mjs memory --width 1920 --fps 30
+node --expose-gc scripts/bench/showcase.mjs --no-video       # only the numbers (no ffmpeg needed)
+node --expose-gc scripts/bench/showcase.mjs --history false  # without the history that lets time go backwards
+```
+
+For each scene it writes `<scene>.mp4` (needs `ffmpeg`), `<scene>-sheet.png` (twelve frames),
+`<scene>-frames.png` (the time every frame took) and `stats.json`. After the last frame it moves the timeline to
+random frames in random order and checks that they come out pixel-identical to the first pass.
+
+The scenes live in `scripts/bench/showcase/` and take the library as an argument (`build(lib, adapter, options)`),
+so they also serve as benchmark scenes. Rendering to video runs `ffmpeg` on the same machine, which takes CPU from
+the render: with `--no-video` the frames are about 25% faster.
+
+Not reproduced: the shaders, the 3D parts and the sprite sheet of the original. The character of the state machine
+is a small shape that idles, walks or falls, and the code panel is plain text.
