@@ -1,6 +1,8 @@
 import { LazyCanvas } from "../structures/LazyCanvas";
 import type { Group } from "../structures/components";
 import {
+  type BakeOptions,
+  type BakeStats,
   type LayerCacheOptions,
   type LayerCacheStats,
   ModernRenderPipeline,
@@ -77,6 +79,9 @@ export class Scene {
    * @param {boolean | LayerCacheOptions} [opts.cache] - Keep the picture of layers between frames and
    * reuse it while nothing that shows in it has changed. For a scene that is drawn again and
    * again (a live preview); a scene drawn once only pays for it. See `LayerCache`.
+   * @param {boolean | BakeOptions} [opts.bake] - Draw the layers that stay the same from one frame to the next
+   * as one picture. For a template with a lot that never moves and a few things that do: shadows, blurs and
+   * text are paid for once and not on every frame. What changes is noticed, nothing has to be declared. See `Baker`.
    * @throws {LazyError} If no adapter is given.
    */
   constructor(
@@ -87,6 +92,7 @@ export class Scene {
       adapter?: ICanvasAdapter;
       onFrameDrawn?: (time: number) => void;
       cache?: boolean | LayerCacheOptions;
+      bake?: boolean | BakeOptions;
       history?: boolean | { maxSeconds?: number; maxEntries?: number };
       timeStep?: number;
     } = {},
@@ -101,9 +107,15 @@ export class Scene {
     return this.lazyCanvas.cache?.stats;
   }
 
+  /** Counters of the baker, or `undefined` if the scene was created without `bake`. */
+  public bakeStats(): BakeStats | undefined {
+    return this.lazyCanvas.baker?.stats;
+  }
+
   /** Forgets every stored layer picture. The next frame draws everything for real. */
   public clearCache(): void {
     this.lazyCanvas.cache?.clear();
+    this.lazyCanvas.baker?.clear();
   }
 
   /**
@@ -188,6 +200,7 @@ export class Scene {
     }
 
     this.watchSignals();
+    this.lazyCanvas.baker?.beginFrame();
     this.scheduler.update(time);
 
     // Start every frame from a clean slate: a transform or clip left behind by

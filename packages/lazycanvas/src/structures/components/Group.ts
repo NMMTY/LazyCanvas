@@ -17,7 +17,7 @@ import {
   isLater,
   throwFirst,
 } from "../../utils";
-import type { LayersManager } from "../managers";
+import type { BakedRun, LayersManager } from "../managers";
 import { drawLayerCached } from "../managers/LayerCache";
 import { BaseLayer, type IBaseLayer, type IBaseLayerProps } from "./BaseLayer";
 
@@ -256,10 +256,16 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
       );
 
       const childScope = { composite: scope.composite };
-      pending = eachInOrder(
+      pending = this.drawList(
         children,
-        (child) => this.renderLayer(child, ctx, canvas, manager, debug, adapter, childScope),
+        ctx,
+        canvas,
+        manager,
+        debug,
+        adapter,
+        childScope,
         errors,
+        (child, c, cv, sc) => this.renderLayer(child, c, cv, manager, debug, adapter, sc),
       );
     } catch (error) {
       ctx.restore();
@@ -276,6 +282,51 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
     ctx.restore();
     throwFirst(errors);
     this.leave(layer, ctx);
+  }
+
+  /**
+   * Draws a list of neighbours in order. When the scene bakes, the ones that stay the same from frame to frame
+   * are drawn together, as one picture.
+   */
+  private drawList(
+    list: readonly (AnyLayer | Group)[],
+    ctx: ICanvasRenderingContext2D,
+    canvas: ICanvas,
+    manager: LayersManager,
+    debug: boolean,
+    adapter: ICanvasAdapter | undefined,
+    scope: { composite?: string },
+    errors: unknown[],
+    step: (
+      layer: AnyLayer | Group,
+      ctx: ICanvasRenderingContext2D,
+      canvas: ICanvas,
+      scope: { composite?: string },
+    ) => Later,
+  ): Later {
+    const baker = manager.baker;
+    // Logging a layer is a reason to draw it, not to draw a picture of it.
+    const units = baker && !debug ? baker.units(list, ctx, canvas) : null;
+    if (!units || !baker) {
+      return eachInOrder(list, (layer) => step(layer, ctx, canvas, scope), errors);
+    }
+
+    return eachInOrder(
+      units,
+      (unit) => {
+        if (!("layers" in unit && "h1" in unit)) return step(unit, ctx, canvas, scope);
+        const run = unit as BakedRun;
+        return baker.draw(run, ctx, canvas, (c, cv, baking) => {
+          // On a picture of its own nothing is known about the context: the first layer sets what it needs.
+          const runScope = baking ? {} : scope;
+          const failures: unknown[] = [];
+          const done = eachInOrder(run.layers, (layer) => step(layer, c, cv, runScope), failures);
+          if (isLater(done)) return done.then(() => throwFirst(failures));
+          throwFirst(failures);
+        });
+      },
+      errors,
+    );
   }
 
   /**
@@ -320,15 +371,21 @@ export class Group extends BaseLayer<IGroupProps> implements IGroup {
       // state back, and only then report.
       // What the context is set to is not known on entry, so the first layer sets it.
       const scope: { composite?: string } = {};
-      pending = eachInOrder(
+      pending = this.drawList(
         this.layers,
-        (subLayer) => {
+        ctx,
+        canvas,
+        manager,
+        debug,
+        adapter,
+        scope,
+        errors,
+        (subLayer, c, cv, sc) => {
           if (debug) LazyLog.log("info", `Rendering ${subLayer.id}...\nData:`, subLayer.toJSON());
           if (subLayer.visible) {
-            return this.renderLayer(subLayer, ctx, canvas, manager, debug, adapter, scope);
+            return this.renderLayer(subLayer, c, cv, manager, debug, adapter, sc);
           }
         },
-        errors,
       );
     } catch (error) {
       ctx.restore();

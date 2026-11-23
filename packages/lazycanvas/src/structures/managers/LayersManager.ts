@@ -3,6 +3,7 @@ import { LazyError, LazyLog } from "../../utils/LazyUtil";
 import { findLayer } from "../../utils/tree";
 import { LazyCanvas } from "../LazyCanvas";
 import type { Group } from "../components";
+import type { Baker } from "./Baker";
 import type { LayerCache } from "./LayerCache";
 
 /**
@@ -45,6 +46,9 @@ export class LayersManager implements ILayersManager {
    * through the manager they are drawn with.
    */
   cache?: LayerCache;
+
+  /** Draws what stays the same from frame to frame as one picture, if the scene asked for it. */
+  baker?: Baker;
 
   /**
    * Constructs a new LayersManager instance.

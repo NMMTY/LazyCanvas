@@ -14,6 +14,19 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 `@nmmty/lazycanvas`.
 
 ### Added
+- **`new Scene(w, h, { bake: true })`** (`@nmmty/lazycanvas`): the layers that stay the same from one frame to the
+  next are drawn once onto a picture of their own, and the picture is copied from then on. Nothing is declared:
+  every frame each layer is described by its props after layout and animation and the transform it is drawn
+  under, so an animated layer, or one changed in place, is drawn as before and the layers around it are baked in
+  runs. Runs are looked at after 2 identical frames and baked only if drawing them clearly costs more than
+  copying the picture, which is measured once with the canvas flushed (`@napi-rs/canvas` records drawing commands
+  and does the work when pixels are read, so frames that are never read look cheap whatever they hold).
+  A 1280×720 template (140 layers, 24 shadows, 12 blurs, 8 animated layers on top) went from 166 to 4.3 ms per
+  frame read back, and the complex bench scene (1920×1080, 600 animated particles under 400 static layers) from
+  750 to 26 ms. Not baked: `globalComposite` other than `source-over`, `clipPath`, links, binary data, `bake: false`.
+  Pixels may differ from the unbaked ones by a rounding step (at most 3 of 255) where translucent layers overlap.
+  `scene.bakeStats()`, `BakeOptions` (`minStable`, `minMs`, `always`, `maxBytes`, `maxEntries`) and `Baker` are
+  exported; the layer cache and the baker are now also cleared when a font is added (`FontsManager.onChange`).
 - **`scene.frames(start, end, fps, { reuse })`** (`@nmmty/lazycanvas`): an async generator that hands over
   the frames of a range one at a time. An export of any length takes the memory of one frame (with `reuse`,
   one buffer for all of them). `scene.getImageData(into)` copies into a buffer you already have.

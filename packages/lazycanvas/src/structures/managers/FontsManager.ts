@@ -37,6 +37,9 @@ export class FontsManager implements IFontsManager {
   debug: boolean;
   private adapter?: IFontsAdapter;
 
+  /** Called when the fonts change, so that what was drawn with the old ones can be forgotten. */
+  onChange?: () => void;
+
   constructor(opts?: { debug?: boolean; adapter?: ICanvasAdapter }) {
     this.map = new Map();
     this.debug = opts?.debug || false;
@@ -93,6 +96,7 @@ export class FontsManager implements IFontsManager {
         }
       }
     }
+    this.onChange?.();
     return this;
   }
 

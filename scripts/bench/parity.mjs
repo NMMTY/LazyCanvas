@@ -5,6 +5,8 @@
 //   node scripts/bench/parity.mjs > new.json
 //
 // or let it do both: `node scripts/bench/parity.mjs --against <checkout>` exits 1 if any frame differs.
+// `node scripts/bench/parity.mjs --bake` compares this build with and without `bake` (translucent layers may
+// differ by a rounding step) and exits 1 if anything is further apart than 2.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -480,8 +482,8 @@ scene("failing-layer-and-siblings", 200, 100, () => {
   ];
 });
 
-for (const check of checks) {
-  const sc = new Scene(check.w, check.h, { adapter });
+async function render(check, extra, times) {
+  const sc = new Scene(check.w, check.h, { adapter, ...extra });
   sc.lazyCanvas.manager.fonts.loadFonts(Fonts);
   const holder = {};
   const layers = check.build(holder);
@@ -489,14 +491,40 @@ for (const check of checks) {
   for (const key of ["__anim", "__anim2", "__anim3"]) {
     if (holder[key]) sc.addAnimation(holder[key]);
   }
-  for (const t of check.times) {
+  const out = [];
+  for (const t of times) {
     let outcome = "ok";
     try {
       await sc.renderFrame(t);
     } catch (error) {
       outcome = `error:${error.message}`;
     }
-    const data = sc.getImageData();
+    out.push({ t, outcome, data: sc.getImageData() });
+  }
+  return out;
+}
+
+if (process.argv.includes("--bake")) {
+  // The same scenes with and without baking, in this build: how far apart can the pixels be?
+  let worst = 0;
+  for (const check of checks) {
+    const times = [0, 0.05, 0.1, 0.15, 0.2, ...check.times.filter((t) => t > 0.2)];
+    const plain = await render(check, {}, times);
+    const baked = await render(check, { bake: { always: true } }, times);
+    let diff = 0;
+    for (let i = 0; i < plain.length; i++) {
+      if (plain[i].outcome !== baked[i].outcome) diff = 255;
+      for (let k = 0; k < plain[i].data.length; k++)
+        diff = Math.max(diff, Math.abs(plain[i].data[k] - baked[i].data[k]));
+    }
+    worst = Math.max(worst, diff);
+    console.log(`${diff <= 2 ? "ok  " : "DIFF"} ${check.name}: largest difference ${diff}`);
+  }
+  process.exit(worst <= 2 ? 0 : 1);
+}
+
+for (const check of checks) {
+  for (const { t, outcome, data } of await render(check, {}, check.times)) {
     hashes[`${check.name}@${t}`] = `${outcome}|${createHash("sha1").update(data).digest("hex")}`;
   }
 }

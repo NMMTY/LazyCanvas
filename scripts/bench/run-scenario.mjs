@@ -8,7 +8,8 @@
 //
 // Environment: BENCH_OPTS (JSON merged into the Scene options), BENCH_NOANIM=1 (do not start animations),
 // BENCH_NOROT=1 (leave the transforms off the polygons of the "complex" scene), BENCH_ALLOC=1 (also report
-// how many bytes each frame allocates and which functions allocate them).
+// how many bytes each frame allocates and which functions allocate them), BENCH_READ=1 (read the pixels after
+// every frame, which is when a lazily drawing canvas does the drawing; always on for the template scenes).
 import { existsSync } from "node:fs";
 import inspector from "node:inspector";
 import { dirname, join, resolve } from "node:path";
@@ -317,6 +318,66 @@ function build(name, opts = {}) {
     return { scene, animations, layers: total, signals };
   }
 
+  if (name === "template") {
+    // A template: a lot that never changes (cards with shadows, text, blurred shapes) and a few animated
+    // layers on top. What baking the static part into one picture is meant for.
+    const scene = new Scene(1280, 720, sceneOpts);
+    scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
+    const layers = [morph({ color: "#0b1220", w: 1280, h: 720, x: 0, y: 0 })];
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 6; col++) {
+        const x = 30 + col * 205;
+        const y = 40 + row * 170;
+        layers.push(
+          morph({
+            color: "#1e293b",
+            w: 185,
+            h: 150,
+            x,
+            y,
+            r: 16,
+            shadow: { color: "#00000099", blur: 18, offsetX: 0, offsetY: 8 },
+          }),
+          text(`Card ${row * 6 + col}`, x + 14, y + 14, 22, "#ffffff"),
+          text("a few words of text", x + 14, y + 52, 14),
+          text("and another line", x + 14, y + 74, 14, "#94a3b8"),
+          morph({ color: pick(), w: 60, h: 22, x: x + 14, y: y + 110, r: 11 }),
+        );
+      }
+    }
+    for (let i = 0; i < 12; i++)
+      layers.push(
+        new Polygon({
+          color: pick(),
+          size: { width: 60, height: 60, count: 5, radius: 0 },
+          position: { x: 80 + i * 100, y: 640 },
+          centring: "none",
+          filter: "blur(4px)",
+        }),
+      );
+    const staticCount = layers.length;
+    // The few things that move.
+    let signals = 0;
+    for (let i = 0; i < 8; i++) {
+      const x = createSignal(60 + i * 150);
+      const baseX = 60 + i * 150;
+      signals++;
+      layers.push(
+        new Morph({
+          color: pick(),
+          size: { width: 28, height: 28, radius: { all: 14 } },
+          position: { x, y: 20 + (i % 4) * 160 },
+          centring: "none",
+        }),
+      );
+      animations.push(() =>
+        loop(() => chain(x.to(baseX + 120, 1.2 + i * 0.1), x.to(baseX, 1.2 + i * 0.1))),
+      );
+    }
+    scene.load(new Group({}).add(...layers));
+    return { scene, animations, layers: staticCount + 8, signals };
+  }
+
   if (name === "layout-mixed") {
     // A flex layout with text in it that does not change, and animated layers placed by hand on top of it.
     const scene = new Scene(1280, 720, sceneOpts);
@@ -439,7 +500,9 @@ async function sampleAllocations(work, frames) {
   };
 }
 
-async function renderScenario(name) {
+async function renderScenario(fullName) {
+  // "complex+read+bake": the scene, with the pixels read after every frame, drawn with `bake`.
+  const [name, ...flags] = fullName.split("+");
   const frames = {
     simple: 300,
     medium: 120,
@@ -447,9 +510,10 @@ async function renderScenario(name) {
     complex: 30,
     layout: 120,
     "layout-mixed": 120,
+    template: 120,
   }[name];
   const t0 = now();
-  const built = build(name);
+  const built = build(name, { scene: flags.includes("bake") ? { bake: true } : {} });
   const buildMs = now() - t0;
   const { scene, animations } = built;
   const t1 = now();
@@ -459,25 +523,41 @@ async function renderScenario(name) {
   const t2 = now();
   await scene.renderFrame(0);
   const firstFrameMs = now() - t2;
-  for (let i = 1; i <= 10; i++) await scene.renderFrame(i / 60); // warm-up
+  for (let i = 1; i <= 10; i++) {
+    await scene.renderFrame(i / 60); // warm-up
+    if (process.env.BENCH_READ || flags.includes("read") || name.startsWith("template"))
+      scene.getImageData();
+  }
 
+  const read = process.env.BENCH_READ || flags.includes("read") || name.startsWith("template");
   const times = [];
   const callsBefore = adapter.calls?.total ?? 0;
   const measure = async () => {
     for (let i = 0; i < frames; i++) {
       const t = now();
       await scene.renderFrame((11 + i) / 60);
+      // A canvas draws lazily: until pixels are read, only the commands have been recorded.
+      if (read) scene.getImageData();
       times.push(now() - t);
     }
   };
   const alloc = process.env.BENCH_ALLOC ? await sampleAllocations(measure, frames) : undefined;
   if (!alloc) await measure();
+  if (process.env.BENCH_DUMP) {
+    // The last frame's pixels, to compare two runs (baked or not) outside of this process.
+    (await import("node:fs")).writeFileSync(
+      process.env.BENCH_DUMP,
+      Buffer.from(scene.getImageData().buffer),
+    );
+  }
   const s = stats(times);
   const canvasCallsPerFrame = adapter.calls
     ? (adapter.calls.total - callsBefore) / frames
     : undefined;
   return {
     alloc,
+    bake: scene.bakeStats?.(),
+    read: Boolean(read),
     canvasCallsPerFrame,
     canvasCalls: adapter.calls
       ? Object.fromEntries(
@@ -486,7 +566,7 @@ async function renderScenario(name) {
             .map(([name, n]) => [name, Math.round(n / (frames + 11))]),
         )
       : undefined,
-    scenario: name,
+    scenario: fullName,
     layers: built.layers,
     signals: built.signals,
     animations: animations.length,

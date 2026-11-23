@@ -3,6 +3,8 @@ import type { ICanvas, ICanvasAdapter, ICanvasRenderingContext2D } from "../type
 import { LazyError, LazyLog, registerPath2D, resize, resizeLayers } from "../utils";
 import type { IGroup } from "./components";
 import {
+  type BakeOptions,
+  Baker,
   ClassicRenderPipeline,
   FontsManager,
   type IRenderManager,
@@ -65,6 +67,9 @@ export class LazyCanvas implements ILazyCanvas {
   /** Remembers layers between frames; `undefined` unless the canvas was created with `cache`. */
   cache?: LayerCache;
 
+  /** Draws what stays the same from frame to frame as one picture; `undefined` unless created with `bake`. */
+  baker?: Baker;
+
   constructor(
     renderPipline: RenderManagerConstructor = ClassicRenderPipeline,
     opts?: {
@@ -72,6 +77,7 @@ export class LazyCanvas implements ILazyCanvas {
       settings?: IOLazyCanvas;
       adapter?: ICanvasAdapter;
       cache?: boolean | LayerCacheOptions;
+      bake?: boolean | BakeOptions;
     },
   ) {
     if (!opts?.adapter) {
@@ -96,6 +102,15 @@ export class LazyCanvas implements ILazyCanvas {
       this.cache = new LayerCache(this.adapter, typeof opts.cache === "object" ? opts.cache : {});
       this.manager.layers.cache = this.cache;
     }
+    if (opts.bake) {
+      this.baker = new Baker(this.adapter, typeof opts.bake === "object" ? opts.bake : {});
+      this.manager.layers.baker = this.baker;
+    }
+    // What a layer looks like depends on the fonts it is drawn with, which its props do not say.
+    this.manager.fonts.onChange = () => {
+      this.cache?.clear();
+      this.baker?.clear();
+    };
     this.options = {
       width: 0,
       height: 0,
@@ -118,6 +133,7 @@ export class LazyCanvas implements ILazyCanvas {
     this.canvas = this.adapter.createCanvas(this.options.width, this.options.height);
     this.ctx = this.canvas.getContext("2d");
     this.cache?.clear();
+    this.baker?.clear();
     return this;
   }
 
@@ -147,6 +163,7 @@ export class LazyCanvas implements ILazyCanvas {
     this.canvas = this.adapter.createCanvas(this.options.width, this.options.height);
     this.ctx = this.canvas.getContext("2d");
     this.cache?.clear();
+    this.baker?.clear();
     const layers = resizeLayers(this.manager.layers.toArray(), ratio);
     this.manager.layers.fromArray(layers);
     return this;
@@ -169,7 +186,9 @@ export class LazyCanvas implements ILazyCanvas {
       adapter: this.adapter,
     });
     this.manager.layers.cache = this.cache;
+    this.manager.layers.baker = this.baker;
     this.cache?.clear();
+    this.baker?.clear();
     return this;
   }
 }

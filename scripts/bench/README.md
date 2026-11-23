@@ -27,6 +27,13 @@ checkout only.
 - A frame is `await scene.renderFrame(t)` at 60 fps frame times, timed with `process.hrtime`, after 10 warm-up
   frames. It includes layout, animation stepping and drawing, not encoding.
 
+**A frame that is not read is not drawn.** `@napi-rs/canvas` records drawing commands and does the work when pixels
+are read (`getImageData`, `toBuffer`, drawing the canvas onto another). `renderFrame` alone therefore times the
+library and the recording of commands, which is what the scenes below report unless they say otherwise. The
+`template` scenes and the ones with `+read` read the pixels after every frame, which is what an export does and
+where shadows, blurs and text are paid for; `+bake` turns on `bake` (`complex+read` against `complex+read+bake`).
+`BENCH_DUMP=file` writes the last frame's pixels, to compare two runs.
+
 ## Scenarios
 
 | Group | Scenario | What it is |
@@ -34,6 +41,8 @@ checkout only.
 | render | `simple` | 800×450, 5 layers, text, one shadow, one animated box |
 | render | `medium`, `medium-cache` | 1280×720, 109 layers, 72 signals; the second with the layer cache on |
 | render | `complex` | 1920×1080, 1141 layers, 1800 signals in 600 looping animations, blur, shadows, rotations |
+| render | `template`, `template+bake` | 1280×720, 141 static layers (24 shadows, 12 blurs, text) and 8 animated ones on top; pixels read every frame; the second with `bake` |
+| render | `complex+read`, `complex+read+bake` | `complex` with the pixels read every frame, without and with `bake` |
 | render | `layout` | 300 flex-wrapped boxes through Yoga, no animation |
 | render | `xform-none`, `xform-legacy`, `xform-origin` | 300 layers with an animated rotation: no transform, one without `origin`, one with `origin` and `scale` |
 | engine | `engine-N-plain` | N looping tweens stepped by `ThreadScheduler` for 10 s, no canvas |
