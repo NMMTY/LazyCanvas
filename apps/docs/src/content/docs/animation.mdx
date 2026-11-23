@@ -186,7 +186,7 @@ scene.addAnimation(function* () {
 
 ## Time and seeking
 
-Time advances in fixed steps of 1/240 s, whatever the frame rate, so the same animation looks the same at 30, 60 or 144 fps. A frame time is rounded down to a step.
+Animations are not stepped. `signal.to()`, `spring()`, `keyframes()` and `waitFor()` put on the signal a description of its value as a function of time, and go to sleep until it is over; the scene wakes each animation at the exact moment it is due (when a tween ends, the next one in a `chain` starts at that same moment) and the value is worked out when a layer reads it. So the same animation gives the same values at 30, 60 or 144 fps, or at a time you made up, and a thousand tweens running at once cost nothing between the moments they start and end.
 
 `scene.renderFrame(t)` accepts **any** time, in any order. Going forward runs the animations; going back puts the signals back from a history the scene keeps while it plays:
 
@@ -196,18 +196,28 @@ await scene.renderFrame(0.5);  // back to 0.5 s: same picture as playing from th
 await scene.renderFrame(3);    // and on
 ```
 
-The history keeps ten minutes or a million recorded values, whichever comes first, and only records the signals that changed. A scene with a few dozen signals keeps all ten minutes; one with thousands of moving signals keeps a few seconds. `new Scene(w, h, { adapter, history: { maxSeconds: 60, maxEntries: 5_000_000 } })` changes that, `history: false` turns it off (going back then throws). Only the signals the scene knows about are restored: those used as layer props, and those passed to `playAnimation`. Going back further than the history reaches throws an error that says so.
+The history keeps ten minutes or a million recorded changes, whichever comes first. A change is a value being set or an animation starting or ending on a signal, so a tween that runs for ten minutes is two entries and the history of a scene with thousands of animated signals is still small. `new Scene(w, h, { adapter, history: { maxSeconds: 60, maxEntries: 5_000_000 } })` changes that, `history: false` turns it off (going back then throws). Only the signals the scene knows about are restored: those used as layer props, and those passed to `playAnimation`. Going back further than the history reaches throws an error that says so.
 
 If you move back and then add a new animation while others are still running, `addAnimation` throws, because the running ones cannot be moved back. Call `scene.clearAnimations()` and `scene.resetTimeline()` first.
 
 `scene.duration` is the length of the animations added **as functions** (`scene.addAnimation(() => intro())`). A generator that was already created cannot be run twice to measure it, so it is not counted.
 
-### What it costs
+### Generators that poll
 
-Time moves in steps of 1/240 s, and every running animation is advanced once per step: at 60 fps that is four steps per frame. For a typical scene this is far below the cost of drawing, but with thousands of animated signals it adds up, and the history adds a little more. Two options trade accuracy for speed:
+An animation you write yourself can still do a bare `yield` to be resumed over and over:
 
-- `new Scene(w, h, { adapter, timeStep: 1 / 60 })` advances once per 60 fps frame (a frame at another rate is rounded down to a step).
-- `history: false` stops recording; going back in time then throws.
+```ts
+scene.addAnimation(function* () {
+  while (true) {
+    label.set(`${Math.round(x.value())} px`);
+    yield; // resumed on a grid of 1/240 s; the value of the yield is the time that passed
+  }
+});
+```
+
+That is the only thing that runs on a grid (`new Scene(w, h, { adapter, timeStep })` sets it), and only for as long as such a generator exists. Prefer `yield* waitFor(...)` and the animations of the signals, which sleep until they are due. To write your own that sleeps, `yield` a time (`yield requireClock().time + 2` resumes it two seconds from now).
+
+If an animation is stopped (`scene.clearAnimations()`, or the other side of an `any()`, or the end of a `loopFor()`), the signals it was animating stay where they were.
 
 ## Playing a scene
 

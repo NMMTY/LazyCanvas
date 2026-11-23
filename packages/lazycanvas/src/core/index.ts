@@ -1,4 +1,5 @@
 export * from "./Scene";
+export * from "./Clock";
 export * from "./Signal";
 export * from "./SignalUtils";
 export * from "./ThreadScheduler";

@@ -6,22 +6,6 @@ import type { TraceListener } from "./SignalTrace";
 import { type SpringConfig, type SpringPresetName, solveSpring } from "./Spring";
 
 /**
- * Tolerance, in seconds, when comparing elapsed time with a duration.
- *
- * The scheduler advances time in many small steps, and adding `1/240` two hundred
- * and forty times does not give exactly `1`. Without a tolerance an animation that
- * should end at one second would still be one step short of it.
- */
-export const TIME_EPSILON = 1e-9;
-
-/**
- * Whether `elapsed` seconds have reached `duration`, within {@link TIME_EPSILON}.
- */
-export function timeReached(elapsed: number, duration: number): boolean {
-  return elapsed + TIME_EPSILON >= duration;
-}
-
-/**
  * Easing function type
  */
 export type EasingFunction = (t: number) => number;

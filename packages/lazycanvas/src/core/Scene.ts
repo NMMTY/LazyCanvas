@@ -66,15 +66,13 @@ export class Scene {
    * @param {(time: number) => void} [opts.onFrameDrawn] - Called after every frame that was drawn
    * completely, before the next queued frame starts. The canvas holds exactly that frame at this
    * point, so it is the place to copy it somewhere (e.g. from an off-screen canvas to a visible one).
-   * @param {number} [opts.timeStep] - Length of one simulation step in seconds, `1/240` by default.
-   * Animations are advanced in whole steps, so a longer step is cheaper (a frame costs one pass over
-   * every running animation per step) and a shorter one follows time more closely. A frame time is
-   * rounded down to a step, so `1/60` shows each 60 fps frame exactly, while an export at another
-   * rate would show some frames twice.
-   * @param {boolean | { maxSeconds?: number, maxEntries?: number }} [opts.history] - Remember the values of
-   * animated signals, so `renderFrame` can be asked for an earlier time than the last one (a scrubber, a
-   * paused preview). On by default, keeping ten minutes or a million recorded values, whichever is reached
-   * first: a scene with thousands of moving signals keeps seconds, a small one keeps all ten minutes.
+   * @param {number} [opts.timeStep] - Length of one step, in seconds, of the grid that generators doing a bare
+   * `yield` are resumed on, `1/240` by default. Animations made with `signal.to()`, `waitFor()`, `all()` and
+   * the like do not run on it: they are woken at the exact moment they are due.
+   * @param {boolean | { maxSeconds?: number, maxEntries?: number }} [opts.history] - Remember what happened
+   * to animated signals, so `renderFrame` can be asked for an earlier time than the last one (a scrubber, a
+   * paused preview). On by default, keeping ten minutes or a million recorded changes, whichever is reached
+   * first. A tween is one change however long it runs, so this is a lot of animation.
    * `false` turns it off, which also saves the time spent recording, and going back in time then throws.
    * @param {boolean | LayerCacheOptions} [opts.cache] - Keep the picture of layers between frames and
    * reuse it while nothing that shows in it has changed. For a scene that is drawn again and
@@ -124,8 +122,8 @@ export class Scene {
    * Renders one frame.
    *
    * `time` can be any moment of the timeline, in any order: frames at `2`, then `0.5`, then
-   * `3` show exactly what playing from the start would show at those times. Time moves in
-   * steps of `1/240` of a second, so a `time` is rounded down to the step.
+   * `3` show exactly what playing from the start would show at those times. The value of an animated
+   * signal is worked out for exactly `time`.
    *
    * Frames are serialized: calling this again before the previous frame has
    * finished queues the new frame rather than drawing over a half-finished one.

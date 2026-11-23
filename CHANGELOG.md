@@ -20,16 +20,17 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 - **Moving the timeline to any time** (`@nmmty/lazycanvas`): `scene.renderFrame(t)` now accepts any
   `t`, in any order, and shows what playing from the start would show at `t`. The scheduler remembers
-  the values of animated signals, ten minutes or a million recorded values, whichever is reached first
+  what happens to animated signals, ten minutes or a million recorded changes, whichever is reached first
   (`new Scene(w, h, { history: { maxSeconds, maxEntries } })` to change it, `history: false` to turn it
-  off, after which going back in time throws). Only signals that changed are recorded, so a scene with
-  thousands of moving signals keeps seconds of history and a small one keeps minutes.
-  `ThreadScheduler` and `SignalTrace` are exported.
-- **`new Scene(w, h, { timeStep })`**: the length of one simulation step, `1/240` s by default. A longer
-  step costs less when many animations run (every running animation is advanced once per step).
+  off, after which going back in time throws). A change is a value being set or an animation starting or
+  ending on a signal, so a tween that runs for ten minutes is two entries. `ThreadScheduler` and
+  `SignalTrace` are exported.
+- **`new Scene(w, h, { timeStep })`**: the grid, `1/240` s by default, that generators doing a bare `yield` are
+  resumed on. Nothing else runs on it.
 - **`scene.duration`**: the length of the animations added as functions, measured without leaving the
   signals at their end values. `Exporter` uses it as the default `duration` of an APNG export.
 - `Signal.restore(value, velocity?)`, `BaseLayer.listSignals()`.
+- For writing animations that sleep: `Clock`, `requireClock()`, `currentClock()`, `ThreadScheduler.runToEnd()`.
 - **Springs** (`@nmmty/lazycanvas`): `signal.spring(target, config | preset)` moves a signal by physics.
   The damped spring is solved exactly (under-, critically and over-damped), so it is the same at any frame
   rate and on any seek. `stiffness`, `damping`, `mass`, `velocity`, `restDelta`, `restSpeed`; presets
@@ -97,9 +98,21 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   variable annotated `const t: Transform = { rotate: 30 }` must become `TransformProps`.
 - Colour blending clamps each channel, so an overshooting easing or spring cannot produce `rgba(300, …)`.
 
-- **Time moves in fixed steps of 1/240 s.** Animations are advanced in equal slices whatever the frame
-  rate, so the same animation gives the same values at 30, 60 or 144 fps, and the time left over when one
-  animation hands over to the next is no longer lost. A frame time is rounded down to a step.
+- **Animations are functions of time, and the scheduler jumps from one due moment to the next.**
+  `signal.to()`, `spring()` and `keyframes()` install a description of the value as a function of time on
+  the signal and sleep until it ends; `waitFor`, `all`, `any`, `loopFor`, `delay`, `stagger` and `timeline` wake
+  exactly when something is due. Nothing is stepped, so a scene with thousands of running tweens costs only the
+  moments they start and end, the same animation gives the same values at any frame rate or time, a tween that ends
+  hands over to the next one at that very moment (a `loop` used to lose up to a step on every iteration and drift:
+  18 units after ten iterations in a test), and a time given to `renderFrame` is no longer rounded down to a grid.
+  Generators that do a bare `yield` keep working: they are resumed on a grid of 1/240 s, with the time that passed.
+- When an animation is stopped (`clearAnimations()`, `remove()`, the losing side of an `any()`, the end of a
+  `loopFor()`) the signals it was animating stay where they were. If two animations drive one signal, the one that
+  started last takes over and the other ending does not undo it.
+- `resetTimeline()` stops the running animations as well as setting the time back to 0 (it is used after
+  `clearAnimations()` in any case).
+- `calculateDuration()` and `scene.duration` run the animation to its end and give its exact length; the
+  `timestep` of `calculateDuration` is only the grid for generators that poll.
 - An animation added with `addAnimation`/`playAnimation` starts at the time of the last rendered frame.
 - `scene.addAnimation` throws if the timeline was moved back while other animations are still running;
   call `clearAnimations()` and `resetTimeline()` first.
