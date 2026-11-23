@@ -12,12 +12,13 @@
     "images-and-paths": 8,
     "effects": 9,
     "animation": 10,
-    "react": 11,
-    "jsx": 12,
-    "exporting": 13,
-    "adapters": 14,
-    "bundlers": 15,
-    "troubleshooting": 16,
-    "migration-from-0.6": 17
+    "performance": 11,
+    "react": 12,
+    "jsx": 13,
+    "exporting": 14,
+    "adapters": 15,
+    "bundlers": 16,
+    "troubleshooting": 17,
+    "migration-from-0.6": 18
   }
 }

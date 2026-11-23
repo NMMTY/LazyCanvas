@@ -105,4 +105,23 @@ Weights are then available as `{ family: "Geist", weight: 600, … }`, and `Font
 
 ### Your own fonts as base64
 
-`pnpm --filter @nmmty/lazycanvas font` converts a folder of `.ttf`/`.otf` files named `{Family}-{Weight}` (for example `Inter-Bold.ttf`) into a module in the same shape as `Fonts`. See the [script's readme](https://github.com/NMMTY/LazyCanvas/blob/main/packages/lazycanvas/scripts/FontsGenerate.md).
+`pnpm --filter @nmmty/lazycanvas font` converts a folder of `.ttf`/`.otf` files named `{Family}-{Weight}` (for example `Inter-Bold.ttf`) into a module in the same shape as `Fonts`. Put the font files in a `fonts` folder next to the script, name them `{Family}-{Weight}` (for example `GeistMono-Black.ttf`) and run it:
+
+```bash
+tsx font-gen.ts
+```
+
+The weight names it understands:
+
+| Name | Weight |
+| --- | ---: |
+| `Thin` | 100 |
+| `ExtraLight`, `UltraLight` | 200 |
+| `Light` | 300 |
+| `Regular`, `Normal` | 400 |
+| `Medium` | 500 |
+| `SemiBold`, `DemiBold` | 600 |
+| `Bold` | 700 |
+| `ExtraBold`, `UltraBold` | 800 |
+| `Black`, `Heavy` | 900 |
+| `ExtraBlack`, `UltraBlack` | 950 |

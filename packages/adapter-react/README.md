@@ -153,6 +153,10 @@ export default {
 
 The scene is created in an effect, so nothing is drawn during server rendering.
 
+## Documentation
+
+Guides, live examples and the API reference: [docs.hitomihiumi.xyz/docs/react](https://docs.hitomihiumi.xyz/docs/react).
+
 ## License
 
 [MIT](./LICENSE) © NMMTY

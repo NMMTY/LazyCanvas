@@ -66,8 +66,9 @@ await new Exporter(scene).export("png", { name: "badge", saveAsFile: true });
 ## Documentation
 
 - [Guides and API reference](https://docs.hitomihiumi.xyz/docs/introduction)
+- [Animation](https://docs.hitomihiumi.xyz/docs/animation) and [Performance](https://docs.hitomihiumi.xyz/docs/performance)
 - [Migrating from 0.6.x](https://docs.hitomihiumi.xyz/docs/migration-from-0.6)
-- [Changelog](./CHANGELOG.md)
+- [Changelog](https://github.com/NMMTY/LazyCanvas/blob/main/CHANGELOG.md)
 
 ## Development
 

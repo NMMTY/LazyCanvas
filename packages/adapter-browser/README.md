@@ -46,7 +46,11 @@ Fonts registered from base64 (for example `scene.lazyCanvas.manager.fonts.loadFo
 
 ## Bundlers
 
-`@nmmty/lazycanvas` loads Yoga through a top-level `await`; see [Bundlers](https://github.com/NMMTY/LazyCanvas/tree/main/packages/lazycanvas#bundlers) for the webpack/Next.js settings.
+`@nmmty/lazycanvas` loads Yoga through a top-level `await`; see [Bundlers](https://docs.hitomihiumi.xyz/docs/bundlers) for the webpack/Next.js settings.
+
+## Documentation
+
+Guides, live examples and the API reference: [docs.hitomihiumi.xyz/docs/adapters](https://docs.hitomihiumi.xyz/docs/adapters).
 
 ## License
 

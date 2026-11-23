@@ -462,7 +462,10 @@ export class Baker {
     const keep = (): void => {
       // A lazily drawing canvas draws the picture the first time it is used as a source; that is the cost of
       // making it, not of copying it.
-      if (flush(sctx) === undefined) return failed();
+      if (flush(sctx) === undefined) {
+        failed();
+        return;
+      }
       const copyMs = this.timeCopy(surface, canvas);
       if (copyMs === undefined || copyMs > drawMs * 0.7) {
         entry.rejected = true;

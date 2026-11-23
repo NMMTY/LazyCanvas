@@ -90,6 +90,8 @@ Two helpers make easings: `cubicBezier(0.4, 0, 0.2, 1)` like CSS, and `steps(4)`
 
 ## Timeline
 
+<Example name="timeline" caption="Seven bars staggered from the middle, with a dot and a glow placed on a timeline around them." />
+
 `timeline()` places animations on a shared clock. The second argument of `add` is the position, as in GSAP:
 
 ```ts
@@ -196,7 +198,7 @@ await scene.renderFrame(0.5);  // back to 0.5 s: same picture as playing from th
 await scene.renderFrame(3);    // and on
 ```
 
-The history keeps ten minutes or a million recorded changes, whichever comes first. A change is a value being set or an animation starting or ending on a signal, so a tween that runs for ten minutes is two entries and the history of a scene with thousands of animated signals is still small. `new Scene(w, h, { adapter, history: { maxSeconds: 60, maxEntries: 5_000_000 } })` changes that, `history: false` turns it off (going back then throws). Only the signals the scene knows about are restored: those used as layer props, and those passed to `playAnimation`. Going back further than the history reaches throws an error that says so.
+The history keeps ten minutes or a million recorded changes, whichever comes first. A change is a value being set or an animation starting or ending on a signal, so a tween that runs for ten minutes is two entries and the history of a scene with thousands of animated signals is still small. `new Scene(w, h, { adapter, history: { maxSeconds: 60, maxEntries: 5_000_000 } })` changes that, `history: false` turns it off (going back then throws). Only the signals the scene knows about are restored: those used as layer props, and those passed to `playAnimation`. Going back further than the history reaches throws an error that says so. A signal can be put back by hand with `signal.restore(value, velocity?)`, and `layer.listSignals()` lists the signals that drive a layer's props.
 
 If you move back and then add a new animation while others are still running, `addAnimation` throws, because the running ones cannot be moved back. Call `scene.clearAnimations()` and `scene.resetTimeline()` first.
 
@@ -269,23 +271,4 @@ for await (const { data, time } of scene.frames(0, 60, 30, { reuse: true })) {
 
 `await scene.renderAnimation(0, 2, 30)` returns PNG buffers (or data URLs in the browser) and `renderAnimationData` the raw RGBA frames, but both **keep every frame until they return**: a frame is 3.7 MB at 1280 × 720, so a minute at 60 fps is more than 13 GB. Use them for short clips. The APNG exporter works frame by frame and keeps only the compressed frames.
 
-## Baking what does not move
-
-A template is mostly things that never change (a background, cards with shadows, labels) and a few that do. Drawing the static part again on every frame is where an export spends its time: shadows, blurs and text are paid for each time. With `bake`, the layers that stay the same from one frame to the next are drawn once onto a picture of their own, and the picture is copied from then on:
-
-```ts
-const scene = new Scene(1280, 720, { adapter, bake: true });
-```
-
-Nothing has to be declared. The scene looks at what each layer looks like in every frame (its props after layout and animation, and the transform it is drawn under), so a layer that is animated, or that you change in place, is simply drawn as before and the layers around it are baked in runs. What you save depends on what the static part costs: on a 1280×720 template of 140 layers with 24 shadows and 12 blurs, a frame that took about 170 ms to draw and read back takes about 4 ms.
-
-It is cautious about what it bakes:
-
-- A run is baked after it has been the same for 2 frames, and only if drawing it costs clearly more than copying the picture (measured once per run). A few cheap rectangles are left alone.
-- Layers with a `globalComposite` other than `source-over`, `clipPath` layers, layers holding a `Link` or binary data, and layers with `bake: false` are always drawn.
-- A picture is the size of the canvas (3.5 MB at 1280×720); `bake: { maxBytes, maxEntries }` limit how many are kept, and `scene.bakeStats()` tells what happened.
-- Translucent layers are blended with each other before they are blended with what is under them, which can move a pixel by a rounding step (at most 3 of 255 in our tests).
-- A layer in a baked run is not drawn on the frames where its picture is copied, so `layer.bounds()` and the like keep what they were when it was last drawn.
-
-Rendering one still frame gains nothing: it is for a scene that is drawn again and again (an export, a live preview).
-
+To make a scene faster when it is drawn again and again, see [Performance](/docs/performance).

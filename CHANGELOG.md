@@ -11,7 +11,9 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
-`@nmmty/lazycanvas`.
+## [1.3.0]
+
+`@nmmty/lazycanvas` 1.3.0 and `@nmmty/adapter-node` 1.1.1; `@nmmty/adapter-browser` and `@nmmty/adapter-react` are unchanged.
 
 ### Added
 - **`new Scene(w, h, { bake: true })`** (`@nmmty/lazycanvas`): the layers that stay the same from one frame to the
@@ -110,7 +112,7 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   (the file is identical byte for byte). `renderAnimation` and `renderAnimationData` still keep every frame
   until they return, and say so; the number of frames of a range no longer depends on floating point drift.
 
-- **`@napi-rs/canvas` 1.2.0 or newer** (`@nmmty/adapter-node`, `@nmmty/adapter-react`): with 1.0.0 every call
+- **`@napi-rs/canvas` 1.2.0 or newer** (`@nmmty/adapter-node` 1.1.1): with 1.0.0 every call
   into the canvas leaked about a hundred bytes of native memory that was never given back, so a process that
   kept rendering grew without end (about 30 KB per frame for a scene of sixty rectangles, 1.2 GB after ten minutes
   of an animated scene, with a flat JavaScript heap). 1.2.0 holds steady (164 MB after the same ten minutes). Glyph

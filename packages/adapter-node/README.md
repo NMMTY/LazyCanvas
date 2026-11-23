@@ -45,6 +45,10 @@ import { Fonts } from "@nmmty/lazycanvas/fonts";
 scene.lazyCanvas.manager.fonts.loadFonts(Fonts); // Geist and Geist Mono
 ```
 
+## Documentation
+
+Guides, live examples and the API reference: [docs.hitomihiumi.xyz/docs/adapters](https://docs.hitomihiumi.xyz/docs/adapters).
+
 ## License
 
 [MIT](./LICENSE) © NMMTY

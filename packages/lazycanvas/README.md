@@ -16,12 +16,14 @@ Declarative 2D canvas rendering with flexbox layout, JSX and signal-based animat
 - **Layers** — `Morph` (rounded shapes), `Text`, `Image`, `Line`, `Bezier`, `Quadratic`, `Polygon`, `Path2D`, grouped with `Group`.
 - **Flexbox layout** — powered by [Yoga](https://www.yogalayout.dev/): `flexDirection`, `gap`, `padding`, `justifyContent`, `alignItems`, absolute positioning and more.
 - **JSX** — write scenes as JSX, with the classic or the automatic runtime (`jsxImportSource`).
-- **Signals & animation** — `createSignal`, tweens, easing and generator-based timelines (`all`, `chain`, `loop`, `waitFor`, …).
+- **Signals & animation** — `createSignal`, tweens, springs, keyframes, easing, a GSAP-style `timeline()`, `stagger` and generator-based composition (`all`, `chain`, `loop`, `waitFor`, …). Any time can be rendered in any order, so pause, reverse and scrub are just a matter of which time you ask for.
+- **Transforms** — `Transform` with an `origin`, skew and `matrix`, `Matrix`/`Vector2` maths, and `layer.worldMatrix()` / `bounds()` / `scene.layerAt()` to find where something is on the canvas.
+- **Fast exports** — `bake: true` draws the layers that stay the same once, `scene.frames()` streams frames without keeping them all.
 - **Text** — fonts, multiline, letter/word spacing, sub-string colors and vertical writing (`ttb`/`btt`).
 - **Export** — PNG, JPEG, WebP and APNG, plus JSON/YAML scene description (Node.js).
 - **Adapter based** — the core never touches a concrete canvas; you plug one in.
 
-> Upgrading from 0.6.x? Read the [migration guide](https://github.com/NMMTY/LazyCanvas/blob/main/apps/docs/src/content/docs/migration-from-0.6.mdx).
+> Upgrading from 0.6.x? Read the [migration guide](https://docs.hitomihiumi.xyz/docs/migration-from-0.6).
 
 ## Installation
 
@@ -167,12 +169,13 @@ import { Fonts } from "@nmmty/lazycanvas/fonts";
 scene.lazyCanvas.manager.fonts.loadFonts(Fonts);
 ```
 
-In the browser, declare families with CSS `@font-face` and refer to them by name; the browser adapter makes sure they are loaded before the first frame. To bundle your own fonts as base64, see [Font generation](https://github.com/NMMTY/LazyCanvas/blob/main/packages/lazycanvas/scripts/FontsGenerate.md).
+In the browser, declare families with CSS `@font-face` and refer to them by name; the browser adapter makes sure they are loaded before the first frame. To bundle your own fonts as base64, see [Your own fonts as base64](https://docs.hitomihiumi.xyz/docs/text#your-own-fonts-as-base64).
 
 ## Documentation
 
-- [Guides and API reference](https://github.com/NMMTY/LazyCanvas/tree/main/apps/docs/src/content/docs)
-- [Migration guide: 0.6.x → 1.0](https://github.com/NMMTY/LazyCanvas/blob/main/apps/docs/src/content/docs/migration-from-0.6.mdx)
+- [Guides and API reference](https://docs.hitomihiumi.xyz/docs/introduction)
+- [Animation](https://docs.hitomihiumi.xyz/docs/animation) and [Performance](https://docs.hitomihiumi.xyz/docs/performance)
+- [Migration guide: 0.6.x → 1.0](https://docs.hitomihiumi.xyz/docs/migration-from-0.6)
 - [Changelog](https://github.com/NMMTY/LazyCanvas/blob/main/CHANGELOG.md)
 
 ## License

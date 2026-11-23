@@ -20,6 +20,8 @@ Every layer accepts the same set of visual effects.
 
 ## Transforms
 
+<Example name="transform" caption="One rotation around three pivots, and a whole Transform animated as a single value (red)." />
+
 `transform` takes a plain object, or a `Transform`, which adds methods and lets you animate the whole thing:
 
 ```ts
@@ -56,6 +58,8 @@ yield* pose.spring(pose.value().with({ rotate: 0 }), "wobbly");
 ```
 
 `transform.with({ ... })` copies it with some fields changed, `transform.lerp(other, t)` blends, `transform.toMatrix(box)` gives the matrix. Rotation and scale blend as numbers (so `0 → 360` is a full turn); a `matrix` is blended through its parts so a turn does not shrink in the middle.
+
+> **Type change:** `Transform` is a class now. The old interface of that name is `TransformProps`, so a variable annotated `const t: Transform = { rotate: 30 }` must become `const t: TransformProps = { rotate: 30 }`. A plain object is still accepted everywhere a transform is.
 
 Layer setters: `setRotate`, `setScale`, `setSkew`, `setTranslate`, `setOrigin`, `setMatrix`, `setTransform`.
 

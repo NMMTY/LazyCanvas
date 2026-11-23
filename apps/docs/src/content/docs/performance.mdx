@@ -1,0 +1,101 @@
+---
+title: "Performance"
+summary: "Keep the frames cheap: the layer cache, baking what does not move, layout reuse, and why a frame that is not read costs almost nothing."
+updatedAt: "2026-11-23T12:00:00.000Z"
+navIcon: "bolt"
+---
+
+Most scenes are fast enough as they are. This page is for the ones that are drawn again and again (an export of a long animation, a live preview) and spend their time on shadows, blurs and text.
+
+## A frame that is not read is not drawn
+
+`@napi-rs/canvas` records drawing commands and does the work when pixels are read: `getImageData`, `toBuffer`, `scene.getImageData()`, or drawing the canvas onto another one. So `await scene.renderFrame(t)` alone mostly measures the library and the recording of the commands. The shadows, blurs and text are paid for when the frame is read, which is what an export does.
+
+When you measure, **read the pixels after every frame**, or you will be looking at the cheap half:
+
+```ts
+const start = performance.now();
+await scene.renderFrame(t);
+const pixels = scene.getImageData();      // the drawing happens here
+console.log(performance.now() - start);
+```
+
+## What a scene can switch on
+
+| Option | What it does | Use it for |
+| --- | --- | --- |
+| `bake: true` | Draws the layers that stay the same from frame to frame as one picture. | A template: much that never changes, a few things that do. |
+| `cache: true` | Keeps the picture of single layers (all layers with a `filter`, and any with `cache: true`) while their props are the same. | A live preview where a few layers change, such as a colour being dragged. |
+| `layout.reuse` | On by default: the layout is not computed again while nothing it depends on has changed. | Scenes with a flex layout. |
+| `history: false` | Does not record what animated signals do, so the timeline cannot be moved back. | A long, one-way export. |
+
+```ts
+const scene = new Scene(1280, 720, { adapter, bake: true });
+```
+
+## Baking what does not move
+
+A template is mostly things that never change (a background, cards with shadows, labels) and a few that do. Drawing the static part again on every frame is where an export spends its time: shadows, blurs and text are paid for each time. With `bake`, the layers that stay the same from one frame to the next are drawn once onto a picture of their own, and the picture is copied from then on:
+
+```ts
+const scene = new Scene(1280, 720, { adapter, bake: true });
+```
+
+Nothing has to be declared. The scene looks at what each layer looks like in every frame (its props after layout and animation, and the transform it is drawn under), so a layer that is animated, or that you change in place, is simply drawn as before and the layers around it are baked in runs. What you save depends on what the static part costs: on a 1280×720 template of 140 layers with 24 shadows and 12 blurs, a frame that took about 170 ms to draw and read back takes about 4 ms.
+
+It is cautious about what it bakes:
+
+- A run is baked after it has been the same for 2 frames, and only if drawing it costs clearly more than copying the picture (measured once per run). A few cheap rectangles are left alone.
+- Layers with a `globalComposite` other than `source-over`, `clipPath` layers, layers holding a `Link` or binary data, and layers with `bake: false` are always drawn.
+- A picture is the size of the canvas (3.5 MB at 1280×720); `bake: { maxBytes, maxEntries }` limit how many are kept, and `scene.bakeStats()` tells what happened.
+- Translucent layers are blended with each other before they are blended with what is under them, which can move a pixel by a rounding step (at most 3 of 255 in our tests).
+- A layer in a baked run is not drawn on the frames where its picture is copied, so `layer.bounds()` and the like keep what they were when it was last drawn.
+
+Rendering one still frame gains nothing: it is for a scene that is drawn again and again (an export, a live preview).
+
+`bake` and `cache` are both cleared when you add a font (`scene.lazyCanvas.manager.fonts.add(...)`), since text looks different afterwards. `scene.clearCache()` clears them by hand.
+
+### How much it saves
+
+On a 1280 × 720 template of 141 layers (24 shadows, 12 blurs, a lot of text) with 8 layers animated on top, with the pixels read after every frame:
+
+| | per frame |
+| --- | ---: |
+| without `bake` | 166 ms |
+| with `bake: true` | 4.3 ms |
+
+A scene that is mostly animated has little to bake and is left alone: the cost of looking is a hash of every layer's props, a few microseconds per layer.
+
+## The layout is not recomputed for nothing
+
+A `Group` with a `layout` is only measured again when its layers, their `layout` rules, the measured size of its text or the canvas size changed. `scene.lazyCanvas.manager.layout.stats` counts passes and skips, and `manager.layout.reuse = false` turns it off. See [Layout](/docs/layout).
+
+## Exporting without keeping every frame
+
+`renderAnimation` and `renderAnimationData` keep **every frame in memory until they return**: a frame is 3.7 MB at 1280 × 720, so a minute at 60 fps is more than 13 GB. For anything long, take the frames one at a time:
+
+```ts
+for await (const { data, time } of scene.frames(0, 60, 30, { reuse: true })) {
+  await encoder.write(data);   // RGBA, width × height × 4 bytes; overwritten by the next frame when `reuse` is on
+}
+```
+
+`scene.getImageData(into)` copies into a buffer you already have. The APNG `Exporter` works frame by frame and keeps only the compressed frames. See [Exporting](/docs/exporting).
+
+## Blur is slow on `@napi-rs/canvas` 1.2.0
+
+LazyCanvas needs `@napi-rs/canvas` **1.2.0** or newer, because 1.0.0 leaked a hundred bytes of native memory on every call into the canvas. In 1.2.0, a `filter: "blur(...)"` on a layer is much more expensive than it was (in a test on 12 small layers, 1.3 ms with 1.0.0 and 145 ms with 1.2.0), and shadows are cheaper. A scene full of blurred layers is where `bake` and `cache` pay off most: a blurred layer that does not change is drawn once.
+
+## Writing a layer of your own
+
+`draw` may return nothing (when it is done at once) or a promise (when it has to wait for something, such as an image). The built-in layers draw without creating a promise; an `async draw` still works, but every call allocates one, and a frame draws thousands of layers.
+
+## Measuring
+
+The repository has a benchmark that compares a checkout with another one:
+
+```bash
+pnpm bench --baseline <git ref> --rounds 5 --only template,template+bake
+```
+
+`+read` reads the pixels after every frame and `+bake` turns baking on (see `scripts/bench/README.md`).

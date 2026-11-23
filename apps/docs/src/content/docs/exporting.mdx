@@ -37,6 +37,18 @@ Options:
 
 `Exporter` accepts a `Scene` or the lower-level `LazyCanvas`. Animated PNG needs a `Scene`; see [Signals and animation](/docs/animation#playing-a-scene).
 
+## Frame by frame
+
+`scene.renderAnimation(start, end, fps)` and `scene.renderAnimationData(...)` return every frame at once, so a long clip needs more memory than a machine has (a minute at 60 fps at 1280 × 720 is over 13 GB). `scene.frames()` hands the frames over one at a time:
+
+```ts
+for await (const { data, time } of scene.frames(0, 60, 30, { reuse: true })) {
+  await encoder.write(data);   // RGBA bytes; with `reuse` the same buffer is overwritten by the next frame
+}
+```
+
+`scene.getImageData(into)` copies the current frame into a buffer you pass in. Because the canvas draws lazily, an export of a scene with many shadows and blurs is faster with `bake: true`: see [Performance](/docs/performance).
+
 ## Serving an image
 
 Without `saveAsFile` the result is a `Buffer`, ready for an HTTP response:

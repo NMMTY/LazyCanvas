@@ -66,6 +66,10 @@ A canvas has one pixel per unit. Create the scene at the physical size and scale
 
 Await each call, or let the scene queue them: frames are serialised, so overlapping calls render in order but each waits for the previous one. For animations, render at increasing times rather than at `0` repeatedly.
 
+## Frames are slow, or slower after updating `@napi-rs/canvas`
+
+Measure with the pixels read (`scene.getImageData()` after each `renderFrame`): until then the canvas has only recorded what to draw. If the scene uses `filter: "blur(...)"`, note that `@napi-rs/canvas` 1.2.0 (the oldest version LazyCanvas supports) draws blurs far slower than 1.0.0 did. Turn on `bake` or `cache` so that blurred layers that do not change are drawn once: see [Performance](/docs/performance).
+
 ## Still stuck?
 
 Search the [issues](https://github.com/NMMTY/LazyCanvas/issues) or open a new one with a minimal scene that reproduces the problem.

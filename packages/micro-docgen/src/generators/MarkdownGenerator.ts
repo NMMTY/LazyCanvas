@@ -24,6 +24,9 @@ export interface MarkdownGeneratorMdBuilderOptions {
 
 const escapeMultiLine = (src: string) => src.replace(/\n|\r/g, ' ');
 
+/** A YAML double-quoted scalar: a description with quotes in it (`">"`) must not end the string early. */
+const yamlString = (src: string) => JSON.stringify(src);
+
 /**
  * MarkdownGenerator is a class that generates markdown documentation for classes, functions, and types.
  * It transforms the JSON output from the serializer into markdown and applies the necessary formatting or linking.
@@ -43,8 +46,8 @@ export class MarkdownGenerator {
         let date = new Date();
         const headers = [
             '---',
-            `title: "${escapeMultiLine(escape(value.name))}"`,
-            `summary: "${escapeMultiLine(escapeDesc(escape(value.description || 'No description provided')))}"`,
+            `title: ${yamlString(escapeMultiLine(escape(value.name)))}`,
+            `summary: ${yamlString(escapeMultiLine(escapeDesc(escape(value.description || 'No description provided'))))}`,
             `updatedAt: "${date.toISOString()}"`,
             `navIcon: "${value.objectType ? navIcon(value.objectType) : ''}"`,
             '---',

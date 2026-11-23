@@ -8,6 +8,8 @@ import Reactive from "./reactive";
 import Shapes from "./shapes";
 import Springs from "./springs";
 import TextExample from "./text";
+import TimelineExample from "./timeline";
+import TransformExample from "./transform";
 
 /** Every live example, by the file name used in `<Example name="…" />`. */
 export const examples: Record<string, ComponentType> = {
@@ -20,4 +22,6 @@ export const examples: Record<string, ComponentType> = {
   shapes: Shapes,
   springs: Springs,
   text: TextExample,
+  timeline: TimelineExample,
+  transform: TransformExample,
 };
