@@ -671,3 +671,16 @@ export function resizeLayers(layers: Array<AnyLayer | Group>, ratio: number) {
   }
   return newLayers;
 }
+
+/**
+ * Lets the event loop run, where it matters.
+ *
+ * In Node, memory held by native objects (the pixels behind every `getImageData`) is only released from
+ * the event loop; a loop made only of `await`ed promises never gives it the chance, and a few hundred frames
+ * fill gigabytes. A browser frees these in the ordinary course of garbage collection and does not need it.
+ */
+export function yieldToEventLoop(): Promise<void> {
+  return typeof setImmediate === "function"
+    ? new Promise((resolve) => setImmediate(resolve))
+    : Promise.resolve();
+}

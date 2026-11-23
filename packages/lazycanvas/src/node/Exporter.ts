@@ -128,14 +128,21 @@ export class Exporter {
         if (!this.scene) {
           throw new LazyError("APNG export requires a Scene instance. Use: new Exporter(scene)");
         }
-        const frames = await this.scene.renderAnimationData(
+        const fps = opts?.fps ?? 60;
+        const encoder = new APNGEncoder(this.scene.width, this.scene.height, fps);
+        // Each frame is compressed as it is drawn and its buffer reused: a long animation takes the
+        // memory of its compressed size plus one frame, not of every raw frame at once.
+        for await (const { data } of this.scene.frames(
           0,
           opts?.duration ?? this.scene.duration,
-          opts?.fps ?? 60,
-        );
-        result = new APNGEncoder(this.scene.width, this.scene.height, opts?.fps ?? 60)
-          .addFrames(...frames)
-          .encode();
+          fps,
+          {
+            reuse: true,
+          },
+        )) {
+          encoder.addFrame(data);
+        }
+        result = encoder.encode();
         break;
       }
 

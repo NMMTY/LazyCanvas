@@ -249,4 +249,12 @@ await new Exporter(scene).export("apng", { duration, fps: 30, name: "move", save
 
 The APNG exporter renders `duration` seconds at `fps` frames per second. `calculateDuration`, `calculateParallelDuration` and `calculateSequentialDuration` measure how long an animation takes.
 
-You can also grab frames yourself: `await scene.renderAnimation(0, 2, 30)` returns PNG buffers (or data URLs in the browser) for t = 0…2 s, and `renderAnimationData` returns raw RGBA frames for your own encoder.
+You can also grab frames yourself. `scene.frames(0, 2, 30)` hands them over one at a time, so an export of any length takes the memory of one frame:
+
+```ts
+for await (const { data, time } of scene.frames(0, 60, 30, { reuse: true })) {
+  await encoder.write(data); // RGBA, width × height × 4 bytes; with `reuse` the buffer is overwritten by the next frame
+}
+```
+
+`await scene.renderAnimation(0, 2, 30)` returns PNG buffers (or data URLs in the browser) and `renderAnimationData` the raw RGBA frames, but both **keep every frame until they return**: a frame is 3.7 MB at 1280 × 720, so a minute at 60 fps is more than 13 GB. Use them for short clips. The APNG exporter works frame by frame and keeps only the compressed frames.

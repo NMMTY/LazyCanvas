@@ -14,6 +14,9 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 `@nmmty/lazycanvas`.
 
 ### Added
+- **`scene.frames(start, end, fps, { reuse })`** (`@nmmty/lazycanvas`): an async generator that hands over
+  the frames of a range one at a time. An export of any length takes the memory of one frame (with `reuse`,
+  one buffer for all of them). `scene.getImageData(into)` copies into a buffer you already have.
 
 - **Moving the timeline to any time** (`@nmmty/lazycanvas`): `scene.renderFrame(t)` now accepts any
   `t`, in any order, and shows what playing from the start would show at `t`. The scheduler remembers
@@ -59,6 +62,12 @@ the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html
   `staggerDelays()` gives the delays.
 
 ### Changed
+- **Exporting an animation takes a fraction of the memory and time** (`@nmmty/lazycanvas`): the APNG
+  exporter compresses every frame as it is drawn instead of keeping all the raw frames, `APNGEncoder` copies
+  a scanline at a time instead of a byte at a time, and the loops that render a range of frames give the event
+  loop a turn between frames. A 20 s, 1280 × 720, 30 fps APNG went from 30.5 s and 4.7 GB to 8.1 s and 229 MB
+  (the file is identical byte for byte). `renderAnimation` and `renderAnimationData` still keep every frame
+  until they return, and say so; the number of frames of a range no longer depends on floating point drift.
 
 - **`@napi-rs/canvas` 1.2.0 or newer** (`@nmmty/adapter-node`, `@nmmty/adapter-react`): with 1.0.0 every call
   into the canvas leaked about a hundred bytes of native memory that was never given back, so a process that

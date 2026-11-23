@@ -1,11 +1,17 @@
+import * as zlib from "node:zlib";
 import { deflateSync } from "node:zlib";
 
 /**
  * APNG Encoder that works directly with Uint8ClampedArray (ImageData)
  * Much faster than encoding each frame to PNG separately
+ *
+ * A frame is compressed the moment it is added and only the compressed bytes are kept, so the memory an
+ * animation takes is its size as a file, not as raw pixels, and the buffer a frame came in can be reused
+ * for the next one.
  */
 export class APNGEncoder {
-  private frames: Uint8ClampedArray[] = [];
+  /** Compressed pixel data of every frame. */
+  private frames: Buffer[] = [];
   private width: number;
   private height: number;
   private fps: number;
@@ -17,7 +23,8 @@ export class APNGEncoder {
   }
 
   /**
-   * Add a frame from ImageData
+   * Add a frame from ImageData. The pixels are compressed straight away and are not kept, so the
+   * array may be overwritten afterwards.
    */
   public addFrame(imageData: Uint8ClampedArray) {
     if (imageData.length !== this.width * this.height * 4) {
@@ -25,7 +32,7 @@ export class APNGEncoder {
         `Invalid ImageData size. Expected ${this.width * this.height * 4}, got ${imageData.length}`,
       );
     }
-    this.frames.push(imageData);
+    this.frames.push(this.compressImageData(imageData));
     return this;
   }
 
@@ -124,9 +131,7 @@ export class APNGEncoder {
 
     chunks.push(this.createChunk("fcTL", fctl));
 
-    // Compress frame data
-    const imageData = this.frames[frameIndex];
-    const compressed = this.compressImageData(imageData);
+    const compressed = this.frames[frameIndex];
 
     // First frame uses IDAT (no sequence number), subsequent frames use fdAT
     if (frameIndex === 0) {
@@ -156,9 +161,8 @@ export class APNGEncoder {
       const filteredOffset = y * (stride + 1);
 
       filtered[filteredOffset] = 0; // Filter type: None
-      imageData.subarray(offset, offset + stride).forEach((byte, i) => {
-        filtered[filteredOffset + 1 + i] = byte;
-      });
+      // One copy of the whole scanline: this used to be a callback per byte, millions of calls a frame.
+      filtered.set(imageData.subarray(offset, offset + stride), filteredOffset + 1);
     }
 
     // Compress with zlib
@@ -191,6 +195,10 @@ export class APNGEncoder {
    * Calculate CRC32 checksum
    */
   private crc32(data: Buffer): number {
+    // Node 22.2+ has it built in.
+    const native = (zlib as { crc32?: (data: Buffer) => number }).crc32;
+    if (native) return native(data);
+
     let crc = 0xffffffff;
 
     for (let i = 0; i < data.length; i++) {

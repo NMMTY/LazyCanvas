@@ -6,7 +6,7 @@ import {
   ModernRenderPipeline,
 } from "../structures/managers";
 import { type AnyExport, type AnyLayer, Export, type ICanvas, type ICanvasAdapter } from "../types";
-import { treeVersion, walkLayers } from "../utils";
+import { treeVersion, walkLayers, yieldToEventLoop } from "../utils";
 import type { Signal, ThreadGenerator } from "./Signal";
 import { ThreadScheduler } from "./ThreadScheduler";
 
@@ -226,10 +226,21 @@ export class Scene {
   /**
    * Copies the current pixels of the canvas.
    *
+   * @param {Uint8ClampedArray} [into] - A buffer of `width * height * 4` bytes to copy the pixels into,
+   * instead of allocating a new one for every call.
    * @returns {Uint8ClampedArray} RGBA data, `width * height * 4` bytes.
    */
-  public getImageData(): Uint8ClampedArray {
+  public getImageData(into?: Uint8ClampedArray): Uint8ClampedArray {
     const imageData = this.lazyCanvas.ctx.getImageData(0, 0, this.width, this.height);
+    if (into) {
+      if (into.length !== imageData.data.length) {
+        throw new Error(
+          `getImageData: the buffer holds ${into.length} bytes but a frame is ${imageData.data.length}`,
+        );
+      }
+      into.set(imageData.data);
+      return into;
+    }
     return new Uint8ClampedArray(imageData.data);
   }
 
@@ -285,7 +296,48 @@ export class Scene {
   }
 
   /**
+   * Renders a range of the timeline one frame at a time, handing each frame over as soon as it is drawn.
+   *
+   * Nothing is kept: an export of any length takes the memory of one frame. Use it instead of
+   * {@link Scene.renderAnimationData} when the frames are written or encoded as they come.
+   *
+   * Between frames the event loop gets to run, which is what lets Node release the memory behind each
+   * read-back; a loop that only awaits promises would not.
+   *
+   * @param {number} startTime - The first time to render, in seconds.
+   * @param {number} endTime - The last time to render, in seconds.
+   * @param {number} [fps] - Frames per second. Defaults to `30`.
+   * @param {{ reuse?: boolean }} [options] - With `reuse`, every frame is written into the same buffer, so
+   * a frame is only valid until the next one is asked for: copy or encode it before the loop continues.
+   * @yields {{ index: number, time: number, data: Uint8ClampedArray }} RGBA data, `width * height * 4` bytes.
+   *
+   * @example
+   * ```ts
+   * for await (const { data } of scene.frames(0, 5, 30, { reuse: true })) encoder.addFrame(data);
+   * ```
+   */
+  public async *frames(
+    startTime: number,
+    endTime: number,
+    fps = 30,
+    options: { reuse?: boolean } = {},
+  ): AsyncGenerator<{ index: number; time: number; data: Uint8ClampedArray }, void, undefined> {
+    // Counting frames, not adding 1/fps to a time: the sum drifts and can lose the last frame.
+    const count = Math.max(0, Math.floor((endTime - startTime) * fps + 1e-6) + 1);
+    const buffer = options.reuse ? new Uint8ClampedArray(this.width * this.height * 4) : undefined;
+
+    for (let index = 0; index < count; index++) {
+      const time = startTime + index / fps;
+      await this.renderFrame(time);
+      yield { index, time, data: this.getImageData(buffer) };
+      await yieldToEventLoop();
+    }
+  }
+
+  /**
    * Renders a range of the timeline and encodes every frame as a PNG.
+   *
+   * All the frames are kept until the method returns; for a long range use {@link Scene.frames}.
    *
    * @param {number} startTime - The first time to render, in seconds.
    * @param {number} endTime - The last time to render, in seconds.
@@ -294,16 +346,17 @@ export class Scene {
    */
   public async renderAnimation(startTime: number, endTime: number, fps = 30): Promise<any[]> {
     const frames: any[] = [];
-    const frameDuration = 1 / fps;
+    const count = Math.max(0, Math.floor((endTime - startTime) * fps + 1e-6) + 1);
 
-    for (let time = startTime; time <= endTime; time += frameDuration) {
-      await this.renderFrame(time);
+    for (let index = 0; index < count; index++) {
+      await this.renderFrame(startTime + index / fps);
       const canvas = this.lazyCanvas.canvas;
       if ("toBuffer" in canvas && typeof canvas.toBuffer === "function") {
         frames.push(canvas.toBuffer("image/png"));
       } else if ("toDataURL" in canvas && typeof canvas.toDataURL === "function") {
         frames.push(canvas.toDataURL("image/png"));
       }
+      await yieldToEventLoop();
     }
 
     return frames;
@@ -311,6 +364,9 @@ export class Scene {
 
   /**
    * Renders a range of the timeline and returns the raw pixels of every frame.
+   *
+   * All the frames are kept until the method returns: 3.7 MB each at 1280 × 720, so a minute at 60 fps
+   * is over 13 GB. For anything long use {@link Scene.frames}, which keeps one frame at a time.
    *
    * @param {number} startTime - The first time to render, in seconds.
    * @param {number} endTime - The last time to render, in seconds.
@@ -323,13 +379,7 @@ export class Scene {
     fps = 30,
   ): Promise<Uint8ClampedArray[]> {
     const frames: Uint8ClampedArray[] = [];
-    const frameDuration = 1 / fps;
-
-    for (let time = startTime; time <= endTime; time += frameDuration) {
-      await this.renderFrame(time);
-      frames.push(this.getImageData());
-    }
-
+    for await (const frame of this.frames(startTime, endTime, fps)) frames.push(frame.data);
     return frames;
   }
 
