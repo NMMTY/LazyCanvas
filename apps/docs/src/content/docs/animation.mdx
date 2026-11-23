@@ -63,6 +63,24 @@ scene.addAnimation(function* () {
 });
 ```
 
+## Time and seeking
+
+Time advances in fixed steps of 1/240 s, whatever the frame rate, so the same animation looks the same at 30, 60 or 144 fps. A frame time is rounded down to a step.
+
+`scene.renderFrame(t)` accepts **any** time, in any order. Going forward runs the animations; going back puts the signals back from a history the scene keeps while it plays:
+
+```ts
+await scene.renderFrame(2);    // plays up to 2 s
+await scene.renderFrame(0.5);  // back to 0.5 s: same picture as playing from the start
+await scene.renderFrame(3);    // and on
+```
+
+The history keeps ten minutes by default. `new Scene(w, h, { adapter, history: { maxSeconds: 60 } })` changes that, `history: false` turns it off (going back then throws). Only the signals the scene knows about are restored: those used as layer props, and those passed to `playAnimation`.
+
+If you move back and then add a new animation while others are still running, `addAnimation` throws, because the running ones cannot be moved back. Call `scene.clearAnimations()` and `scene.resetTimeline()` first.
+
+`scene.duration` is the length of the animations added **as functions** (`scene.addAnimation(() => intro())`). A generator that was already created cannot be run twice to measure it, so it is not counted.
+
 ## Playing a scene
 
 The scene owns the timeline. How you advance it depends on where you run.

@@ -9,6 +9,37 @@ packages it applies to.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+`@nmmty/lazycanvas`.
+
+### Added
+
+- **Moving the timeline to any time** (`@nmmty/lazycanvas`): `scene.renderFrame(t)` now accepts any
+  `t`, in any order, and shows what playing from the start would show at `t`. The scheduler remembers
+  the values of animated signals (ten minutes by default; `new Scene(w, h, { history: { maxSeconds } })`
+  to change it, `history: false` to turn it off, after which going back in time throws).
+  `ThreadScheduler` and `SignalTrace` are exported.
+- **`scene.duration`**: the length of the animations added as functions, measured without leaving the
+  signals at their end values. `Exporter` uses it as the default `duration` of an APNG export.
+- `Signal.restore(value)`, `BaseLayer.listSignals()`.
+
+### Changed
+
+- **Time moves in fixed steps of 1/240 s.** Animations are advanced in equal slices whatever the frame
+  rate, so the same animation gives the same values at 30, 60 or 144 fps, and the time left over when one
+  animation hands over to the next is no longer lost. A frame time is rounded down to a step.
+- An animation added with `addAnimation`/`playAnimation` starts at the time of the last rendered frame.
+- `scene.addAnimation` throws if the timeline was moved back while other animations are still running;
+  call `clearAnimations()` and `resetTimeline()` first.
+
+### Fixed
+
+- `Timeline.after()` did not wait for the previous animation; it now starts when it finishes, and
+  `seek(time)` pins the next `after()` to a time. Animations started by `at()` no longer run one step ahead.
+- A `transform.matrix` with a `0` component (no skew, no offset) was rejected as invalid.
+- A tween that should end at exactly its duration could be one step short of it because of rounding.
+
 ## [1.2.0]
 
 `@nmmty/lazycanvas` and `@nmmty/adapter-react`.

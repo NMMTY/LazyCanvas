@@ -24,7 +24,8 @@ export interface IExportOptions {
   saveAsFile?: boolean;
 
   /**
-   * Animation length in seconds. Only used by the `apng` format.
+   * Animation length in seconds. Only used by the `apng` format. Defaults to
+   * `scene.duration`, the length of the animations added as functions.
    */
   duration?: number;
 
@@ -129,7 +130,7 @@ export class Exporter {
         }
         const frames = await this.scene.renderAnimationData(
           0,
-          opts?.duration ?? 0,
+          opts?.duration ?? this.scene.duration,
           opts?.fps ?? 60,
         );
         result = new APNGEncoder(this.scene.width, this.scene.height, opts?.fps ?? 60)

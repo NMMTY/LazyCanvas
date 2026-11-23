@@ -1,6 +1,22 @@
 import { type Interpolator, getInterpolator, lerpColorHSL, lerpColorRGB } from "./Interpolation";
 
 /**
+ * Tolerance, in seconds, when comparing elapsed time with a duration.
+ *
+ * The scheduler advances time in many small steps, and adding `1/240` two hundred
+ * and forty times does not give exactly `1`. Without a tolerance an animation that
+ * should end at one second would still be one step short of it.
+ */
+export const TIME_EPSILON = 1e-9;
+
+/**
+ * Whether `elapsed` seconds have reached `duration`, within {@link TIME_EPSILON}.
+ */
+export function timeReached(elapsed: number, duration: number): boolean {
+  return elapsed + TIME_EPSILON >= duration;
+}
+
+/**
  * Easing function type
  */
 export type EasingFunction = (t: number) => number;
@@ -174,6 +190,17 @@ export class Signal<T = number> {
   }
 
   /**
+   * Puts a value back without touching the running animation.
+   *
+   * This is what the scene's timeline uses when it moves to another point in time:
+   * unlike {@link Signal.set} it does not cancel the animation that drives the
+   * signal. Call `set` for ordinary assignments.
+   */
+  public restore(value: T): void {
+    this._value = value;
+  }
+
+  /**
    * Reset to initial value
    */
   public reset(): void {
@@ -200,7 +227,7 @@ export class Signal<T = number> {
 
     let elapsed = 0;
 
-    while (elapsed < duration) {
+    while (!timeReached(elapsed, duration)) {
       const delta = yield;
       const actualDelta = typeof delta === "number" ? delta : 1 / 60; // Default 60fps
       elapsed += actualDelta;
@@ -210,7 +237,7 @@ export class Signal<T = number> {
       this._value = interpolator(from, value, easedProgress);
 
       // Critical: ensure we don't overshoot
-      if (elapsed >= duration) {
+      if (timeReached(elapsed, duration)) {
         this._value = value;
         break;
       }
@@ -226,7 +253,7 @@ export class Signal<T = number> {
   public *wait(duration: number): ThreadGenerator {
     let elapsed = 0;
 
-    while (elapsed < duration) {
+    while (!timeReached(elapsed, duration)) {
       const delta = yield;
       const actualDelta = typeof delta === "number" ? delta : 1 / 60;
       elapsed += actualDelta;

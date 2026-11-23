@@ -274,6 +274,14 @@ export class BaseLayer<T extends IBaseLayerProps> implements IBaseLayer {
   }
 
   /**
+   * The signals that drive this layer's props.
+   * @returns {Signal<any>[]} The signals found in the props, in the order they were declared.
+   */
+  public listSignals(): Signal<any>[] {
+    return [...this._signals.values()];
+  }
+
+  /**
    * Update layer properties from signals at given time
    * @param time - Current time in seconds
    */

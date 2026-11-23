@@ -1,4 +1,4 @@
-import type { Signal, ThreadGenerator } from "./Signal";
+import { type Signal, type ThreadGenerator, timeReached } from "./Signal";
 
 /**
  * Metadata for tracking animation duration
@@ -71,11 +71,11 @@ export function* loop(
 export function* loopFor(generator: () => ThreadGenerator, duration: number): ThreadGenerator {
   let elapsed = 0;
 
-  while (elapsed < duration) {
+  while (!timeReached(elapsed, duration)) {
     const gen = generator();
 
     let result = gen.next();
-    while (!result.done && elapsed < duration) {
+    while (!result.done && !timeReached(elapsed, duration)) {
       const delta = yield;
       const actualDelta = typeof delta === "number" ? delta : 1 / 60;
       elapsed += actualDelta;
@@ -83,7 +83,7 @@ export function* loopFor(generator: () => ThreadGenerator, duration: number): Th
     }
 
     // If animation finished before duration, restart
-    if (result.done && elapsed < duration) {
+    if (result.done && !timeReached(elapsed, duration)) {
       // Loop continues
     } else {
       break;
@@ -98,7 +98,7 @@ export function* loopFor(generator: () => ThreadGenerator, duration: number): Th
 export function* waitFor(duration: number): ThreadGenerator {
   let elapsed = 0;
 
-  while (elapsed < duration) {
+  while (!timeReached(elapsed, duration)) {
     const delta = yield;
     const actualDelta = typeof delta === "number" ? delta : 1 / 60;
     elapsed += actualDelta;
@@ -274,37 +274,57 @@ export function* yoyo<T>(
 }
 
 /**
+ * A timeline entry: an animation and when it starts.
+ */
+interface TimelineEntry {
+  /** Absolute start time in seconds, or `null` to start when the previous entry finishes. */
+  at: number | null;
+  generator: ThreadGenerator;
+}
+
+/**
  * Create a timeline builder for complex animations
  */
 export class Timeline {
-  private generators: Array<{ time: number; generator: ThreadGenerator }> = [];
-  private currentTime = 0;
+  private entries: TimelineEntry[] = [];
+  private cursor: number | null = null;
 
   /**
    * Add animation at specific time
    */
   public at(time: number, generator: ThreadGenerator): this {
-    this.generators.push({ time, generator });
+    this.entries.push({ at: time, generator });
     return this;
   }
 
   /**
-   * Add an animation after the previous one.
+   * Add an animation that starts when the previously added one finishes.
+   *
+   * The first animation added this way starts at time `0`. After {@link Timeline.seek}
+   * the next one starts at that time instead.
    *
    * Named `after` rather than `then` on purpose: a `then` method would make
    * Timeline thenable, so `await timeline()` would try to resolve the timeline
    * as a promise instead of returning it.
    */
   public after(generator: ThreadGenerator): this {
-    this.generators.push({ time: this.currentTime, generator });
+    if (this.cursor !== null) {
+      this.entries.push({ at: this.cursor, generator });
+      this.cursor = null;
+    } else if (this.entries.length === 0) {
+      this.entries.push({ at: 0, generator });
+    } else {
+      this.entries.push({ at: null, generator });
+    }
     return this;
   }
 
   /**
-   * Set current time cursor
+   * Make the next {@link Timeline.after} start at an absolute time, instead of
+   * waiting for the previous animation.
    */
   public seek(time: number): this {
-    this.currentTime = time;
+    this.cursor = time;
     return this;
   }
 
@@ -312,31 +332,48 @@ export class Timeline {
    * Execute timeline
    */
   public *play(): ThreadGenerator {
-    // Sort by time
-    const sorted = [...this.generators].sort((a, b) => a.time - b.time);
-
+    const entries = this.entries;
+    const started: boolean[] = entries.map(() => false);
+    const active = new Map<number, ThreadGenerator>();
     let time = 0;
-    const activeGens: ThreadGenerator[] = [];
-    let nextIndex = 0;
 
-    while (nextIndex < sorted.length || activeGens.length > 0) {
+    const start = (index: number) => {
+      started[index] = true;
+      const generator = entries[index].generator;
+      if (!generator.next().done) active.set(index, generator);
+      else finish(index);
+    };
+
+    // An entry that follows the previous one starts the moment that one ends.
+    const finish = (index: number) => {
+      const next = index + 1;
+      if (next < entries.length && entries[next].at === null && !started[next]) start(next);
+    };
+
+    const startDue = () => {
+      for (let i = 0; i < entries.length; i++) {
+        const at = entries[i].at;
+        if (!started[i] && at !== null && timeReached(time, at)) start(i);
+      }
+    };
+
+    startDue();
+
+    while (started.includes(false) || active.size > 0) {
       const delta = yield;
       const actualDelta = typeof delta === "number" ? delta : 1 / 60;
       time += actualDelta;
 
-      // Start new generators that should be active now
-      while (nextIndex < sorted.length && sorted[nextIndex].time <= time) {
-        activeGens.push(sorted[nextIndex].generator);
-        nextIndex++;
-      }
-
-      // Update active generators
-      for (let i = activeGens.length - 1; i >= 0; i--) {
-        const result = activeGens[i].next(delta);
-        if (result.done) {
-          activeGens.splice(i, 1);
+      // Advance what is already running first: an animation that starts now begins at
+      // this moment, so it must not take a step before the next one.
+      for (const [index, generator] of [...active]) {
+        if (generator.next(delta).done) {
+          active.delete(index);
+          finish(index);
         }
       }
+
+      startDue();
     }
   }
 }

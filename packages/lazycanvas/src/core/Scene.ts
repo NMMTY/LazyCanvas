@@ -27,8 +27,15 @@ export class Scene {
   public readonly lazyCanvas: LazyCanvas;
 
   private allLayers: (AnyLayer | Group)[] = [];
-  private scheduler: ThreadScheduler = new ThreadScheduler();
+  private scheduler: ThreadScheduler;
   private lastFrameTime = 0;
+
+  /** Signals handed to {@link Scene.playAnimation}; they may not be used by any layer. */
+  private playedSignals = new Set<Signal<any>>();
+
+  /** Animations added as functions: the only ones whose length can be measured. */
+  private factories: Array<() => ThreadGenerator> = [];
+  private measuredDuration: number | undefined;
 
   /**
    * Tail of the render queue. Frames share one canvas context, and layers hold
@@ -53,6 +60,10 @@ export class Scene {
    * @param {(time: number) => void} [opts.onFrameDrawn] - Called after every frame that was drawn
    * completely, before the next queued frame starts. The canvas holds exactly that frame at this
    * point, so it is the place to copy it somewhere (e.g. from an off-screen canvas to a visible one).
+   * @param {boolean | { maxSeconds?: number }} [opts.history] - Remember the values of animated
+   * signals, so `renderFrame` can be asked for an earlier time than the last one (a scrubber, a
+   * paused preview). On by default, keeping ten minutes; `false` turns it off, and going back in
+   * time then throws.
    * @param {boolean | LayerCacheOptions} [opts.cache] - Keep the picture of layers between frames and
    * reuse it while nothing that shows in it has changed. For a scene that is drawn again and
    * again (a live preview); a scene drawn once only pays for it. See `LayerCache`.
@@ -66,9 +77,11 @@ export class Scene {
       adapter?: ICanvasAdapter;
       onFrameDrawn?: (time: number) => void;
       cache?: boolean | LayerCacheOptions;
+      history?: boolean | { maxSeconds?: number };
     } = {},
   ) {
     this.lazyCanvas = new LazyCanvas(ModernRenderPipeline, opts).create(width, height);
+    this.scheduler = new ThreadScheduler({ history: opts.history });
     this.onFrameDrawn = opts.onFrameDrawn;
   }
 
@@ -96,6 +109,10 @@ export class Scene {
 
   /**
    * Renders one frame.
+   *
+   * `time` can be any moment of the timeline, in any order: frames at `2`, then `0.5`, then
+   * `3` show exactly what playing from the start would show at those times. Time moves in
+   * steps of `1/240` of a second, so a `time` is rounded down to the step.
    *
    * Frames are serialized: calling this again before the previous frame has
    * finished queues the new frame rather than drawing over a half-finished one.
@@ -159,6 +176,7 @@ export class Scene {
       await this.lazyCanvas.manager.layout.ready;
     }
 
+    this.watchSignals();
     this.scheduler.update(time);
 
     // Start every frame from a clean slate: a transform or clip left behind by
@@ -210,6 +228,15 @@ export class Scene {
   /** The canvas height in pixels. */
   public get height(): number {
     return this.lazyCanvas.canvas.height;
+  }
+
+  /** Tells the scheduler which signals to remember, so the timeline can go back. */
+  private watchSignals(): void {
+    for (const layer of walkLayers(this.allLayers)) {
+      const signals = (layer as { listSignals?: () => Signal<any>[] }).listSignals?.();
+      if (signals) for (const signal of signals) this.scheduler.watch(signal);
+    }
+    for (const signal of this.playedSignals) this.scheduler.watch(signal);
   }
 
   private updateAllStates(time: number): void {
@@ -295,10 +322,8 @@ export class Scene {
    * @param {ThreadGenerator | (() => ThreadGenerator)} generatorOrFactory - A generator, or a function returning one.
    */
   public addAnimation(generatorOrFactory: ThreadGenerator | (() => ThreadGenerator)): void {
-    const gen =
-      typeof generatorOrFactory === "function"
-        ? (generatorOrFactory as () => ThreadGenerator)()
-        : generatorOrFactory;
+    this.watchSignals();
+    const gen = this.start(generatorOrFactory);
     this.scheduler.add(gen);
   }
 
@@ -312,23 +337,80 @@ export class Scene {
     signal: Signal<T>,
     generatorOrFactory: ThreadGenerator | (() => ThreadGenerator),
   ): void {
-    const gen =
-      typeof generatorOrFactory === "function"
-        ? (generatorOrFactory as () => ThreadGenerator)()
-        : generatorOrFactory;
+    this.playedSignals.add(signal);
+    this.watchSignals();
+    const gen = this.start(generatorOrFactory);
     signal.run(gen);
     this.scheduler.add(gen);
+  }
+
+  /** Creates the generator for an animation and remembers a factory so its length can be measured. */
+  private start(generatorOrFactory: ThreadGenerator | (() => ThreadGenerator)): ThreadGenerator {
+    this.measuredDuration = undefined;
+    if (typeof generatorOrFactory === "function") {
+      this.factories.push(generatorOrFactory);
+      return generatorOrFactory();
+    }
+    return generatorOrFactory;
   }
 
   /** Stops and removes every running animation. */
   public clearAnimations(): void {
     this.scheduler.clear();
+    this.factories = [];
+    this.measuredDuration = undefined;
   }
 
   /** Rewinds the timeline to `0`. Signals keep their current values; reset them with `resetSignals`. */
   public resetTimeline(): void {
     this.scheduler.reset();
     this.lastFrameTime = 0;
+  }
+
+  /**
+   * Length of the animations in seconds: how long until all of them have finished.
+   *
+   * Only animations added as a function (`scene.addAnimation(() => move())`) are counted.
+   * A generator that was already created cannot be run a second time to find out how long it
+   * is, so it is left out; `0` means no measurable animation.
+   *
+   * Measuring runs the animations on a copy of the clock and puts the signals back afterwards,
+   * so unlike `calculateDuration` it does not leave them at their end values.
+   */
+  public get duration(): number {
+    if (this.measuredDuration === undefined) {
+      this.measuredDuration = this.measureDuration();
+    }
+    return this.measuredDuration;
+  }
+
+  private measureDuration(maxSeconds = 3600): number {
+    if (this.factories.length === 0) return 0;
+
+    this.watchSignals();
+    const signals = new Set<Signal<any>>(this.playedSignals);
+    for (const layer of walkLayers(this.allLayers)) {
+      const listed = (layer as { listSignals?: () => Signal<any>[] }).listSignals?.();
+      if (listed) for (const signal of listed) signals.add(signal);
+    }
+    const saved = [...signals].map((signal) => [signal, signal.value()] as const);
+
+    const sandbox = new ThreadScheduler({ step: this.scheduler.step, history: false });
+    for (const factory of this.factories) sandbox.add(factory());
+
+    let steps = 0;
+    const maxSteps = Math.ceil(maxSeconds / sandbox.step);
+    try {
+      sandbox.update(0);
+      while (sandbox.hasActiveThreads() && steps < maxSteps) {
+        steps++;
+        sandbox.update(steps * sandbox.step);
+      }
+    } finally {
+      for (const [signal, value] of saved) signal.restore(value);
+    }
+
+    return Math.round(steps * sandbox.step * 1e9) / 1e9;
   }
 
   /** Whether any animation is still running. */

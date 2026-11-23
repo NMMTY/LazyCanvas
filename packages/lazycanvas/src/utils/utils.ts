@@ -322,23 +322,20 @@ export function transform(
       ctx.scale(transform.scale.x, transform.scale.y);
     }
     if (transform.matrix) {
+      // A component may legitimately be 0 (no skew, no translation), so check for
+      // numbers rather than for truthiness.
+      const { a, b, c, d, e, f } = transform.matrix;
       if (
-        !transform.matrix.a ||
-        !transform.matrix.b ||
-        !transform.matrix.c ||
-        !transform.matrix.d ||
-        !transform.matrix.e ||
-        !transform.matrix.f
+        typeof a !== "number" ||
+        typeof b !== "number" ||
+        typeof c !== "number" ||
+        typeof d !== "number" ||
+        typeof e !== "number" ||
+        typeof f !== "number" ||
+        ![a, b, c, d, e, f].every(Number.isFinite)
       )
         throw new LazyError("The matrix transformation must be a valid matrix");
-      ctx.transform(
-        transform.matrix.a,
-        transform.matrix.b,
-        transform.matrix.c,
-        transform.matrix.d,
-        transform.matrix.e,
-        transform.matrix.f,
-      );
+      ctx.transform(a, b, c, d, e, f);
     }
   }
 }
